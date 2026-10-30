@@ -1,10 +1,12 @@
 {
   "name": "Bugs Video Editor",
-  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "image": "mcr.microsoft.com/devcontainers/cpp:1-ubuntu-24.04",
   "remoteUser": "vscode",
   "customizations": {
     "vscode": {
-      "extensions": []
+      "extensions": [
+        "ms-vscode.cmake-tools"
+      ]
     }
   }
 }
