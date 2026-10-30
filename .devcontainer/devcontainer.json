@@ -1,0 +1,10 @@
+{
+  "name": "Bugs Video Editor",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "remoteUser": "vscode",
+  "customizations": {
+    "vscode": {
+      "extensions": []
+    }
+  }
+}
