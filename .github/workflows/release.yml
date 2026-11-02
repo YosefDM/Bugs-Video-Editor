@@ -1,0 +1,56 @@
+name: Release
+
+# Push a tag such as v26.11.1 to build the installer and create a draft GitHub Release.
+# It stays a draft until someone has tried the installer on Windows and publishes it.
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: read
+
+jobs:
+  check-tag:
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Read the version from the tag
+        id: version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::Tags must look like v26.11.1, not $TAG"
+            exit 1
+          fi
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+  windows:
+    needs: check-tag
+    uses: ./.github/workflows/build-windows.yml
+    with:
+      version: ${{ needs.check-tag.outputs.version }}
+
+  draft-release:
+    needs: [check-tag, windows]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - name: Download installer
+        uses: actions/download-artifact@v6
+        with:
+          name: windows-installer
+          path: dist
+
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ needs.check-tag.outputs.version }}
+        run: |
+          mv dist/bugs-video-editor-setup.exe "dist/bugs-video-editor-setup-$VERSION.exe"
+          gh release create "$TAG" "dist/bugs-video-editor-setup-$VERSION.exe" \
+            --draft --verify-tag --generate-notes --title "BUGS! Video Editor $VERSION"

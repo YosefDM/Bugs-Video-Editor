@@ -439,7 +439,7 @@ function set_globals {
   REPOLOCS[1]="https://github.com/mltframework/mlt.git"
   REPOLOCS[2]="https://github.com/dyne/frei0r.git"
   REPOLOCS[3]="https://github.com/ddennedy/movit.git"
-  REPOLOCS[4]="https://github.com/mltframework/shotcut.git"
+  REPOLOCS[4]="${BUGS_REPO:-https://github.com/YosefDM/Bugs-Video-Editor.git}"
   REPOLOCS[5]="https://github.com/ddennedy/ladspa-swh.git"
   REPOLOCS[6]="https://github.com/FFmpeg/nv-codec-headers.git"
   REPOLOCS[7]="https://github.com/GPUOpen-LibrariesAndSDKs/AMF.git"
@@ -765,6 +765,7 @@ function install_shotcut {
   cmd ninja install
   cmd install -c COPYING "$FINAL_INSTALL_DIR"
   cmd install -c packaging/windows/shotcut.iss "$FINAL_INSTALL_DIR"/..
+  cmd install -c packaging/windows/shotcut-logo-64.bmp "$FINAL_INSTALL_DIR"/..
   cmd sed -i "s/YY.MM.DD/$SHOTCUT_VERSION/" "$FINAL_INSTALL_DIR"/../shotcut.iss
   cmd install -d "$FINAL_INSTALL_DIR"/share/translations
   cmd install -p -c translations/*.qm "$FINAL_INSTALL_DIR"/share/translations
@@ -941,7 +942,8 @@ function get_subproject {
           # No git repo
           debug "No git repo, need to check out"
           feedback_status "Cloning git sources for $1"
-          cmd git --no-pager clone --quiet --recurse-submodules $REPOLOC || die "Unable to git clone source for $1 from $REPOLOC"
+          # Named explicitly: the BUGS! repository is not called "shotcut".
+          cmd git --no-pager clone --quiet --recurse-submodules "$REPOLOC" "$1" || die "Unable to git clone source for $1 from $REPOLOC"
           cmd cd $1 || die "Unable to change to directory $1"
           cmd git checkout --recurse-submodules $REVISION || die "Unable to git checkout $REVISION"
           [ "$SDK" = "1" -a "shotcut" != "$1" -a "mlt" != "$1" ] && cmd rm -rf .git

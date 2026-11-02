@@ -4,6 +4,21 @@ if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.20")
   cmake_policy(SET CMP0115 NEW)
 endif()
 
+# BUGS! uses the release tag (v26.11.2) as its version when built from one.
+if(NOT DEFINED SHOTCUT_VERSION)
+  find_package(Git QUIET)
+  if(GIT_FOUND)
+    execute_process(
+      COMMAND ${GIT_EXECUTABLE} describe --tags --exact-match --match "v[0-9]*"
+      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+      OUTPUT_VARIABLE BUGS_TAG
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      ERROR_QUIET)
+    if(BUGS_TAG MATCHES "^v([0-9]+\\.[0-9]+\\.[0-9]+)$")
+      set(SHOTCUT_VERSION ${CMAKE_MATCH_1})
+    endif()
+  endif()
+endif()
 if(NOT DEFINED SHOTCUT_VERSION)
   string(TIMESTAMP SHOTCUT_VERSION "%y.%m.%d")
   # Remove leading zeros from each digit group
