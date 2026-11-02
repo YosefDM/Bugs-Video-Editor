@@ -31,7 +31,8 @@ SolidCompression=no
 OutputDir=userdocs:Inno Setup Examples Output
 ; Installs for the current user with no administrator prompt, unless asked otherwise.
 PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=commandline dialog
+; No "for me or for everyone?" question; only the command line can change it.
+PrivilegesRequiredOverridesAllowed=commandline
 ; "ArchitecturesAllowed=x64" specifies that Setup cannot run on
 ; anything but x64.
 ArchitecturesAllowed=x64compatible
@@ -67,6 +68,7 @@ Name: removeSettings; Description: "{cm:ClearSettings}"; Flags: unchecked
 
 [Files]
 Source: "Shotcut\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs uninsremovereadonly
+Source: "bugs-spider-*.bmp"; Flags: dontcopy
 
 [Icons]
 Name: "{autoprograms}\BUGS! Video Editor"; Filename: "{app}\bugs-video-editor.exe"; Tasks: startMenu
@@ -79,6 +81,111 @@ Root: HKCU; Subkey: "Software\BUGS\BUGS! Video Editor"; Tasks: removeSettings; A
 Filename: "{app}\bugs-video-editor.exe"; Description: "{cm:StartBugs}"; Flags: postinstall nowait skipifsilent
 
 [Code]
+// A prank for Levi: when the install starts, a huntsman spider scuttles across the installer.
+// It runs in its own see-through window (magenta is invisible), so only the spider shows.
+// Photo: Heteropoda venatoria by ja:user:Dieno, public domain, via Wikimedia Commons.
+// Skipped for silent installs.
+const
+  GWL_EXSTYLE = -20;
+  WS_EX_TRANSPARENT = $20;
+  WS_EX_TOOLWINDOW = $80;
+  WS_EX_LAYERED = $80000;
+  LWA_COLORKEY = 1;
+  SeeThrough = $FF00FF;
+
+function GetWindowLong(Wnd: HWND; Index: Integer): Longint;
+  external 'GetWindowLongW@user32.dll stdcall';
+function SetWindowLong(Wnd: HWND; Index: Integer; NewLong: Longint): Longint;
+  external 'SetWindowLongW@user32.dll stdcall';
+function SetLayeredWindowAttributes(Wnd: HWND; Key: Cardinal; Alpha: Byte; Flags: Cardinal): Integer;
+  external 'SetLayeredWindowAttributes@user32.dll stdcall';
+
+procedure CrawlSpider();
+var
+  Form: TSetupForm;
+  Frames: array[0..2] of TBitmapImage;
+  Size, StartX, StartY, DistX, DistY, Steps, I, Shown, Next: Integer;
+  Name: String;
+begin
+  // Pictures are made at exact sizes for 100%, 150% and 200% display scaling. Stretching them
+  // would blend the see-through magenta into the spider's edges.
+  if ScaleY(100) >= 190 then
+    Size := 920
+  else if ScaleY(100) >= 140 then
+    Size := 690
+  else
+    Size := 460;
+  for I := 1 to 3 do
+    ExtractTemporaryFile('bugs-spider-' + IntToStr(Size) + '-' + IntToStr(I) + '.bmp');
+  WizardForm.Repaint;
+
+  Form := CreateCustomForm;
+  try
+    Form.BorderStyle := bsNone;
+    Form.FormStyle := fsStayOnTop;
+    Form.Color := SeeThrough;
+    Form.ClientWidth := Size;
+    Form.ClientHeight := Size;
+    for I := 0 to 2 do
+    begin
+      Frames[I] := TBitmapImage.Create(Form);
+      Frames[I].Parent := Form;
+      Frames[I].SetBounds(0, 0, Size, Size);
+      Frames[I].Stretch := False;
+      Name := 'bugs-spider-' + IntToStr(Size) + '-' + IntToStr(I + 1) + '.bmp';
+      Frames[I].Bitmap.LoadFromFile(ExpandConstant('{tmp}\') + Name);
+      Frames[I].Visible := I = 1;
+    end;
+    SetWindowLong(Form.Handle, GWL_EXSTYLE,
+      GetWindowLong(Form.Handle, GWL_EXSTYLE) or WS_EX_LAYERED or WS_EX_TRANSPARENT or WS_EX_TOOLWINDOW);
+    SetLayeredWindowAttributes(Form.Handle, SeeThrough, 255, LWA_COLORKEY);
+
+    // From off the lower left, up across the window and off the top right. The photo is turned
+    // to face this way.
+    DistX := WizardForm.Width + Size;
+    DistY := -(DistX * 445) div 1000;
+    StartX := WizardForm.Left - Size;
+    StartY := WizardForm.Top + WizardForm.Height - Size div 4;
+    Form.Left := StartX;
+    Form.Top := StartY;
+    Form.Show;
+
+    Steps := 90;
+    Shown := 1;
+    for I := 1 to Steps do
+    begin
+      Form.Left := StartX + DistX * I div Steps;
+      Form.Top := StartY + DistY * I div Steps;
+      // Legs: flick between the three poses.
+      case I mod 4 of
+        0, 2: Next := 1;
+        1: Next := 0;
+      else
+        Next := 2;
+      end;
+      Frames[Next].Visible := True;
+      if Next <> Shown then
+        Frames[Shown].Visible := False;
+      Shown := Next;
+      Form.Repaint;
+      Sleep(11);
+      // Real spiders move in bursts. It freezes in the middle of the window for a moment.
+      if I = Steps div 2 then
+        Sleep(1300)
+      else if I mod 15 = 0 then
+        Sleep(180 + Random(320));
+    end;
+  finally
+    Form.Free;
+  end;
+end;
+
+procedure CurPageChanged(CurPageID: Integer);
+begin
+  if (CurPageID = wpInstalling) and not WizardSilent then
+    CrawlSpider();
+end;
+
 procedure RemoveSettings();
 begin
   RegDeleteKeyIncludingSubkeys(HKEY_CURRENT_USER, 'Software\BUGS\BUGS! Video Editor');
