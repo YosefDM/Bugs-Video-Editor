@@ -1,3 +1,15 @@
+# BUGS! Video Editor
+
+A simple video and photo editor for Windows: open a file, trim it, cut a piece out, crop it, add a caption, and save a new copy. Your original is never changed. It works offline with no account.
+
+BUGS! is based on [Shotcut](https://www.shotcut.org/) by Meltytech, LLC, and keeps the full Shotcut editor under Advanced. See `docs/bugs/HANDOVER.md` for the product brief and `AGENTS.md` for how the code is organised.
+
+To build the Windows installer, run the **Build Windows installer** workflow in GitHub Actions.
+
+---
+
+The original Shotcut README follows.
+
 [![build-shotcut-linux](https://github.com/mltframework/shotcut/workflows/build-shotcut-linux/badge.svg)](https://github.com/mltframework/shotcut/actions?query=workflow%3Abuild-shotcut-linux+is%3Acompleted+branch%3Amaster)
 [![build-shotcut-macos](https://github.com/mltframework/shotcut/workflows/build-shotcut-macos/badge.svg)](https://github.com/mltframework/shotcut/actions?query=workflow%3Abuild-shotcut-macos+is%3Acompleted+branch%3Amaster)
 [![build-shotcut-windows](https://github.com/mltframework/shotcut/workflows/build-shotcut-windows/badge.svg)](https://github.com/mltframework/shotcut/actions?query=workflow%3Abuild-shotcut-windows+is%3Acompleted+branch%3Amaster)

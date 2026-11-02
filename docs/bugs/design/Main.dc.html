@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Editor — simple mode</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#111214}
+a{color:#9DB8FF}a:hover{color:#C9D7FF}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+.strip{background-image:url("/_blob/7f8e54f5baa3cdbd1425e95befd7976a");background-repeat:repeat-x;background-size:auto 100%;background-position:left center}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 940px; box-sizing: border-box; background: {{t.bg}}; color: {{t.text}}; font-family: 'Inter', system-ui, sans-serif; font-size: 13px; display: flex; flex-direction: column">
+
+<header style="min-height: 64px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 10px 16px; box-sizing: border-box; border-bottom: 1px solid {{t.border}}; background: {{t.bar}}">
+<div style="display: flex; align-items: center; gap: 10px">
+<img src="{{t.markSrc}}" alt="" style="width: 38px; height: 38px; display: block">
+<span style="font-family: 'Outfit', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: -0.015em; line-height: 1">BUGS<span style="color: #E5392B">!</span></span>
+</div>
+<div style="width: 1px; height: 24px; background: {{t.border}}"></div>
+<div style="display: flex; flex-direction: column; gap: 2px">
+<span style="font-size: 14px; font-weight: 600">Editing: {{current.name}}</span>
+<span style="font-size: 12px; color: {{t.muted}}; display: flex; align-items: center; gap: 5px">
+<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
+Original stays untouched
+</span>
+</div>
+<div style="flex: 1 1 20px"></div>
+<button aria-label="Undo" style="width: 40px; height: 40px; border-radius: 10px; border: 0; background: transparent; color: {{t.text2}}; display: flex; align-items: center; justify-content: center">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14L4 9l5-5"></path><path d="M4 9h10a6 6 0 0 1 0 12h-3"></path></svg>
+</button>
+<button aria-label="Redo" style="width: 40px; height: 40px; border-radius: 10px; border: 0; background: transparent; color: {{t.text2}}; display: flex; align-items: center; justify-content: center">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 14l5-5-5-5"></path><path d="M20 9H10a6 6 0 0 0 0 12h3"></path></svg>
+</button>
+<button aria-label="{{themeLabel}}" title="{{themeLabel}}" onClick="{{toggleTheme}}" style="width: 40px; height: 40px; border-radius: 10px; border: 0; background: {{t.chip}}; color: {{t.text2}}; display: flex; align-items: center; justify-content: center">
+<sc-if value="{{isLight}}" hint-placeholder-val="{{false}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path></svg>
+</sc-if>
+<sc-if value="{{isDark}}" hint-placeholder-val="{{true}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="M4.9 4.9l1.4 1.4"></path><path d="M17.7 17.7l1.4 1.4"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="M4.9 19.1l1.4-1.4"></path><path d="M17.7 6.3l1.4-1.4"></path></svg>
+</sc-if>
+</button>
+<button style="height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid {{t.softBorder}}; background: transparent; color: {{t.text2}}; font-size: 13px; display: flex; align-items: center; gap: 8px">
+<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="7" width="8" height="10" rx="1.5"></rect><rect x="14" y="7" width="8" height="10" rx="1.5"></rect><path d="M10 12h4"></path></svg>
+Combine clips
+</button>
+<button onClick="{{finish}}" style="height: 40px; padding: 0 22px; border-radius: 10px; border: 0; background: {{t.accent}}; color: {{t.onAccent}}; font-size: 14px; font-weight: 600; display: flex; align-items: center; gap: 8px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>
+Finish
+</button>
+</header>
+
+<div style="display: flex; flex-wrap: wrap; flex: 1 1 auto">
+
+<section aria-label="Library" style="flex: 0 1 320px; min-width: 270px; box-sizing: border-box; padding: 16px; background: {{t.panel}}; border-right: 1px solid {{t.border}}; display: flex; flex-direction: column; gap: 14px">
+<div role="tablist" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2px; padding: 3px; border-radius: 12px; background: {{t.seg}}">
+<sc-for list="{{tabs}}" as="tb" hint-placeholder-count="2">
+<button role="tab" aria-selected="{{tb.selected}}" onClick="{{tb.pick}}" style="height: 40px; border-radius: 9px; border: 0; background: {{tb.bg}}; color: {{tb.color}}; font-size: 13px; font-weight: 600; box-shadow: {{tb.shadow}}; display: flex; align-items: center; justify-content: center; gap: 6px">
+{{tb.label}}<span style="min-width: 20px; height: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 10px; background: {{t.countBg}}; color: {{t.text2}}; font-size: 11px; display: inline-flex; align-items: center; justify-content: center">{{tb.count}}</span>
+</button>
+</sc-for>
+</div>
+
+<p style="margin: 0; font-size: 12px; line-height: 1.45; color: {{t.muted}}">{{tabHint}}</p>
+
+<sc-if value="{{onOriginals}}" hint-placeholder-val="{{true}}">
+<button style="height: 64px; border-radius: 12px; border: 1.5px dashed {{t.dashed}}; background: {{t.drop}}; color: {{t.text2}}; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 13px; font-weight: 600">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4"></path><path d="M7 9l5-5 5 5"></path><path d="M4 20h16"></path></svg>
+Add videos or photos
+</button>
+</sc-if>
+
+<div style="display: flex; gap: 6px; flex-wrap: wrap">
+<sc-for list="{{filters}}" as="f" hint-placeholder-count="3">
+<button aria-pressed="{{f.pressed}}" onClick="{{f.pick}}" style="height: 32px; padding: 0 14px; border-radius: 16px; border: 1px solid {{f.border}}; background: {{f.bg}}; color: {{f.color}}; font-size: 12px; font-weight: 600">{{f.label}}</button>
+</sc-for>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<sc-for list="{{library}}" as="m" hint-placeholder-count="6">
+<button onClick="{{m.pick}}" aria-pressed="{{m.pressed}}" style="border: 0; padding: 0; background: transparent; color: {{t.text}}; text-align: left; display: flex; flex-direction: column; gap: 6px">
+<span style="position: relative; display: block; width: 100%; aspect-ratio: 16 / 10; border-radius: 9px; overflow: hidden; background: {{t.drop}}; box-shadow: {{m.ring}}">
+<img src="{{m.img}}" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block">
+<span style="position: absolute; right: 6px; bottom: 6px; padding: 2px 6px; border-radius: 5px; background: #0B0C0ED9; font-size: 11px; color: #FFFFFF; display: flex; align-items: center; gap: 4px">{{m.badge}}</span>
+<sc-if value="{{m.done}}" hint-placeholder-val="{{false}}">
+<span style="position: absolute; left: 6px; top: 6px; width: 22px; height: 22px; border-radius: 11px; background: #2E9C74; color: #FFFFFF; display: flex; align-items: center; justify-content: center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></span>
+</sc-if>
+</span>
+<span style="font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{m.name}}</span>
+</button>
+</sc-for>
+</div>
+</section>
+
+<section aria-label="Editor" style="flex: 999 1 560px; min-width: 0; box-sizing: border-box; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px; align-items: center">
+
+<div style="width: 100%; max-width: 820px; aspect-ratio: 16 / 9; border-radius: 14px; background: #0B0C0E; position: relative; overflow: hidden; box-shadow: {{t.previewShadow}}">
+<img src="/_blob/7db4a7194aa1252cb4e7702bbb29ac3c" alt="Red motorcycle parked in a garage" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block">
+
+<sc-if value="{{showCaption}}" hint-placeholder-val="{{true}}">
+<div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 22px 28px 20px; background: {{captionBg}}; display: flex; flex-direction: column; gap: 2px; align-items: {{captionAlign}}">
+<span style="font-size: 30px; font-weight: 700; letter-spacing: -0.01em; color: #FFFFFF">{{captionText}}</span>
+<span style="font-size: 15px; color: #E8EAEE">{{captionSub}}</span>
+</div>
+</sc-if>
+
+<sc-if value="{{toolCrop}}" hint-placeholder-val="{{false}}">
+<div style="position: absolute; inset: 0; background: #00000080"></div>
+<div style="position: absolute; left: 28%; top: 0; width: 44%; height: 100%; box-sizing: border-box; border: 2px solid #FFFFFF; box-shadow: 0 0 0 9999px #00000080; background-image: linear-gradient(#FFFFFF59, #FFFFFF59), linear-gradient(#FFFFFF59, #FFFFFF59), linear-gradient(#FFFFFF59, #FFFFFF59), linear-gradient(#FFFFFF59, #FFFFFF59); background-size: 1px 100%, 1px 100%, 100% 1px, 100% 1px; background-position: 33.3% 0, 66.6% 0, 0 33.3%, 0 66.6%; background-repeat: no-repeat">
+<span style="position: absolute; left: -4px; top: -4px; width: 18px; height: 18px; border-left: 4px solid #FFFFFF; border-top: 4px solid #FFFFFF"></span>
+<span style="position: absolute; right: -4px; top: -4px; width: 18px; height: 18px; border-right: 4px solid #FFFFFF; border-top: 4px solid #FFFFFF"></span>
+<span style="position: absolute; left: -4px; bottom: -4px; width: 18px; height: 18px; border-left: 4px solid #FFFFFF; border-bottom: 4px solid #FFFFFF"></span>
+<span style="position: absolute; right: -4px; bottom: -4px; width: 18px; height: 18px; border-right: 4px solid #FFFFFF; border-bottom: 4px solid #FFFFFF"></span>
+</div>
+</sc-if>
+
+<sc-if value="{{toast}}" hint-placeholder-val="{{false}}">
+<div role="status" style="position: absolute; top: 14px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 10px; background: #16181DF0; color: #FFFFFF; font-size: 13px; white-space: nowrap">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5FD3A8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>
+<span>{{toast}}</span>
+</div>
+</sc-if>
+</div>
+
+<div style="width: 100%; max-width: 820px; display: flex; align-items: center; gap: 14px">
+<button aria-label="Play" style="flex: 0 0 auto; width: 48px; height: 48px; border-radius: 24px; border: 0; background: {{t.strong}}; color: {{t.onStrong}}; display: flex; align-items: center; justify-content: center">
+<svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor"></path></svg>
+</button>
+
+<div style="flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<div style="position: relative; height: 56px">
+<div class="strip" style="position: absolute; inset: 0; border-radius: 10px; opacity: 0.95"></div>
+<sc-if value="{{showCut}}" hint-placeholder-val="{{true}}">
+<div style="position: absolute; top: 0; bottom: 0; left: 40%; width: 14%; background: #E5484D59; border-top: 3px solid #E5484D; border-bottom: 3px solid #E5484D; box-sizing: border-box; display: flex; align-items: center; justify-content: center">
+<span style="padding: 2px 8px; border-radius: 6px; background: #E5484D; color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; gap: 4px">
+<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M20 4L8.1 15.9"></path><path d="M14.5 14.5L20 20"></path></svg>
+Cut out
+</span>
+<span style="position: absolute; left: -5px; top: -3px; bottom: -3px; width: 10px; border-radius: 4px; background: #E5484D"></span>
+<span style="position: absolute; right: -5px; top: -3px; bottom: -3px; width: 10px; border-radius: 4px; background: #E5484D"></span>
+</div>
+</sc-if>
+<div style="position: absolute; inset: 0; border-radius: 10px; border: 3px solid {{t.trim}}; box-sizing: border-box; pointer-events: none"></div>
+<span style="position: absolute; left: 0; top: 0; bottom: 0; width: 14px; border-radius: 10px 0 0 10px; background: {{t.trim}}; display: flex; align-items: center; justify-content: center"><span style="width: 2px; height: 18px; border-radius: 1px; background: {{t.onTrim}}"></span></span>
+<span style="position: absolute; right: 0; top: 0; bottom: 0; width: 14px; border-radius: 0 10px 10px 0; background: {{t.trim}}; display: flex; align-items: center; justify-content: center"><span style="width: 2px; height: 18px; border-radius: 1px; background: {{t.onTrim}}"></span></span>
+<span style="position: absolute; left: 28%; top: -6px; bottom: -6px; width: 3px; border-radius: 2px; background: #FFFFFF; box-shadow: 0 0 0 1px #00000066"></span>
+</div>
+<div style="display: flex; justify-content: space-between; font-size: 12px; color: {{t.muted}}; font-variant-numeric: tabular-nums">
+<span>0:00</span><span><b style="color: {{t.text}}; font-weight: 600">0:12</b> playing</span><span>{{lengthLabel}}</span>
+</div>
+</div>
+</div>
+
+<div role="toolbar" aria-label="Edit tools" style="width: 100%; max-width: 820px; display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 8px">
+<sc-for list="{{tools}}" as="tl" hint-placeholder-count="5">
+<button aria-pressed="{{tl.pressed}}" onClick="{{tl.pick}}" style="height: 72px; border-radius: 14px; border: 1.5px solid {{tl.border}}; background: {{tl.bg}}; color: {{tl.color}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 13px; font-weight: 600">
+<sc-if value="{{tl.isTrim}}" hint-placeholder-val="{{false}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 4v16"></path><path d="M18 4v16"></path><path d="M6 8h-3"></path><path d="M18 16h3"></path><rect x="9" y="8" width="6" height="8" rx="1"></rect></svg></sc-if>
+<sc-if value="{{tl.isCut}}" hint-placeholder-val="{{false}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M20 4L8.1 15.9"></path><path d="M14.5 14.5L20 20"></path><path d="M8.1 8.1L12 12"></path></svg></sc-if>
+<sc-if value="{{tl.isCrop}}" hint-placeholder-val="{{false}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14"></path><path d="M18 22V8a2 2 0 0 0-2-2H2"></path></svg></sc-if>
+<sc-if value="{{tl.isCaption}}" hint-placeholder-val="{{false}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><path d="M3 15h18"></path><path d="M7 18h6"></path></svg></sc-if>
+<sc-if value="{{tl.isFrame}}" hint-placeholder-val="{{false}}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h2l2-2h6l2 2h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><circle cx="12" cy="13" r="4"></circle></svg></sc-if>
+{{tl.label}}
+</button>
+</sc-for>
+</div>
+</section>
+
+<aside aria-label="Tool options" style="flex: 1 1 290px; max-width: 350px; box-sizing: border-box; padding: 20px 18px; background: {{t.panel}}; border-left: 1px solid {{t.border}}; display: flex; flex-direction: column; gap: 18px">
+
+<sc-if value="{{toolTrim}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px"><h2 style="margin: 0; font-size: 17px; font-weight: 600">Trim</h2><p style="margin: 0; color: {{t.muted}}; line-height: 1.45">Drag the yellow handles on the strip to cut off the start or end.</p></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<label style="display: flex; flex-direction: column; gap: 6px; color: {{t.text2}}">Starts at<input value="0:00" style="height: 40px; border-radius: 9px; border: 1px solid {{t.softBorder}}; background: {{t.drop}}; color: {{t.text}}; padding: 0 12px; font-size: 14px"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; color: {{t.text2}}">Ends at<input value="0:42" style="height: 40px; border-radius: 9px; border: 1px solid {{t.softBorder}}; background: {{t.drop}}; color: {{t.text}}; padding: 0 12px; font-size: 14px"></label>
+</div>
+<button style="align-self: flex-start; height: 36px; padding: 0 4px; border: 0; background: transparent; color: {{t.muted}}; text-decoration: underline; font-size: 12px">Reset trim</button>
+</div>
+</sc-if>
+
+<sc-if value="{{toolCut}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px"><h2 style="margin: 0; font-size: 17px; font-weight: 600">Cut out a part</h2><p style="margin: 0; color: {{t.muted}}; line-height: 1.45">Drag the red box over the part you don't want. Everything else stays and joins up.</p></div>
+<div style="padding: 14px; border-radius: 12px; background: {{t.drop}}; border: 1px solid {{t.softBorder}}; display: flex; flex-direction: column; gap: 10px">
+<span style="font-size: 12px; color: {{t.muted}}">Selected part</span>
+<span style="font-size: 20px; font-weight: 600; font-variant-numeric: tabular-nums">0:17 → 0:23</span>
+<span style="font-size: 12px; color: {{t.muted}}">6 seconds will be removed</span>
+</div>
+<button onClick="{{doCut}}" style="height: 46px; border-radius: 11px; border: 0; background: #E5484D; color: #FFFFFF; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><path d="M20 4L8.1 15.9"></path><path d="M14.5 14.5L20 20"></path><path d="M8.1 8.1L12 12"></path></svg>
+Remove this part
+</button>
+<button style="height: 40px; border-radius: 11px; border: 1px solid {{t.softBorder}}; background: transparent; color: {{t.text2}}; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 8px">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+Select another part
+</button>
+</div>
+</sc-if>
+
+<sc-if value="{{toolCrop}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px"><h2 style="margin: 0; font-size: 17px; font-weight: 600">Crop</h2><p style="margin: 0; color: {{t.muted}}; line-height: 1.45">Pick a shape, then drag the box on the picture.</p></div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{ratios}}" as="ra" hint-placeholder-count="5">
+<button aria-pressed="{{ra.pressed}}" onClick="{{ra.pick}}" style="height: 64px; border-radius: 10px; border: 1.5px solid {{ra.border}}; background: {{ra.bg}}; color: {{t.text}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; font-size: 12px; font-weight: 600">
+<span style="width: {{ra.w}}px; height: {{ra.h}}px; border: 2px solid {{ra.icon}}; border-radius: 3px"></span>{{ra.label}}
+</button>
+</sc-for>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+<button style="height: 40px; border-radius: 9px; border: 1px solid {{t.softBorder}}; background: {{t.drop}}; color: {{t.text}}; font-size: 12px">Rotate</button>
+<button style="height: 40px; border-radius: 9px; border: 1px solid {{t.softBorder}}; background: {{t.drop}}; color: {{t.text}}; font-size: 12px">Flip</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{toolCaption}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px"><h2 style="margin: 0; font-size: 17px; font-weight: 600">Caption</h2><p style="margin: 0; color: {{t.muted}}; line-height: 1.45">Put a name across the bottom of the video or photo.</p></div>
+<label style="display: flex; flex-direction: column; gap: 6px; color: {{t.text2}}">Name<input value="Bike Show 2026" style="height: 44px; border-radius: 10px; border: 1.5px solid {{t.accent}}; background: {{t.drop}}; color: {{t.text}}; padding: 0 12px; font-size: 15px"></label>
+<label style="display: flex; flex-direction: column; gap: 6px; color: {{t.text2}}">Second line (optional)<input value="Lakewood, NJ" style="height: 40px; border-radius: 10px; border: 1px solid {{t.softBorder}}; background: {{t.drop}}; color: {{t.text}}; padding: 0 12px; font-size: 14px"></label>
+<span style="color: {{t.text2}}">Style</span>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+<sc-for list="{{capStyles}}" as="cs" hint-placeholder-count="3">
+<button aria-pressed="{{cs.pressed}}" onClick="{{cs.pick}}" style="height: 70px; border-radius: 10px; border: 1.5px solid {{cs.border}}; padding: 0; overflow: hidden; background: #3A3F4A; display: flex; flex-direction: column; justify-content: flex-end">
+<span style="display: flex; flex-direction: column; align-items: {{cs.align}}; padding: 6px 8px; background: {{cs.preview}}; color: #FFFFFF; font-size: 11px; font-weight: 700">{{cs.label}}</span>
+</button>
+</sc-for>
+</div>
+<label style="display: flex; align-items: center; gap: 10px; color: {{t.text2}}"><input type="checkbox" checked style="width: 18px; height: 18px; margin: 0; accent-color: {{t.accent}}">Show for the whole video</label>
+</div>
+</sc-if>
+
+<sc-if value="{{toolFrame}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 4px"><h2 style="margin: 0; font-size: 17px; font-weight: 600">Save a picture</h2><p style="margin: 0; color: {{t.muted}}; line-height: 1.45">Pause on the moment you like, then save it as a photo. Same quality as the video.</p></div>
+<img src="/_blob/7db4a7194aa1252cb4e7702bbb29ac3c" alt="Current frame" style="width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px">
+<span style="font-size: 12px; color: {{t.muted}}">Frame at 0:12</span>
+<button onClick="{{saveFrame}}" style="height: 46px; border-radius: 11px; border: 0; background: {{t.accent}}; color: {{t.onAccent}}; font-size: 14px; font-weight: 600; display: flex; align-items: center; justify-content: center; gap: 8px">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8a2 2 0 0 1 2-2h2l2-2h6l2 2h2a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+Save this picture
+</button>
+<span style="font-size: 12px; color: {{t.muted}}">It goes into Finished, ready to share.</span>
+</div>
+</sc-if>
+
+<div style="flex: 1 1 auto"></div>
+<div style="padding: 12px 14px; border-radius: 12px; background: {{t.drop}}; display: flex; gap: 10px; align-items: flex-start; color: {{t.text2}}; font-size: 12px; line-height: 1.45">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: 0 0 auto"><path d="M12 3l8 3v6c0 4.5-3.4 8.2-8 9-4.6-.8-8-4.5-8-9V6z"></path><path d="M9 12l2 2 4-4"></path></svg>
+<span>Your original is never changed. <b style="font-weight: 600">Finish</b> saves a new copy to the Finished tab.</span>
+</div>
+</aside>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"startLight":{"editor":"boolean","default":false},"$preview":{"width":1440,"height":940}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const light = this.state.light ?? (this.props.startLight ?? false);
+    const dark = {
+      bg: '#111214', bar: '#141518', panel: '#17181C', border: '#24272D',
+      text: '#ECEDEF', text2: '#C4C7CE', muted: '#9A9EA8', icon: '#A6AAB3',
+      accent: '#5B8CFF', onAccent: '#0B1020', accentSoft: '#1D2230',
+      chip: '#1D1F24', softBorder: '#2C2F36', dashed: '#3A3E46', drop: '#1B1D22',
+      strong: '#ECEDEF', onStrong: '#111214', seg: '#111214', segActive: '#2A2D34', segShadow: 'none',
+      countBg: '#2C2F36', trim: '#F5C542', onTrim: '#3A2C00', previewShadow: 'none', markSrc: '/_blob/a3af571c81ca120008f0b74e3914effe'
+    };
+    const lite = {
+      bg: '#F6F7F9', bar: '#FFFFFF', panel: '#FFFFFF', border: '#E3E5EA',
+      text: '#16181D', text2: '#3F444E', muted: '#5F6470', icon: '#5F6470',
+      accent: '#2F62E0', onAccent: '#FFFFFF', accentSoft: '#EAF0FD',
+      chip: '#F0F2F5', softBorder: '#D5D8DE', dashed: '#C9CDD5', drop: '#F6F7F9',
+      strong: '#16181D', onStrong: '#FFFFFF', seg: '#EEF0F3', segActive: '#FFFFFF', segShadow: '0 1px 2px #00000014',
+      countBg: '#E3E5EA', trim: '#F2B705', onTrim: '#3A2C00', previewShadow: '0 1px 2px #0000000F, 0 8px 24px #00000014', markSrc: '/_blob/20a0fa98e2a930799db176c4999943ef'
+    };
+    const t = light ? lite : dark;
+    const st = this.state;
+    const tab = st.tab ?? 'orig';
+    const filter = st.filter ?? 'all';
+    const tool = st.tool ?? 'cut';
+    const sel = st.sel ?? 'o1';
+    const ratio = st.ratio ?? '916';
+    const cap = st.cap ?? 'bar';
+
+    const originals = [
+      { id: 'o1', name: 'IMG_0057.MOV', kind: 'video', badge: '0:42', img: '/_blob/7f8e54f5baa3cdbd1425e95befd7976a' },
+      { id: 'o2', name: 'IMG_0070.MOV', kind: 'video', badge: '0:28', img: '/_blob/c5259285f5e96ee7eec69c20e0cab196' },
+      { id: 'o3', name: 'IMG_0072.MOV', kind: 'video', badge: '0:51', img: '/_blob/f86bee45bc34ec81cd7aa87ce027ebe6' },
+      { id: 'o4', name: 'IMG_0059.jpeg', kind: 'photo', badge: 'Photo', img: '/_blob/843d39467aa0917aea7e80f7bf6784f1' },
+      { id: 'o5', name: 'IMG_0061.jpeg', kind: 'photo', badge: 'Photo', img: '/_blob/8977b01914dce10bf415fc9de18c337b' },
+      { id: 'o6', name: 'IMG_0063.jpeg', kind: 'photo', badge: 'Photo', img: '/_blob/3d7723a93d86f09969a016e187fc1d34' },
+      { id: 'o7', name: 'IMG_0075.jpeg', kind: 'photo', badge: 'Photo', img: '/_blob/99a30e806db8dba957604f3b06140b96' },
+      { id: 'o8', name: 'IMG_0064.jpeg', kind: 'photo', badge: 'Photo', img: '/_blob/8a6207fd5d89f9b82b17789ee11cc80f' }
+    ];
+    const finished = [
+      { id: 'f1', name: 'Bike Show — final.mp4', kind: 'video', badge: '0:36', img: '/_blob/7f8e54f5baa3cdbd1425e95befd7976a' },
+      { id: 'f2', name: 'Rocket launch.jpg', kind: 'photo', badge: 'Photo', img: '/_blob/8977b01914dce10bf415fc9de18c337b' },
+      { id: 'f3', name: 'Cat (square).jpg', kind: 'photo', badge: 'Photo', img: '/_blob/99a30e806db8dba957604f3b06140b96' }
+    ].concat(st.extraDone ?? []);
+
+    const source = tab === 'orig' ? originals : finished;
+    const library = source
+      .filter(m => filter === 'all' || m.kind === filter)
+      .map(m => ({
+        ...m, done: tab === 'done', pressed: m.id === sel ? 'true' : 'false',
+        ring: m.id === sel ? '0 0 0 3px ' + t.accent : 'none',
+        pick: () => this.setState({ sel: m.id, toast: null })
+      }));
+    const current = originals.concat(finished).find(m => m.id === sel) || originals[0];
+
+    const tabs = [['orig', 'Originals', originals.length], ['done', 'Finished', finished.length]].map(([id, label, count]) => {
+      const on = id === tab;
+      return { label, count, selected: on ? 'true' : 'false', bg: on ? t.segActive : 'transparent', color: on ? t.text : t.muted, shadow: on ? t.segShadow : 'none', pick: () => this.setState({ tab: id }) };
+    });
+    const filters = [['all', 'All'], ['video', 'Videos'], ['photo', 'Photos']].map(([id, label]) => {
+      const on = id === filter;
+      return { label, pressed: on ? 'true' : 'false', bg: on ? t.strong : 'transparent', color: on ? t.onStrong : t.text2, border: on ? t.strong : t.softBorder, pick: () => this.setState({ filter: id }) };
+    });
+    const tools = [['trim', 'Trim'], ['cut', 'Cut out'], ['crop', 'Crop'], ['caption', 'Caption'], ['frame', 'Save picture']].map(([id, label]) => {
+      const on = id === tool;
+      return {
+        label, pressed: on ? 'true' : 'false',
+        bg: on ? t.accentSoft : t.panel, border: on ? t.accent : t.border, color: on ? t.accent : t.text2,
+        isTrim: id === 'trim', isCut: id === 'cut', isCrop: id === 'crop', isCaption: id === 'caption', isFrame: id === 'frame',
+        pick: () => this.setState({ tool: id, toast: null })
+      };
+    });
+    const ratios = [['orig', 'Original', 30, 17], ['free', 'Free', 26, 20], ['11', 'Square', 22, 22], ['916', '9:16', 14, 24], ['169', '16:9', 32, 18], ['45', '4:5', 18, 22]].map(([id, label, w, h]) => {
+      const on = id === ratio;
+      return { label, w, h, pressed: on ? 'true' : 'false', bg: on ? t.accentSoft : 'transparent', border: on ? t.accent : t.softBorder, icon: on ? t.accent : t.muted, pick: () => this.setState({ ratio: id }) };
+    });
+    const capDefs = {
+      bar: { label: 'Bar', preview: '#000000B3', align: 'flex-start', bg: 'linear-gradient(transparent, #000000CC)', a: 'flex-start' },
+      center: { label: 'Center', preview: '#00000099', align: 'center', bg: 'linear-gradient(transparent, #000000B3)', a: 'center' },
+      bold: { label: 'Bold', preview: t.accent, align: 'flex-start', bg: t.accent + 'E6', a: 'flex-start' }
+    };
+    const capStyles = Object.keys(capDefs).map(id => {
+      const on = id === cap;
+      return { label: capDefs[id].label, preview: capDefs[id].preview, align: capDefs[id].align, pressed: on ? 'true' : 'false', border: on ? t.accent : 'transparent', pick: () => this.setState({ cap: id }) };
+    });
+
+    return {
+      t, tabs, filters, library, tools, ratios, capStyles, current,
+      onOriginals: tab === 'orig',
+      tabHint: tab === 'orig' ? 'Your untouched files. Pick one to start editing.' : 'Everything you finished. Ready to share or send.',
+      toolTrim: tool === 'trim', toolCut: tool === 'cut', toolCrop: tool === 'crop', toolCaption: tool === 'caption', toolFrame: tool === 'frame',
+      showCut: tool === 'cut', showCaption: tool !== 'crop',
+      captionText: 'Bike Show 2026', captionSub: 'Lakewood, NJ',
+      captionBg: capDefs[cap].bg, captionAlign: capDefs[cap].a,
+      lengthLabel: st.cutDone ? '0:36' : '0:42',
+      toast: st.toast ?? null,
+      isLight: light, isDark: !light,
+      themeLabel: light ? 'Switch to dark mode' : 'Switch to light mode',
+      toggleTheme: () => this.setState({ light: !light }),
+      doCut: () => this.setState({ cutDone: true, toast: 'Part removed: video is now 0:36' }),
+      saveFrame: () => this.setState({ toast: 'Picture saved to Finished', extraDone: [{ id: 'f9', name: 'Frame at 0-12.jpg', kind: 'photo', badge: 'Photo', img: '/_blob/7db4a7194aa1252cb4e7702bbb29ac3c' }] }),
+      finish: () => this.setState({ toast: 'Saved to Finished. Your original is untouched', tab: 'done' })
+    };
+  }
+}
+</script>
+</body>
+</html>

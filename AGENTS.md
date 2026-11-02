@@ -1,3 +1,29 @@
+# BUGS! Video Editor — Workspace Instructions
+
+BUGS! is a fork of Shotcut for one non-technical user, Levi. It opens into **Simple mode**; the full Shotcut interface stays under **Advanced**. The product brief and mockups are in `docs/bugs/`.
+
+## Simple mode
+
+| Where | What |
+|-------|------|
+| `src/simple/simpleedit.*` | `Simple::Edit`, a plain value holding everything Levi changed, and `compileXml()` |
+| `src/simple/simplemedia.*` | Opening files, thumbnails, filmstrip, caption picture, single-frame rendering |
+| `src/simple/simplecontroller.*` | All Simple mode state and actions, exposed to QML as `simple` |
+| `src/simple/simplemodewidget.*` | Lays out the views; borrows the video widget from the player |
+| `src/qml/views/simple/` | The screens. Colours and icons are in `Theme.js` |
+
+Rules that keep the product's promises:
+
+- **Originals are read-only.** Nothing writes to `Edit::sourcePath`. Saves go to a `.part.` file in the Finished folder, are checked, then renamed with `uniquePath()`.
+- **Preview matches the saved file** because both load the same `compileXml()` output. Do not add effects to only one path.
+- **Finish never asks questions.** Output is always H.264/AAC MP4.
+
+Set up with `scripts/bugs/setup-dev-linux.sh`. Test with `ctest --test-dir build/dev -R simple --output-on-failure` (needs a display, such as Xvfb).
+
+The rest of this file is Shotcut's own guidance, which still applies to everything under Advanced. The executable is now `bugs-video-editor`, though the CMake target is still `shotcut`.
+
+---
+
 # Shotcut — Workspace Instructions
 
 Shotcut is a free, open-source, cross-platform video editor built on Qt 6 and the [MLT multimedia framework](https://www.mltframework.org/).
