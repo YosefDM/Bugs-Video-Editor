@@ -590,6 +590,9 @@ function set_globals {
   #####
   # mlt
   CONFIG[1]="cmake -GNinja -DCMAKE_INSTALL_PREFIX=$FINAL_INSTALL_DIR -DCMAKE_PREFIX_PATH=$QTDIR -DMOD_GDK=OFF -DMOD_GLAXNIMATE_QT6=ON -DMOD_PLACEBO=OFF -DMOD_SPATIALAUDIO=ON"
+  # BUGS!: MSYS2 no longer ships rubberband, sox or lilv for MINGW64. These only add optional audio
+  # filters in Advanced mode.
+  CONFIG[1]="${CONFIG[1]} -DMOD_RUBBERBAND=OFF -DMOD_SOX=OFF -DUSE_LV2=OFF"
   [ "$ENABLE_OPENCV" = "1" ] && CONFIG[1]="${CONFIG[1]} -DMOD_OPENCV=ON"
   if [ "$DEBUG_BUILD" = "1" ]; then
     CONFIG[1]="${CONFIG[1]} -DCMAKE_BUILD_TYPE=RelWithDebInfo"
@@ -765,7 +768,7 @@ function install_shotcut {
   cmd ninja install
   cmd install -c COPYING "$FINAL_INSTALL_DIR"
   cmd install -c packaging/windows/shotcut.iss "$FINAL_INSTALL_DIR"/..
-  cmd install -c packaging/windows/bugs-wizard-*.bmp "$FINAL_INSTALL_DIR"/..
+  cmd install -c packaging/windows/bugs-wizard-*.bmp packaging/windows/bugs-spider-*.bmp "$FINAL_INSTALL_DIR"/..
   cmd install -c -T packaging/windows/shotcut-logo-64.ico "$FINAL_INSTALL_DIR"/../bugs-setup.ico
   cmd sed -i "s/YY.MM.DD/$SHOTCUT_VERSION/" "$FINAL_INSTALL_DIR"/../shotcut.iss
   cmd install -d "$FINAL_INSTALL_DIR"/share/translations
