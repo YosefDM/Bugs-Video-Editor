@@ -492,6 +492,256 @@ Rectangle {
                 }
             }
 
+            // Text
+            ColumnLayout {
+                id: textPanel
+
+                readonly property int selected: simple.selectedLabel
+                readonly property var label: selected >= 0 && selected < simple.labels.length
+                                             ? simple.labels[selected] : null
+
+                visible: simple.hasFile && simple.tool === "text"
+                Layout.fillWidth: true
+                Layout.leftMargin: 18
+                Layout.rightMargin: 18
+                spacing: 14
+
+                Heading {
+                    title: "Text"
+                    body: "Put words anywhere, like names next to people. Drag them into place on the picture."
+                }
+
+                ActionButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 44
+                    icon: "plus"
+                    text: "Add text"
+                    primary: true
+                    onClicked: {
+                        simple.addLabel();
+                        wordsInput.forceActiveFocus();
+                        wordsInput.selectAll();
+                    }
+                }
+
+                Text {
+                    visible: simple.labels.length === 0
+                    Layout.fillWidth: true
+                    text: "Press Add text, then drag it where you want it."
+                    wrapMode: Text.WordWrap
+                    color: root.t.muted
+                    font.family: "Inter"
+                    font.pixelSize: 12
+                }
+
+                ColumnLayout {
+                    visible: textPanel.label !== null
+                    Layout.fillWidth: true
+                    spacing: 14
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 6
+
+                        Text {
+                            text: "Words (Enter starts a new line)"
+                            color: root.t.text2
+                            font.family: "Inter"
+                            font.pixelSize: 13
+                        }
+
+                        TextArea {
+                            id: wordsInput
+
+                            Layout.fillWidth: true
+                            Layout.minimumHeight: 64
+                            wrapMode: TextEdit.Wrap
+                            color: root.t.text
+                            selectByMouse: true
+                            selectedTextColor: root.t.onAccent
+                            selectionColor: root.t.accent
+                            leftPadding: 12
+                            rightPadding: 12
+                            topPadding: 10
+                            bottomPadding: 10
+                            font.family: "Inter"
+                            font.pixelSize: 15
+                            background: Rectangle {
+                                radius: 10
+                                color: root.t.drop
+                                border.width: wordsInput.activeFocus ? 1.5 : 1
+                                border.color: wordsInput.activeFocus ? root.t.accent : root.t.softBorder
+                            }
+                            onTextChanged: {
+                                if (activeFocus && textPanel.label)
+                                    simple.setLabelText(textPanel.selected, text);
+                            }
+                            Binding on text {
+                                value: textPanel.label ? textPanel.label.text : ""
+                                when: !wordsInput.activeFocus
+                            }
+                        }
+                    }
+
+                    Text {
+                        text: "Font"
+                        color: root.t.text2
+                        font.family: "Inter"
+                        font.pixelSize: 13
+                    }
+
+                    Grid {
+                        id: fontGrid
+
+                        Layout.fillWidth: true
+                        columns: 2
+                        spacing: 8
+
+                        Repeater {
+                            model: simple.labelFonts
+
+                            delegate: Rectangle {
+                                required property var modelData
+                                readonly property bool selected: textPanel.label && textPanel.label.font === modelData.id
+
+                                width: (fontGrid.width - 8) / 2
+                                height: 44
+                                radius: 10
+                                color: selected ? root.t.accentSoft : "transparent"
+                                border.width: 1.5
+                                border.color: selected ? root.t.accent : root.t.softBorder
+                                Accessible.role: Accessible.Button
+                                Accessible.name: modelData.name
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: modelData.name
+                                    color: root.t.text
+                                    font.family: modelData.family
+                                    font.bold: true
+                                    font.pixelSize: 17
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: simple.setLabelFont(textPanel.selected, modelData.id)
+                                }
+                            }
+                        }
+                    }
+
+                    Text {
+                        text: "Colour"
+                        color: root.t.text2
+                        font.family: "Inter"
+                        font.pixelSize: 13
+                    }
+
+                    Grid {
+                        id: colorGrid
+
+                        Layout.fillWidth: true
+                        columns: 5
+                        spacing: 10
+
+                        Repeater {
+                            model: simple.labelColors
+
+                            delegate: Rectangle {
+                                required property string modelData
+                                readonly property bool selected: textPanel.label && textPanel.label.color.toLowerCase() === modelData.toLowerCase()
+
+                                width: (colorGrid.width - 40) / 5
+                                height: width
+                                radius: width / 2
+                                color: "transparent"
+                                border.width: selected ? 2.5 : 0
+                                border.color: root.t.accent
+                                Accessible.role: Accessible.Button
+                                Accessible.name: "Colour " + modelData
+
+                                Rectangle {
+                                    anchors.fill: parent
+                                    anchors.margins: 5
+                                    radius: width / 2
+                                    color: parent.modelData
+                                    border.width: 1
+                                    border.color: root.t.softBorder
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: simple.setLabelColor(textPanel.selected, modelData)
+                                }
+                            }
+                        }
+                    }
+
+                    Text {
+                        text: "Size"
+                        color: root.t.text2
+                        font.family: "Inter"
+                        font.pixelSize: 13
+                    }
+
+                    Row {
+                        id: sizeRow
+
+                        Layout.fillWidth: true
+                        spacing: 8
+
+                        Repeater {
+                            model: ["Small", "Medium", "Large"]
+
+                            delegate: Rectangle {
+                                required property string modelData
+                                required property int index
+                                readonly property bool selected: textPanel.label && textPanel.label.size === index
+
+                                width: (sizeRow.width - 16) / 3
+                                height: 40
+                                radius: 10
+                                color: selected ? root.t.accentSoft : "transparent"
+                                border.width: 1.5
+                                border.color: selected ? root.t.accent : root.t.softBorder
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: modelData
+                                    color: root.t.text
+                                    font.family: "Inter"
+                                    font.pixelSize: 13
+                                    font.weight: Font.DemiBold
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: simple.setLabelSize(textPanel.selected, index)
+                                }
+                            }
+                        }
+                    }
+
+                    Text {
+                        text: "Remove this text"
+                        color: root.t.danger
+                        font.family: "Inter"
+                        font.pixelSize: 12
+                        font.underline: true
+
+                        MouseArea {
+                            anchors.fill: parent
+                            anchors.margins: -8
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: simple.removeLabel(textPanel.selected)
+                        }
+                    }
+                }
+            }
+
             // Save picture
             ColumnLayout {
                 visible: simple.hasFile && simple.tool === "frame"

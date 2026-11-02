@@ -32,7 +32,7 @@ bool Edit::operator==(const Edit &o) const
     return sourcePath == o.sourcePath && trim == o.trim && cuts == o.cuts && rotation == o.rotation
            && flipped == o.flipped && crop == o.crop && cropShape == o.cropShape
            && captionName == o.captionName && captionSecond == o.captionSecond
-           && captionStyle == o.captionStyle;
+           && captionStyle == o.captionStyle && labels == o.labels;
 }
 
 void Edit::reset()
@@ -46,6 +46,7 @@ void Edit::reset()
     captionName.clear();
     captionSecond.clear();
     captionStyle = CaptionStyle::Bar;
+    labels.clear();
 }
 
 bool Edit::hasTimeChanges() const
@@ -56,7 +57,65 @@ bool Edit::hasTimeChanges() const
 bool Edit::hasChanges() const
 {
     return hasTimeChanges() || rotation != 0 || flipped || crop != QRectF(0, 0, 1, 1)
-           || hasCaption();
+           || hasOverlay();
+}
+
+bool Edit::hasLabels() const
+{
+    for (const auto &label : labels) {
+        if (!label.isEmpty())
+            return true;
+    }
+    return false;
+}
+
+double labelFontFraction(int size)
+{
+    switch (size) {
+    case 0:
+        return 0.035;
+    case 2:
+        return 0.075;
+    default:
+        return 0.05;
+    }
+}
+
+const QVector<LabelFont> &labelFonts()
+{
+    static const QVector<LabelFont> fonts{
+        {QStringLiteral("clean"), QStringLiteral("Clean"), QStringLiteral("Inter")},
+        {QStringLiteral("rounded"), QStringLiteral("Rounded"), QStringLiteral("Rubik")},
+        {QStringLiteral("classic"), QStringLiteral("Classic"), QStringLiteral("Frank Ruhl Libre")},
+        {QStringLiteral("headline"), QStringLiteral("Headline"), QStringLiteral("Bebas Neue")},
+        {QStringLiteral("handwritten"), QStringLiteral("Handwritten"), QStringLiteral("Caveat")},
+        {QStringLiteral("fancy"), QStringLiteral("Fancy"), QStringLiteral("Pacifico")},
+    };
+    return fonts;
+}
+
+QString labelFontFamily(const QString &id)
+{
+    for (const auto &font : labelFonts()) {
+        if (font.id == id)
+            return font.family;
+    }
+    return labelFonts().first().family;
+}
+
+const QStringList &labelColors()
+{
+    static const QStringList colors{QStringLiteral("#F04AD9"),
+                                    QStringLiteral("#FFFFFF"),
+                                    QStringLiteral("#FFD43B"),
+                                    QStringLiteral("#E5392B"),
+                                    QStringLiteral("#111111"),
+                                    QStringLiteral("#2F80FF"),
+                                    QStringLiteral("#2BD16B"),
+                                    QStringLiteral("#FF8A1F"),
+                                    QStringLiteral("#9B5CFF"),
+                                    QStringLiteral("#21D4FD")};
+    return colors;
 }
 
 bool Edit::isHdr() const

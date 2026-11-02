@@ -203,6 +203,95 @@ Shotcut.VuiBase {
         }
     }
 
+    // Text labels, drawn live while the Text tool is open so they can be dragged. Same font,
+    // size and shadow as drawLabels() in simplemedia.cpp, which draws them into the saved file.
+    Item {
+        id: labelLayer
+
+        readonly property real shorter: Math.min(width, height)
+
+        visible: simple.hasFile && simple.tool === "text"
+        x: root.frameX
+        y: root.frameY
+        width: root.frameW
+        height: root.frameH
+
+        // Counted rather than given the list, so items survive edits: rebuilding them would end a
+        // drag after its first step.
+        Repeater {
+            model: simple.labels.length
+
+            delegate: Item {
+                id: labelItem
+
+                required property int index
+                readonly property var modelData: simple.labels[index] || ({ index: index, text: "", x: 0.5, y: 0.5, size: 1, color: "#FFFFFF", family: "Inter" })
+                readonly property bool selected: modelData.index === simple.selectedLabel
+                readonly property int px: Math.max(8, Math.round(simple.labelFontFraction(modelData.size) * labelLayer.shorter))
+
+                width: words.implicitWidth
+                height: words.implicitHeight
+                x: modelData.x * labelLayer.width - width / 2
+                y: modelData.y * labelLayer.height - height / 2
+
+                Text {
+                    x: Math.max(1, labelItem.px / 16)
+                    y: x
+                    text: words.text
+                    font: words.font
+                    horizontalAlignment: Text.AlignHCenter
+                    color: "#96000000"
+                }
+
+                Text {
+                    id: words
+
+                    text: labelItem.modelData.text.trim()
+                    horizontalAlignment: Text.AlignHCenter
+                    color: labelItem.modelData.color
+                    font.family: labelItem.modelData.family
+                    font.bold: true
+                    font.pixelSize: labelItem.px
+                }
+
+                // Shows which one the options on the right change.
+                Rectangle {
+                    visible: labelItem.selected
+                    anchors.fill: parent
+                    anchors.margins: -6
+                    radius: 6
+                    color: "transparent"
+                    border.width: 2
+                    border.color: "#FFFFFF"
+                    opacity: 0.9
+                }
+
+                MouseArea {
+                    property point grab
+
+                    anchors.fill: parent
+                    anchors.margins: -10
+                    cursorShape: Qt.SizeAllCursor
+                    onPressed: (mouse) => {
+                        simple.selectLabel(labelItem.modelData.index);
+                        grab = mapToItem(labelLayer, mouse.x, mouse.y);
+                        grab = Qt.point(grab.x - labelItem.modelData.x * labelLayer.width,
+                                        grab.y - labelItem.modelData.y * labelLayer.height);
+                    }
+                    onPositionChanged: (mouse) => {
+                        if (!pressed)
+                            return;
+                        var at = mapToItem(labelLayer, mouse.x, mouse.y);
+                        simple.moveLabel(labelItem.modelData.index,
+                                         (at.x - grab.x) / labelLayer.width,
+                                         (at.y - grab.y) / labelLayer.height);
+                    }
+                    onReleased: simple.endLabelDrag()
+                }
+            }
+        }
+    }
+
     // Confirmation message
     Rectangle {
         visible: simple.toast.length > 0

@@ -5,6 +5,9 @@ Each release notes the Shotcut version it is based on.
 
 ## Unreleased
 
+### Added
+- Text: put words anywhere on a photo or video, such as names next to people. Add as many as you like, drag them into place, and pick from six fonts (two with Hebrew), ten colours and three sizes.
+
 ## 26.11.2 (2 November 2026)
 
 The first version. Based on Shotcut 26.9.27.

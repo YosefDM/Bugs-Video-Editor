@@ -286,6 +286,7 @@ void SimpleController::removeFromLibrary(const QString &path)
         m_undo.clear();
         m_redo.clear();
         m_selection = Range();
+        m_selectedLabel = -1;
         m_filmstrip.clear();
         MLT.close();
         emit filmstripChanged();
@@ -354,6 +355,7 @@ void SimpleController::openFile(const QString &path)
                 }
                 self->m_lastCoalesceKey.clear();
                 self->m_selection = Range();
+                self->m_selectedLabel = -1;
                 self->m_tool = self->m_edit.isPhoto ? QStringLiteral("crop")
                                                     : QStringLiteral("trim");
                 self->m_filmstrip.clear();
@@ -405,8 +407,10 @@ void SimpleController::setTool(const QString &tool)
     if (tool == m_tool || !hasFile())
         return;
     const bool wasCrop = m_tool == QLatin1String("crop");
+    const bool wasText = m_tool == QLatin1String("text");
     m_tool = tool;
     const bool isCrop = tool == QLatin1String("crop");
+    const bool isText = tool == QLatin1String("text");
     if (tool == QLatin1String("cut")) {
         if (m_selection.isEmpty())
             selectAnotherPart();
@@ -415,8 +419,11 @@ void SimpleController::setTool(const QString &tool)
     }
     if (tool == QLatin1String("frame"))
         updateFrameThumb();
+    if (isText && m_selectedLabel < 0 && !m_edit.labels.isEmpty())
+        m_selectedLabel = 0;
     // Crop shows the whole picture with the box on top; other tools show the cropped result.
-    if (wasCrop != isCrop)
+    // Text draws the labels live so they can be dragged, so they leave the baked overlay.
+    if (wasCrop != isCrop || wasText != isText)
         rebuildPreview(m_playhead);
     emit changed();
 }
@@ -542,6 +549,142 @@ void SimpleController::setCaptionStyle(const QString &style)
     m_edit.captionStyle = value;
     pushUndo(before);
     afterEdit(true);
+}
+
+QVariantList SimpleController::labels() const
+{
+    QVariantList result;
+    for (int i = 0; i < m_edit.labels.size(); ++i) {
+        const auto &label = m_edit.labels.at(i);
+        QVariantMap item;
+        item[QStringLiteral("index")] = i;
+        item[QStringLiteral("text")] = label.text;
+        item[QStringLiteral("x")] = label.center.x();
+        item[QStringLiteral("y")] = label.center.y();
+        item[QStringLiteral("size")] = label.size;
+        item[QStringLiteral("color")] = label.color;
+        item[QStringLiteral("font")] = label.font;
+        item[QStringLiteral("family")] = labelFontFamily(label.font);
+        result << item;
+    }
+    return result;
+}
+
+QVariantList SimpleController::labelFonts() const
+{
+    QVariantList result;
+    for (const auto &font : Simple::labelFonts()) {
+        QVariantMap item;
+        item[QStringLiteral("id")] = font.id;
+        item[QStringLiteral("name")] = font.name;
+        item[QStringLiteral("family")] = font.family;
+        result << item;
+    }
+    return result;
+}
+
+void SimpleController::addLabel()
+{
+    if (!hasFile())
+        return;
+    const Edit before = m_edit;
+    TextLabel label;
+    label.text = QStringLiteral("Name");
+    // Each new one a little lower, so they do not land on top of each other.
+    const int n = m_edit.labels.size();
+    label.center = QPointF(0.5, 0.3 + 0.1 * (n % 5));
+    if (m_selectedLabel >= 0 && m_selectedLabel < n) {
+        label.color = m_edit.labels.at(m_selectedLabel).color;
+        label.size = m_edit.labels.at(m_selectedLabel).size;
+        label.font = m_edit.labels.at(m_selectedLabel).font;
+    }
+    m_edit.labels << label;
+    m_selectedLabel = n;
+    pushUndo(before);
+    afterEdit(false);
+}
+
+void SimpleController::selectLabel(int index)
+{
+    if (index == m_selectedLabel || index < -1 || index >= m_edit.labels.size())
+        return;
+    m_selectedLabel = index;
+    m_lastCoalesceKey.clear();
+    emit changed();
+}
+
+void SimpleController::setLabelText(int index, const QString &text)
+{
+    if (index < 0 || index >= m_edit.labels.size() || m_edit.labels.at(index).text == text)
+        return;
+    const Edit before = m_edit;
+    m_edit.labels[index].text = text;
+    pushUndo(before, QStringLiteral("label%1").arg(index));
+    emit changed();
+}
+
+void SimpleController::setLabelColor(int index, const QString &color)
+{
+    if (index < 0 || index >= m_edit.labels.size() || m_edit.labels.at(index).color == color)
+        return;
+    const Edit before = m_edit;
+    m_edit.labels[index].color = color;
+    pushUndo(before);
+    afterEdit(false);
+}
+
+void SimpleController::setLabelSize(int index, int size)
+{
+    if (index < 0 || index >= m_edit.labels.size() || m_edit.labels.at(index).size == size)
+        return;
+    const Edit before = m_edit;
+    m_edit.labels[index].size = qBound(0, size, 2);
+    pushUndo(before);
+    afterEdit(false);
+}
+
+void SimpleController::setLabelFont(int index, const QString &font)
+{
+    if (index < 0 || index >= m_edit.labels.size() || m_edit.labels.at(index).font == font)
+        return;
+    const Edit before = m_edit;
+    m_edit.labels[index].font = font;
+    pushUndo(before);
+    afterEdit(false);
+}
+
+void SimpleController::moveLabel(int index, double x, double y)
+{
+    if (index < 0 || index >= m_edit.labels.size())
+        return;
+    if (!m_labelDragging) {
+        m_dragStart = m_edit;
+        m_labelDragging = true;
+    }
+    m_edit.labels[index].center = QPointF(qBound(0.0, x, 1.0), qBound(0.0, y, 1.0));
+    emit changed();
+}
+
+void SimpleController::endLabelDrag()
+{
+    if (!m_labelDragging)
+        return;
+    m_labelDragging = false;
+    if (m_edit != m_dragStart)
+        pushUndo(m_dragStart);
+    m_lastCoalesceKey.clear();
+    emit changed();
+}
+
+void SimpleController::removeLabel(int index)
+{
+    if (index < 0 || index >= m_edit.labels.size())
+        return;
+    const Edit before = m_edit;
+    m_edit.labels.remove(index);
+    m_selectedLabel = m_edit.labels.isEmpty() ? -1 : qMin(index, m_edit.labels.size() - 1);
+    pushUndo(before);
+    afterEdit(false);
 }
 
 void SimpleController::activate()
@@ -861,6 +1004,7 @@ void SimpleController::undo()
     m_edit = m_undo.takeLast();
     m_lastCoalesceKey.clear();
     m_selection = Range();
+    m_selectedLabel = qMin(m_selectedLabel, m_edit.labels.size() - 1);
     rebuildPreview(m_playhead);
     emit changed();
 }
@@ -873,6 +1017,7 @@ void SimpleController::redo()
     m_edit = m_redo.takeLast();
     m_lastCoalesceKey.clear();
     m_selection = Range();
+    m_selectedLabel = qMin(m_selectedLabel, m_edit.labels.size() - 1);
     rebuildPreview(m_playhead);
     emit changed();
 }
@@ -894,6 +1039,8 @@ void SimpleController::rebuildPreview(int sourceFrame)
         shown.crop = QRectF(0, 0, 1, 1);
         shown.cropShape = QStringLiteral("original");
     }
+    if (m_tool == QLatin1String("text"))
+        shown.labels.clear();
     if (!cropTool)
         options.captionImage = writeCaptionImage(shown);
 

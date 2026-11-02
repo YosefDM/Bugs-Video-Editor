@@ -18,6 +18,7 @@
 #ifndef SIMPLEEDIT_H
 #define SIMPLEEDIT_H
 
+#include <QPointF>
 #include <QRect>
 #include <QRectF>
 #include <QSize>
@@ -38,6 +39,39 @@ struct Range
 };
 
 enum class CaptionStyle { Bar, Center, Bold };
+
+// Words placed anywhere on the picture, such as a name next to a person.
+struct TextLabel
+{
+    QString text;                             // can have several lines
+    QPointF center{0.5, 0.5};                 // fraction of the finished picture
+    int size{1};                              // 0 small, 1 medium, 2 large
+    QString color{QStringLiteral("#F04AD9")}; // pink, like the names people add to photos
+    QString font{QStringLiteral("clean")};    // an id from labelFonts()
+
+    bool operator==(const TextLabel &o) const
+    {
+        return text == o.text && center == o.center && size == o.size && color == o.color
+               && font == o.font;
+    }
+    bool isEmpty() const { return text.trimmed().isEmpty(); }
+};
+
+// Label text height as a fraction of the picture's shorter side.
+double labelFontFraction(int size);
+
+// The fonts Levi can pick for labels. All are bundled, so they work offline.
+struct LabelFont
+{
+    QString id;     // stored in TextLabel::font
+    QString name;   // shown in the app
+    QString family; // the bundled font
+};
+const QVector<LabelFont> &labelFonts();
+// The family for an id, or the first font's for an unknown id.
+QString labelFontFamily(const QString &id);
+// The colours Levi can pick for labels.
+const QStringList &labelColors();
 
 // Everything Levi has done to one file. A plain value, so undo is a stack of copies and
 // nothing here can reach the original file.
@@ -65,6 +99,7 @@ struct Edit
     QString captionName;
     QString captionSecond;
     CaptionStyle captionStyle{CaptionStyle::Bar};
+    QVector<TextLabel> labels;
 
     bool operator==(const Edit &o) const;
     bool operator!=(const Edit &o) const { return !(*this == o); }
@@ -74,6 +109,9 @@ struct Edit
     bool hasChanges() const;
     bool hasTimeChanges() const;
     bool hasCaption() const { return !captionName.trimmed().isEmpty(); }
+    bool hasLabels() const;
+    // Anything drawn over the picture: the caption and the labels.
+    bool hasOverlay() const { return hasCaption() || hasLabels(); }
     bool isHdr() const;
 
     // Timeline

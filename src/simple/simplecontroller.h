@@ -85,6 +85,11 @@ class SimpleController : public QObject
     Q_PROPERTY(QString captionName READ captionName WRITE setCaptionName NOTIFY changed)
     Q_PROPERTY(QString captionSecond READ captionSecond WRITE setCaptionSecond NOTIFY changed)
     Q_PROPERTY(QString captionStyle READ captionStyle WRITE setCaptionStyle NOTIFY changed)
+    // Text labels placed anywhere on the picture
+    Q_PROPERTY(QVariantList labels READ labels NOTIFY changed)
+    Q_PROPERTY(int selectedLabel READ selectedLabel NOTIFY changed)
+    Q_PROPERTY(QStringList labelColors READ labelColors CONSTANT)
+    Q_PROPERTY(QVariantList labelFonts READ labelFonts CONSTANT)
     // Save picture
     Q_PROPERTY(QString frameThumb READ frameThumb NOTIFY frameThumbChanged)
     // The dialog showing over Simple mode: "close", "about" or empty for none
@@ -148,6 +153,12 @@ public:
     QString captionStyle() const;
     void setCaptionStyle(const QString &style);
 
+    QVariantList labels() const;
+    int selectedLabel() const { return m_selectedLabel; }
+    QStringList labelColors() const { return Simple::labelColors(); }
+    QVariantList labelFonts() const;
+    Q_INVOKABLE double labelFontFraction(int size) const { return Simple::labelFontFraction(size); }
+
     QString frameThumb() const { return m_frameThumb; }
     QString dialog() const { return m_dialog; }
 
@@ -189,6 +200,16 @@ public slots:
     void endCropDrag();
     void rotate();
     void flip();
+
+    void addLabel();
+    void selectLabel(int index);
+    void setLabelText(int index, const QString &text);
+    void setLabelColor(int index, const QString &color);
+    void setLabelSize(int index, int size);
+    void setLabelFont(int index, const QString &font);
+    void moveLabel(int index, double x, double y);
+    void endLabelDrag();
+    void removeLabel(int index);
 
     void undo();
     void redo();
@@ -272,6 +293,8 @@ private:
     int m_playhead{0};
     bool m_playing{false};
     QTimer m_captionTimer;
+    int m_selectedLabel{-1};
+    bool m_labelDragging{false};
     QTimer m_frameThumbTimer;
     QString m_frameThumb;
     QString m_dialog;

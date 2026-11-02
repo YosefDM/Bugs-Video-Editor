@@ -18,6 +18,7 @@
 #include "simpleedit.h"
 
 #include <QFile>
+#include <QSet>
 #include <QTemporaryDir>
 #include <QtTest/QtTest>
 
@@ -318,6 +319,47 @@ private slots:
             return xml.mid(xml.indexOf(QStringLiteral("<producer")));
         };
         QCOMPARE(body(compileXml(edit, preview)), body(compileXml(edit, save)));
+    }
+
+    void labelsCountAsChanges()
+    {
+        Edit edit = video();
+        QVERIFY(!edit.hasOverlay());
+        TextLabel empty;
+        empty.text = QStringLiteral("   ");
+        edit.labels << empty;
+        QVERIFY(!edit.hasLabels());
+        QVERIFY(!edit.hasChanges());
+        TextLabel name;
+        name.text = QStringLiteral("R Henach\nShachar");
+        edit.labels << name;
+        QVERIFY(edit.hasLabels());
+        QVERIFY(edit.hasOverlay());
+        QVERIFY(edit.hasChanges());
+        Edit moved = edit;
+        moved.labels[1].center = QPointF(0.2, 0.8);
+        QVERIFY(moved != edit);
+        Edit refont = edit;
+        refont.labels[1].font = QStringLiteral("handwritten");
+        QVERIFY(refont != edit);
+        edit.reset();
+        QVERIFY(edit.labels.isEmpty());
+    }
+
+    void labelFontsAndColours()
+    {
+        QCOMPARE(labelFonts().size(), 6);
+        QSet<QString> ids;
+        for (const auto &font : labelFonts()) {
+            QVERIFY(!font.family.isEmpty());
+            ids.insert(font.id);
+        }
+        QCOMPARE(ids.size(), 6);
+        QCOMPARE(labelFontFamily(QStringLiteral("rounded")), QStringLiteral("Rubik"));
+        QCOMPARE(labelFontFamily(QStringLiteral("no such font")), QStringLiteral("Inter"));
+        QCOMPARE(labelColors().size(), 10);
+        QVERIFY(labelFontFraction(0) < labelFontFraction(1));
+        QVERIFY(labelFontFraction(1) < labelFontFraction(2));
     }
 
     void hdrIsConvertedInBothPreviewAndSave()
