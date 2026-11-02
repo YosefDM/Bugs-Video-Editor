@@ -376,7 +376,9 @@ function set_globals {
   # Note, the function to_key depends on this
   if [ -z "$SUBDIRS" ]; then
     [ "$TARGET_ARCH" = "mingw64" ] && SUBDIRS="AMF nv-codec-headers"
-    SUBDIRS="$SUBDIRS aom dav1d FFmpeg"
+    # BUGS!: aom is not built; MSYS2's package is used instead. This aom version does not accept
+    # the nasm MSYS2 now ships, and BUGS! never encodes AV1.
+    SUBDIRS="$SUBDIRS dav1d FFmpeg"
 
     if test "$ENABLE_MOVIT" = 1 && test "$MOVIT_HEAD" = 1 -o "$MOVIT_REVISION" != ""; then
         SUBDIRS="$SUBDIRS movit"
@@ -1237,7 +1239,7 @@ function deploy
 
   log Reorganizing installed files
   cmd mv bin/*.dll .
-  cmd mv lib/libaom.dll .
+  [ -f lib/libaom.dll ] && cmd mv lib/libaom.dll .
   cmd mv lib/libCuteLogger.dll .
   if [ "$SDK" = "1" ]; then
     cmd mv bin/*.exe .

@@ -38,7 +38,7 @@ step() { printf '\n\033[36m==> %s\033[0m\n' "$1"; }
 step 'Installing build tools and libraries'
 PACKAGES=$(cat <<'LIST'
 autotools base-devel bzip2 coreutils git gzip tar xz zip perl-List-MoreUtils perl-XML-Parser
-mingw-w64-x86_64-toolchain mingw-w64-x86_64-cmake mingw-w64-x86_64-meson mingw-w64-x86_64-nasm
+mingw-w64-x86_64-toolchain mingw-w64-x86_64-aom mingw-w64-x86_64-cmake mingw-w64-x86_64-meson mingw-w64-x86_64-nasm
 mingw-w64-x86_64-ninja mingw-w64-x86_64-cairo mingw-w64-x86_64-eigen3
 mingw-w64-x86_64-dlfcn mingw-w64-x86_64-fftw mingw-w64-x86_64-gcc-fortran mingw-w64-x86_64-gettext-tools
 mingw-w64-x86_64-harfbuzz mingw-w64-x86_64-lame mingw-w64-x86_64-libarchive mingw-w64-x86_64-libepoxy
@@ -56,7 +56,6 @@ LIST
 )
 # shellcheck disable=SC2086
 pacman -S --needed --noconfirm $PACKAGES
-pacman -Rdd --noconfirm mingw-w64-x86_64-aom 2>/dev/null || true
 
 if [ ! -f "$HOME/.bugs-prebuilt-v7" ]; then
     step 'Downloading prebuilt dependencies from the Shotcut project'
