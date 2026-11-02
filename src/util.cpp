@@ -839,7 +839,7 @@ QString Util::getConversionAdvice(Mlt::Producer *producer)
         QString trcString = Util::trcString(trc);
         LOG_INFO() << resource << "Probable HDR" << trcString;
         advice = QObject::tr("This file uses color transfer characteristics %1, which may result "
-                             "in incorrect colors or brightness in Shotcut.")
+                             "in incorrect colors or brightness in BUGS!.")
                      .arg(trcString);
     } else if (producer->get_int("meta.media.variable_frame_rate")) {
         LOG_INFO() << resource << "is variable frame rate";

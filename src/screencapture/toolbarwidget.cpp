@@ -63,7 +63,7 @@ ScreenCaptureToolbar::ScreenCaptureToolbar(bool isRecordingMode, QWidget *parent
     m_windowButton->setStyleSheet(buttonStyle);
 
     // Create checkboxes
-    m_minimizeCheckbox = new QCheckBox(tr("Minimize Shotcut"), this);
+    m_minimizeCheckbox = new QCheckBox(tr("Minimize BUGS!"), this);
     m_audioCheckbox = new QCheckBox(tr("Record Audio"), this);
 
     // Style checkboxes

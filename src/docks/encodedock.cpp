@@ -1702,7 +1702,7 @@ void EncodeDock::enqueueAnalysis()
             QMessageBox
                 dialog(QMessageBox::Question,
                        windowTitle(),
-                       tr("Shotcut found filters that require analysis jobs that have not run.\n"
+                       tr("BUGS! found filters that require analysis jobs that have not run.\n"
                           "Do you want to run the analysis jobs now?"),
                        QMessageBox::No | QMessageBox::Yes,
                        this);
@@ -3072,7 +3072,7 @@ bool EncodeDock::checkForMissingFiles()
                            qApp->applicationName(),
                            tr("Your project is missing some files.\n\n"
                               "Save your project, close it, and reopen it.\n"
-                              "Shotcut will attempt to repair your project."),
+                              "BUGS! will attempt to repair your project."),
                            QMessageBox::Ok | QMessageBox::Ignore,
                            this);
         dialog.setWindowModality(QmlApplication::dialogModality());

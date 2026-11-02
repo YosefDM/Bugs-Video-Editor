@@ -50,7 +50,7 @@ EncodeJob::EncodeJob(const QString &name,
 {
     QAction *action = new QAction(tr("Open"), this);
     action->setData("Open");
-    action->setToolTip(tr("Open the output file in the Shotcut player"));
+    action->setToolTip(tr("Open the output file in the BUGS! player"));
     connect(action, SIGNAL(triggered()), this, SLOT(onOpenTiggered()));
     m_successActions << action;
 

@@ -201,7 +201,7 @@
             </size>
            </property>
            <property name="toolTip">
-            <string>This is the folder to contain Shotcut project folders.
+            <string>This is the folder to contain BUGS! project folders.
 A folder will be created in this folder for each project.</string>
            </property>
            <property name="text">

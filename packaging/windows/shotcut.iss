@@ -1,4 +1,4 @@
-; -- shotcut.iss --
+; -- BUGS! Video Editor installer, adapted from shotcut.iss --
 ; Copyright (c) 2024-2025 Meltytech, LLC
 
 ; This program is free software: you can redistribute it and/or modify
@@ -16,19 +16,21 @@
 
 [Setup]
 AppVersion=YY.MM.DD
-AppPublisher=Meltytech
-AppName=Shotcut
+AppId={{7E3C1B52-4C3A-4B7E-9A55-2F6B1D0E8A11}
+AppPublisher=BUGS! Video Editor
+AppName=BUGS! Video Editor
 WizardStyle=modern
-DefaultDirName={autopf}\Shotcut
+DefaultDirName={autopf}\BUGS Video Editor
 ; Since no icons will be created in "{group}", we don't need the wizard
 ; to ask for a Start Menu folder name:
 DisableProgramGroupPage=yes
-UninstallDisplayIcon={app}\shotcut.exe
+UninstallDisplayIcon={app}\bugs-video-editor.exe
 LicenseFile=Shotcut\COPYING.txt
 Compression=lzma2
 SolidCompression=no
 OutputDir=userdocs:Inno Setup Examples Output
-ChangesAssociations=yes
+; Installs for the current user with no administrator prompt, unless asked otherwise.
+PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=commandline dialog
 ; "ArchitecturesAllowed=x64" specifies that Setup cannot run on
 ; anything but x64.
@@ -37,10 +39,10 @@ ArchitecturesAllowed=x64compatible
 ; done in "64-bit mode" on x64, meaning it should use the native
 ; 64-bit Program Files directory and the 64-bit view of the registry.
 ArchitecturesInstallIn64BitMode=x64compatible
-AppMutex="Meltytech Shotcut Running Mutex"
-OutputBaseFilename=shotcut-setup
-UninstallDisplayName=Shotcut
-VersionInfoCopyright="Copyright (c) 2012-2026 Meltytech, LLC"
+AppMutex="BUGS Video Editor Running Mutex"
+OutputBaseFilename=bugs-video-editor-setup
+UninstallDisplayName=BUGS! Video Editor
+VersionInfoCopyright="Based on Shotcut, Copyright (c) 2012-2026 Meltytech, LLC"
 WizardSmallImageFile="shotcut-logo-64.bmp"
 WizardImageStretch=yes
 ShowLanguageDialog=no
@@ -50,42 +52,33 @@ Name: "en"; MessagesFile: "compiler:Default.isl"
 
 [CustomMessages]
 en.StartMenu=Create Start Menu Shortcut
-en.AssociateMltXml=Associate *.mlt files with Shotcut
 en.DesktopIcon=Create Desktop Shortcut (Icon)
-en.ClearShotcutSettings=Remove Shotcut Settings From Registry
-en.InstallingShotcut=Installing Shotcut...
-en.StartShotcut=Start Shotcut
+en.ClearSettings=Remove BUGS! Settings From Registry
+en.InstallingBugs=Installing BUGS! Video Editor...
+en.StartBugs=Start BUGS! Video Editor
 
 [Tasks]
 Name: startMenu; Description: "{cm:StartMenu}"
-Name: associateExtension; Description: "{cm:AssociateMltXml}"; Check: IsAdminInstallMode
-Name: desktopIcon; Description: "{cm:DesktopIcon}"; Flags: unchecked
-Name: removeSettings; Description: "{cm:ClearShotcutSettings}"; Flags: unchecked
+Name: desktopIcon; Description: "{cm:DesktopIcon}"
+Name: removeSettings; Description: "{cm:ClearSettings}"; Flags: unchecked
 
 [Files]
 Source: "Shotcut\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs uninsremovereadonly
 
 [Icons]
-Name: "{autoprograms}\Shotcut"; Filename: "{app}\shotcut.exe"; Tasks: startMenu
-Name: "{autodesktop}\Shotcut"; Filename: "{app}\shotcut.exe"; Tasks: desktopIcon
+Name: "{autoprograms}\BUGS! Video Editor"; Filename: "{app}\bugs-video-editor.exe"; Tasks: startMenu
+Name: "{autodesktop}\BUGS! Video Editor"; Filename: "{app}\bugs-video-editor.exe"; Tasks: desktopIcon
 
 [Registry]
-; Associate .mlt files (requires ChangesAssociations=yes)
-Root: HKCR; Subkey: ".mlt"; ValueType: string; ValueName: ""; ValueData: "Shotcut.mlt"; Flags: uninsdeletekey; Check: IsAdminInstallMode; Tasks: associateExtension
-Root: HKCR; Subkey: "Shotcut.mlt"; ValueType: string; ValueName: ""; ValueData: ""; Flags: uninsdeletekey; Check: IsAdminInstallMode; Tasks: associateExtension
-Root: HKCR; Subkey: "Shotcut.mlt\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\shotcut.exe"" ""%1"""; Check: IsAdminInstallMode; Tasks: associateExtension
-Root: HKCU; Subkey: "Software\Meltytech\Shotcut"; Tasks: removeSettings; AfterInstall: RemoveShotcutSettings()
+Root: HKCU; Subkey: "Software\BUGS\BUGS! Video Editor"; Tasks: removeSettings; AfterInstall: RemoveSettings()
 
 [Run]
-Filename: "{app}\shotcut.exe"; Description: "{cm:StartShotcut}"; Flags: postinstall nowait skipifsilent
+Filename: "{app}\bugs-video-editor.exe"; Description: "{cm:StartBugs}"; Flags: postinstall nowait skipifsilent
 
 [Code]
-var
-  DownloadPage: TDownloadWizardPage;
-
-procedure RemoveShotcutSettings();
+procedure RemoveSettings();
 begin
-  RegDeleteKeyIncludingSubkeys(HKEY_CURRENT_USER, 'Software\Meltytech\Shotcut');
+  RegDeleteKeyIncludingSubkeys(HKEY_CURRENT_USER, 'Software\BUGS\BUGS! Video Editor');
 end;
 
 procedure InitializeWizard();
@@ -110,7 +103,7 @@ begin
 
   CustomStatusLabel := TNewStaticText.Create(WizardForm);
   CustomStatusLabel.Parent := WizardForm.InstallingPage;
-  CustomStatusLabel.Caption := ExpandConstant('{cm:InstallingShotcut}');
+  CustomStatusLabel.Caption := ExpandConstant('{cm:InstallingBugs}');
   CustomStatusLabel.Font.Size := CustomStatusLabel.Font.Size + 4;
   CustomStatusLabel.Font.Style := [fsBold];
   CustomStatusLabel.AutoSize := True;
@@ -121,12 +114,3 @@ begin
     ((WizardForm.ProgressGauge.Width - CustomStatusLabel.Width) div 2);
 end;
 
-procedure CurPageChanged(CurPageID: Integer);
-begin
-  if CurPageID = wpInstalling then
-  begin;
-    Log('Removing old installer registry keys');
-    RegDeleteKeyIncludingSubkeys(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\Shotcut');
-    RegDeleteKeyIncludingSubkeys(HKEY_LOCAL_MACHINE, 'SOFTWARE\Shotcut');
-  end;
-end;
