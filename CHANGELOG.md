@@ -1,13 +1,13 @@
 # Changelog
 
-BUGS! Video Editor versions are dates, like Shotcut's: `26.11.2` is 2 November 2026.
-Each release notes the Shotcut version it is based on.
+BUGS! Video Editor uses version numbers like `1.2.3`: the middle number goes up for new features,
+the last for fixes, and the first for big changes. Each release notes the Shotcut version it builds on.
 
 ## Unreleased
 
-## 26.11.2 (2 November 2026)
+## 1.0.0
 
-The first version. Based on Shotcut 26.9.27.
+The first version. Built on Shotcut 26.9.27.
 
 ### Added
 - Simple mode, which opens by default: a library of Originals and Finished files, a preview, a filmstrip, and five tools: Trim, Cut out, Crop, Caption and Save picture.

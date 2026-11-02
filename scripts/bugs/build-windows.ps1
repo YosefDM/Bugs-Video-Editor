@@ -84,7 +84,7 @@ rm -rf "$HOME/bugs-build/src/shotcut"
 
 cat > build-shotcut.conf <<EOF
 INSTALL_DIR="$HOME/bugs-build"
-SHOTCUT_VERSION="$(date +%y.%-m.%-d)"
+SHOTCUT_VERSION="$(head -n1 VERSION)"
 BUGS_REPO="$REPO"
 SHOTCUT_HEAD=0
 SHOTCUT_REVISION=origin/$BUGS_BRANCH
