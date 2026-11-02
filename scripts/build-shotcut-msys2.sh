@@ -685,6 +685,9 @@ function set_globals {
   # aom
   # Use -DCMAKE_POSITION_INDEPENDENT_CODE=ON if -DBUILD_SHARED_LIBS=1 does not work.
   CONFIG[11]="cmake -GNinja -DCMAKE_INSTALL_PREFIX=$FINAL_INSTALL_DIR $CMAKE_DEBUG_FLAG -DBUILD_SHARED_LIBS=1 -DCONFIG_AV1_DECODER=0 -DENABLE_EXAMPLES=0 -DENABLE_TESTS=0 ../aom"
+  # BUGS!: aom rejects the nasm MSYS2 now ships, and MSYS2 no longer has yasm for MINGW64. Plain C is
+  # fine here: BUGS! never encodes AV1 itself.
+  CONFIG[11]="${CONFIG[11]/..\/aom/-DAOM_TARGET_CPU=generic ../aom}"
   CFLAGS_[11]=$CFLAGS
   LDFLAGS_[11]=$LDFLAGS
   BUILD[11]="ninja -j $MAKEJ"
