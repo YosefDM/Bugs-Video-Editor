@@ -41,7 +41,7 @@ autotools base-devel bzip2 coreutils git gzip tar xz zip perl-List-MoreUtils per
 mingw-w64-x86_64-toolchain mingw-w64-x86_64-aom mingw-w64-x86_64-cmake mingw-w64-x86_64-meson mingw-w64-x86_64-nasm
 mingw-w64-x86_64-ninja mingw-w64-x86_64-cairo mingw-w64-x86_64-eigen3
 mingw-w64-x86_64-dlfcn mingw-w64-x86_64-fftw mingw-w64-x86_64-gcc-fortran mingw-w64-x86_64-gettext-tools
-mingw-w64-x86_64-harfbuzz mingw-w64-x86_64-lame mingw-w64-x86_64-libarchive mingw-w64-x86_64-libepoxy
+mingw-w64-x86_64-harfbuzz mingw-w64-x86_64-ladspa-sdk mingw-w64-x86_64-lame mingw-w64-x86_64-libarchive mingw-w64-x86_64-libepoxy
 mingw-w64-x86_64-libexif mingw-w64-x86_64-libimagequant mingw-w64-x86_64-libsamplerate
 mingw-w64-x86_64-libtheora mingw-w64-x86_64-libvorbis mingw-w64-x86_64-libvpx mingw-w64-x86_64-libwebp
 mingw-w64-x86_64-libxml2 mingw-w64-x86_64-onevpl mingw-w64-x86_64-openblas
