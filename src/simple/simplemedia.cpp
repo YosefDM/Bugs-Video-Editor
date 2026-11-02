@@ -361,13 +361,29 @@ QStringList filmstripFor(const Edit &edit,
     return result;
 }
 
+namespace {
+void drawCaption(QPainter &painter, const Edit &edit, const QSize &frame);
+void drawLabels(QPainter &painter, const Edit &edit, const QSize &frame);
+} // namespace
+
 QImage renderCaption(const Edit &edit, const QSize &frame)
 {
     QImage image(frame, QImage::Format_ARGB32_Premultiplied);
     image.fill(Qt::transparent);
-    if (!edit.hasCaption())
-        return image;
+    QPainter painter(&image);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::TextAntialiasing);
+    if (edit.hasCaption())
+        drawCaption(painter, edit, frame);
+    drawLabels(painter, edit, frame);
+    painter.end();
+    return image;
+}
 
+namespace {
+
+void drawCaption(QPainter &painter, const Edit &edit, const QSize &frame)
+{
     // Sizes come from the mockup, where the preview is 820 wide. Tall videos use their shorter
     // side so the caption does not swallow a narrow picture.
     const double scale = qMax(frame.width(), qMin(frame.height(), frame.width() * 9 / 16)) / 820.0;
@@ -389,9 +405,6 @@ QImage renderCaption(const Edit &edit, const QSize &frame)
     const QString name = edit.captionName.trimmed();
     const QString second = edit.captionSecond.trimmed();
 
-    QPainter painter(&image);
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setRenderHint(QPainter::TextAntialiasing);
     painter.setFont(nameFont);
     const QRect nameBox = painter.boundingRect(QRect(0, 0, textWidth, frame.height()), flags, name);
     painter.setFont(secondFont);
@@ -426,21 +439,56 @@ QImage renderCaption(const Edit &edit, const QSize &frame)
         painter.setFont(secondFont);
         painter.drawText(QRect(paddingX, y, textWidth, secondBox.height()), flags, second);
     }
-    painter.end();
-    return image;
 }
+
+// Each label is centred on its point, in bold, with a soft shadow so it reads on any picture.
+// The Text tool draws the same thing live in Vui.qml while labels are being placed.
+void drawLabels(QPainter &painter, const Edit &edit, const QSize &frame)
+{
+    const int shorter = qMin(frame.width(), frame.height());
+    for (const auto &label : edit.labels) {
+        if (label.isEmpty())
+            continue;
+        QFont font(labelFontFamily(label.font));
+        font.setWeight(QFont::Bold);
+        font.setPixelSize(qMax(8, qRound(labelFontFraction(label.size) * shorter)));
+        painter.setFont(font);
+        const QString text = label.text.trimmed();
+        const int flags = Qt::AlignHCenter | Qt::AlignVCenter;
+        QRect box = painter.boundingRect(QRect(0, 0, frame.width() * 4, frame.height() * 4),
+                                         flags,
+                                         text);
+        box.moveCenter(QPoint(qRound(label.center.x() * frame.width()),
+                              qRound(label.center.y() * frame.height())));
+        const int shadow = qMax(1, font.pixelSize() / 16);
+        painter.setPen(QColor(0, 0, 0, 150));
+        painter.drawText(box.translated(shadow, shadow), flags, text);
+        painter.setPen(QColor(label.color));
+        painter.drawText(box, flags, text);
+    }
+}
+
+} // namespace
 
 QString writeCaptionImage(const Edit &edit)
 {
-    if (!edit.hasCaption())
+    if (!edit.hasOverlay())
         return QString();
     const QSize frame = edit.outputSize();
-    const QString key = QStringLiteral("%1|%2|%3|%4x%5")
-                            .arg(edit.captionName,
-                                 edit.captionSecond,
-                                 QString::number(int(edit.captionStyle)))
-                            .arg(frame.width())
-                            .arg(frame.height());
+    QString key = QStringLiteral("%1|%2|%3|%4x%5")
+                      .arg(edit.hasCaption() ? edit.captionName : QString(),
+                           edit.captionSecond,
+                           QString::number(int(edit.captionStyle)))
+                      .arg(frame.width())
+                      .arg(frame.height());
+    for (const auto &label : edit.labels) {
+        key += QStringLiteral("|%1@%2,%3:%4%5")
+                   .arg(label.text)
+                   .arg(label.center.x(), 0, 'f', 5)
+                   .arg(label.center.y(), 0, 'f', 5)
+                   .arg(label.size)
+                   .arg(label.color + label.font);
+    }
     const QString name = QString::fromLatin1(
         QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex().left(24));
     const QString target

@@ -104,11 +104,13 @@ Rectangle {
 
             readonly property var tools: simple.isPhoto
                 ? [{ id: "crop", label: "Crop", icon: "crop" },
-                   { id: "caption", label: "Caption", icon: "caption" }]
+                   { id: "caption", label: "Caption", icon: "caption" },
+                   { id: "text", label: "Text", icon: "text" }]
                 : [{ id: "trim", label: "Trim", icon: "trim" },
                    { id: "cut", label: "Cut out", icon: "cut" },
                    { id: "crop", label: "Crop", icon: "crop" },
                    { id: "caption", label: "Caption", icon: "caption" },
+                   { id: "text", label: "Text", icon: "text" },
                    { id: "frame", label: "Save picture", icon: "frame" }]
 
             Layout.fillWidth: true

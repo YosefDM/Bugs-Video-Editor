@@ -23,7 +23,9 @@
 
 #include <Mlt.h>
 #include <QCryptographicHash>
+#include <QDir>
 #include <QFile>
+#include <QFileInfo>
 #include <QFontDatabase>
 #include <QImage>
 #include <QJsonArray>
@@ -215,9 +217,12 @@ private slots:
         QVERIFY(m_dir.isValid());
         QStandardPaths::setTestModeEnabled(true);
         QVERIFY(Mlt::Factory::init());
-        const QString fonts = QFINDTESTDATA("../src/qml/views/simple/fonts/Inter-Bold.ttf");
-        if (!fonts.isEmpty())
-            QFontDatabase::addApplicationFont(fonts);
+        const QString interBold = QFINDTESTDATA("../src/qml/views/simple/fonts/Inter-Bold.ttf");
+        if (!interBold.isEmpty()) {
+            const QDir fonts = QFileInfo(interBold).dir();
+            for (const auto &file : fonts.entryList({QStringLiteral("*.ttf")}))
+                QFontDatabase::addApplicationFont(fonts.filePath(file));
+        }
 
         // Tagged BT.709 like phone videos. Untagged HD is ambiguous and decoders guess differently.
         const QString tone = QStringLiteral("sine=frequency=440:duration=%1");
@@ -626,6 +631,49 @@ private slots:
         QCOMPARE(picture.size(), expected.size());
         const double diff = difference(picture, expected);
         QVERIFY2(diff < 4.0, qPrintable(QString::number(diff)));
+    }
+
+    // Names placed on a photo land where they were put, in their colours and fonts.
+    void labelsAreDrawnWhereTheyWerePlaced()
+    {
+        Edit edit;
+        QVERIFY(openMedia(m_jpg, &edit));
+        TextLabel pink;
+        pink.text = QStringLiteral("MMMM");
+        pink.center = QPointF(0.25, 0.25);
+        pink.size = 2;
+        TextLabel blue = pink;
+        blue.center = QPointF(0.75, 0.75);
+        blue.color = QStringLiteral("#2F80FF");
+        blue.font = QStringLiteral("rounded");
+        edit.labels << pink << blue;
+        const QImage picture = renderFrame(edit, 0);
+        const QImage plain = QImage(m_jpg).convertToFormat(QImage::Format_RGB32);
+        const auto colourNear = [&](const QPointF &center, const QColor &want) {
+            const QPoint c(qRound(center.x() * picture.width()),
+                           qRound(center.y() * picture.height()));
+            int hits = 0;
+            for (int y = c.y() - 60; y < c.y() + 60; ++y) {
+                for (int x = c.x() - 200; x < c.x() + 200; ++x) {
+                    const QColor got = picture.pixelColor(x, y);
+                    if (qAbs(got.red() - want.red()) + qAbs(got.green() - want.green())
+                            + qAbs(got.blue() - want.blue())
+                        < 40)
+                        ++hits;
+                }
+            }
+            return hits;
+        };
+        QVERIFY(colourNear(pink.center, QColor(pink.color)) > 500);
+        QVERIFY(colourNear(blue.center, QColor(blue.color)) > 500);
+        // And nowhere else: the opposite corners are untouched.
+        QVERIFY(colourNear(QPointF(0.75, 0.25), QColor(pink.color)) < 20);
+        QVERIFY(difference(picture.copy(0,
+                                        picture.height() / 2,
+                                        picture.width() / 2,
+                                        picture.height() / 2),
+                           plain.copy(0, plain.height() / 2, plain.width() / 2, plain.height() / 2))
+                < 1.0);
     }
 
     void captionPictureHasText()
