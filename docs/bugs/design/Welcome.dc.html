@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Welcome screen</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Outfit:wght@600;800&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#111214}
+a{color:#9DB8FF}a:hover{color:#C9D7FF}
+button{font-family:inherit}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 940px; box-sizing: border-box; background: #111214; color: #ECEDEF; font-family: 'Inter', system-ui, sans-serif; font-size: 14px; display: flex; flex-direction: column; align-items: center; padding: 48px 24px">
+<div style="width: 100%; max-width: 1080px; display: flex; flex-direction: column; gap: 40px">
+
+<header style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px">
+<div style="display: flex; align-items: center; gap: 12px">
+<img src="/_blob/a3af571c81ca120008f0b74e3914effe" alt="" style="width: 48px; height: 48px; display: block">
+<span style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-family: 'Outfit', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.015em; line-height: 1">BUGS<span style="color: #E5392B">!</span></span>
+<span style="font-family: 'Outfit', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: 0.14em; color: #9A9EA8">VIDEO EDITOR</span>
+</span>
+</div>
+<span style="font-size: 13px; color: #9A9EA8; display: flex; align-items: center; gap: 8px">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+Works offline · No account needed
+</span>
+</header>
+
+<div style="display: flex; flex-direction: column; gap: 8px">
+<h1 style="margin: 0; font-size: 40px; font-weight: 700; letter-spacing: -0.02em">Start a new project</h1>
+<p style="margin: 0; font-size: 16px; color: #A6AAB3">Pick a shape. You can change it later.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px">
+<button style="height: 200px; border-radius: 16px; border: 1.5px solid {{accent}}; background: #1A1D24; color: #ECEDEF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; cursor: pointer">
+<span style="width: 112px; height: 63px; border-radius: 8px; border: 2px solid {{accent}}"></span>
+<span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 15px; font-weight: 600">Widescreen 16:9</b><span style="font-size: 13px; color: #A6AAB3">YouTube, TV, laptops</span></span>
+</button>
+<button style="height: 200px; border-radius: 16px; border: 1px solid #2C2F36; background: #17181C; color: #ECEDEF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; cursor: pointer">
+<span style="width: 40px; height: 72px; border-radius: 8px; border: 2px solid #8B8F99"></span>
+<span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 15px; font-weight: 600">Vertical 9:16</b><span style="font-size: 13px; color: #A6AAB3">Shorts, Reels, Status</span></span>
+</button>
+<button style="height: 200px; border-radius: 16px; border: 1px solid #2C2F36; background: #17181C; color: #ECEDEF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; cursor: pointer">
+<span style="width: 64px; height: 64px; border-radius: 8px; border: 2px solid #8B8F99"></span>
+<span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 15px; font-weight: 600">Square 1:1</b><span style="font-size: 13px; color: #A6AAB3">Feeds and posts</span></span>
+</button>
+<button style="height: 200px; border-radius: 16px; border: 1px dashed #3A3E46; background: transparent; color: #ECEDEF; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 16px; cursor: pointer">
+<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#8B8F99" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
+<span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 15px; font-weight: 600">Custom size</b><span style="font-size: 13px; color: #A6AAB3">Set width and height</span></span>
+</button>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+<h2 style="margin: 0; font-size: 20px; font-weight: 600">Recent projects</h2>
+<button style="height: 40px; padding: 0 16px; border-radius: 10px; border: 1px solid #2C2F36; background: #1D1F24; color: #ECEDEF; font-size: 13px; display: flex; align-items: center; gap: 8px; cursor: pointer">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+Open project…
+</button>
+</div>
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px">
+<sc-for list="{{recent}}" as="r" hint-placeholder-count="4">
+<button style="border: 0; padding: 0; background: transparent; color: #ECEDEF; text-align: left; display: flex; flex-direction: column; gap: 10px; cursor: pointer">
+<img src="{{r.img}}" alt="" style="display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; object-fit: cover; background: {{r.bg}}">
+<span style="display: flex; flex-direction: column; gap: 3px"><b style="font-size: 14px; font-weight: 600">{{r.name}}</b><span style="font-size: 12px; color: #9A9EA8">{{r.meta}}</span></span>
+</button>
+</sc-for>
+</div>
+</div>
+
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"accent":{"editor":"color","default":"#5B8CFF","options":["#5B8CFF","#F5A04A","#3DD68C","#B48CFF"]},"$preview":{"width":1440,"height":940}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const accent = this.props.accent ?? '#5B8CFF';
+    const recent = [
+      { name: 'Bike Show 2026', meta: '2:27 · Edited today', bg: '#2E4A6B', img: '/_blob/7f8e54f5baa3cdbd1425e95befd7976a' },
+      { name: 'Launch Day Recap', meta: '4:10 · Edited yesterday', bg: '#4A3B2E', img: '/_blob/8977b01914dce10bf415fc9de18c337b' },
+      { name: 'Night Sky Timelapse', meta: '1:05 · Edited last week', bg: '#2E5A4F', img: '/_blob/f86bee45bc34ec81cd7aa87ce027ebe6' },
+      { name: 'Cat Compilation', meta: '0:58 · Edited 2 weeks ago', bg: '#3A3F5A', img: '/_blob/99a30e806db8dba957604f3b06140b96' }
+    ];
+    return { accent, recent };
+  }
+}
+</script>
+</body>
+</html>
