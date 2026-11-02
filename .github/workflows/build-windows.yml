@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Version number, such as 26.11.1. Leave empty to use today's date.
+        description: Version number, such as 1.0.0. Leave empty to use the VERSION file.
         required: false
         type: string
   workflow_call:
@@ -96,7 +96,7 @@ jobs:
         env:
           REQUESTED_VERSION: ${{ inputs.version }}
         run: |
-          VERSION="${REQUESTED_VERSION:-$(date +"%y.%-m.%-d")}"
+          VERSION="${REQUESTED_VERSION:-$(head -n1 VERSION)}"
           echo VERSION=$VERSION
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"

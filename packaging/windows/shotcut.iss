@@ -17,7 +17,7 @@
 [Setup]
 AppVersion=YY.MM.DD
 AppId={{7E3C1B52-4C3A-4B7E-9A55-2F6B1D0E8A11}
-AppPublisher=BUGS! Video Editor
+AppPublisher=Yosef
 AppName=BUGS! Video Editor
 WizardStyle=modern
 DefaultDirName={autopf}\BUGS Video Editor
@@ -43,7 +43,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 AppMutex="BUGS Video Editor Running Mutex"
 OutputBaseFilename=bugs-video-editor-setup
 UninstallDisplayName=BUGS! Video Editor
-VersionInfoCopyright="Based on Shotcut, Copyright (c) 2012-2026 Meltytech, LLC"
+VersionInfoCopyright="Copyright (c) 2026 Yosef"
 ; BUGS! artwork, at 100%, 150% and 200% display scaling.
 SetupIconFile=bugs-setup.ico
 WizardImageFile=bugs-wizard-100.bmp,bugs-wizard-150.bmp,bugs-wizard-200.bmp

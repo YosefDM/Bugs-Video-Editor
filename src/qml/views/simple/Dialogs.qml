@@ -112,7 +112,7 @@ Rectangle {
         }
     }
 
-    // About, with the credit to Shotcut its license asks for
+    // About
     Card {
         visible: simple.dialog === "about"
         Accessible.name: "About BUGS! Video Editor"
@@ -144,7 +144,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: "Version " + Qt.application.version
+                    text: "Version " + Qt.application.version + " · Created by Yosef"
                     color: root.t.muted
                     font.family: "Inter"
                     font.pixelSize: 12
@@ -156,14 +156,11 @@ Rectangle {
             text: "A simple editor for your videos and photos. It works offline, needs no account, and never changes your originals."
         }
 
-        Body {
-            text: "BUGS! is based on <a href=\"https://www.shotcut.org/\">Shotcut</a> by Meltytech, LLC, which you can find under <b>Combine clips</b>. Thank you to everyone who makes Shotcut, MLT, FFmpeg and Qt."
-        }
-
+        // The open-source credit and license notice, kept small.
         Body {
             color: root.t.muted
-            font.pixelSize: 12
-            text: "Free software under the <a href=\"https://www.gnu.org/licenses/gpl-3.0.html\">GNU General Public License v3</a>. <a href=\"https://github.com/YosefDM/Bugs-Video-Editor\">Source code</a>."
+            font.pixelSize: 11
+            text: "Built with open-source software, including <a href=\"https://www.shotcut.org/\">Shotcut</a> by Meltytech, LLC, MLT, FFmpeg and Qt. Free software under the <a href=\"https://www.gnu.org/licenses/gpl-3.0.html\">GNU General Public License v3</a>."
         }
 
         ActionButton {

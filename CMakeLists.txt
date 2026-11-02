@@ -4,7 +4,7 @@ if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.20")
   cmake_policy(SET CMP0115 NEW)
 endif()
 
-# BUGS! uses the release tag (v26.11.2) as its version when built from one.
+# BUGS! version: the VERSION file, or the release tag (v1.0.0) when built from one.
 if(NOT DEFINED SHOTCUT_VERSION)
   find_package(Git QUIET)
   if(GIT_FOUND)
@@ -20,9 +20,7 @@ if(NOT DEFINED SHOTCUT_VERSION)
   endif()
 endif()
 if(NOT DEFINED SHOTCUT_VERSION)
-  string(TIMESTAMP SHOTCUT_VERSION "%y.%m.%d")
-  # Remove leading zeros from each digit group
-  string(REGEX REPLACE "0*([0-9]+)" "\\1" SHOTCUT_VERSION "${SHOTCUT_VERSION}")
+  file(STRINGS "${CMAKE_CURRENT_SOURCE_DIR}/VERSION" SHOTCUT_VERSION LIMIT_COUNT 1)
 endif()
 
 project(shotcut
