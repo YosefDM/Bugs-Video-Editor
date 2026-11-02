@@ -43,19 +43,22 @@ AppMutex="BUGS Video Editor Running Mutex"
 OutputBaseFilename=bugs-video-editor-setup
 UninstallDisplayName=BUGS! Video Editor
 VersionInfoCopyright="Based on Shotcut, Copyright (c) 2012-2026 Meltytech, LLC"
-WizardSmallImageFile="shotcut-logo-64.bmp"
-WizardImageStretch=yes
+; BUGS! artwork, at 100%, 150% and 200% display scaling.
+SetupIconFile=bugs-setup.ico
+WizardImageFile=bugs-wizard-100.bmp,bugs-wizard-150.bmp,bugs-wizard-200.bmp
+WizardSmallImageFile=bugs-wizard-small-100.bmp,bugs-wizard-small-150.bmp,bugs-wizard-small-200.bmp
+WizardImageStretch=no
 ShowLanguageDialog=no
 
 [Languages]
 Name: "en"; MessagesFile: "compiler:Default.isl"
 
 [CustomMessages]
-en.StartMenu=Create Start Menu Shortcut
-en.DesktopIcon=Create Desktop Shortcut (Icon)
-en.ClearSettings=Remove BUGS! Settings From Registry
+en.StartMenu=Add BUGS! to the Start menu
+en.DesktopIcon=Put a BUGS! shortcut on the desktop
+en.ClearSettings=Start fresh (forget the library list and light or dark choice)
 en.InstallingBugs=Installing BUGS! Video Editor...
-en.StartBugs=Start BUGS! Video Editor
+en.StartBugs=Open BUGS! Video Editor now
 
 [Tasks]
 Name: startMenu; Description: "{cm:StartMenu}"

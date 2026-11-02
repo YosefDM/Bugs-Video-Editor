@@ -765,7 +765,8 @@ function install_shotcut {
   cmd ninja install
   cmd install -c COPYING "$FINAL_INSTALL_DIR"
   cmd install -c packaging/windows/shotcut.iss "$FINAL_INSTALL_DIR"/..
-  cmd install -c packaging/windows/shotcut-logo-64.bmp "$FINAL_INSTALL_DIR"/..
+  cmd install -c packaging/windows/bugs-wizard-*.bmp "$FINAL_INSTALL_DIR"/..
+  cmd install -c -T packaging/windows/shotcut-logo-64.ico "$FINAL_INSTALL_DIR"/../bugs-setup.ico
   cmd sed -i "s/YY.MM.DD/$SHOTCUT_VERSION/" "$FINAL_INSTALL_DIR"/../shotcut.iss
   cmd install -d "$FINAL_INSTALL_DIR"/share/translations
   cmd install -p -c translations/*.qm "$FINAL_INSTALL_DIR"/share/translations

@@ -5,7 +5,9 @@ Each release notes the Shotcut version it is based on.
 
 ## Unreleased
 
-Based on Shotcut 26.9.27.
+## 26.11.2 (2 November 2026)
+
+The first version. Based on Shotcut 26.9.27.
 
 ### Added
 - Simple mode, which opens by default: a library of Originals and Finished files, a preview, a filmstrip, and five tools: Trim, Cut out, Crop, Caption and Save picture.
@@ -14,5 +16,5 @@ Based on Shotcut 26.9.27.
 - Light and dark mode, remembered between sessions.
 - A first-launch welcome screen.
 - Combine clips opens the full Shotcut editor with the current file; Back to Simple returns.
-- BUGS! names, logo and installer, separate from any Shotcut install on the same computer.
+- BUGS! names, logo and installer artwork, separate from any Shotcut install on the same computer.
 - Works fully offline: no update checks.
