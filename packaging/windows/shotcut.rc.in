@@ -22,7 +22,7 @@ VS_VERSION_INFO VERSIONINFO
 				VALUE "CompanyName", "BUGS! Video Editor\0"
 				VALUE "FileDescription", "BUGS! Video Editor\0"
                 VALUE "FileVersion", "${SHOTCUT_VERSION}\0"
-                VALUE "LegalCopyright", "Based on Shotcut, Copyright (C) 2011-2026 Meltytech, LLC. Licensed under GPLv3.\0"
+                VALUE "LegalCopyright", "Copyright (C) 2026 Yosef. Includes open-source software licensed under GPLv3.\0"
 				VALUE "OriginalFilename", "bugs-video-editor.exe\0"
 				VALUE "ProductName", "BUGS! Video Editor\0"
                 VALUE "ProductVersion", "${SHOTCUT_VERSION}\0"

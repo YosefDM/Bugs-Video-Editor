@@ -1,6 +1,6 @@
 name: Release
 
-# Push a tag such as v26.11.1 to build the installer and create a draft GitHub Release.
+# Push a tag such as v1.0.0 to build the installer and create a draft GitHub Release.
 # It stays a draft until someone has tried the installer on Windows and publishes it.
 on:
   push:
@@ -15,13 +15,19 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
     steps:
+      - uses: actions/checkout@v6
+
       - name: Read the version from the tag
         id: version
         env:
           TAG: ${{ github.ref_name }}
         run: |
           if [[ ! "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "::error::Tags must look like v26.11.1, not $TAG"
+            echo "::error::Tags must look like v1.0.0, not $TAG"
+            exit 1
+          fi
+          if [ "${TAG#v}" != "$(head -n1 VERSION)" ]; then
+            echo "::error::$TAG does not match the VERSION file ($(head -n1 VERSION)). Update VERSION first."
             exit 1
           fi
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"

@@ -5,7 +5,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Version number, such as 26.11.1. Leave empty to use today's date.
+        description: Version number, such as 1.0.0. Leave empty to use the VERSION file.
         required: false
         type: string
   workflow_call:
@@ -38,6 +38,7 @@ jobs:
             autotools base-devel bzip2 coreutils git gzip tar xz zip
             perl-List-MoreUtils perl-XML-Parser
             mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-aom
             mingw-w64-x86_64-cmake
             mingw-w64-x86_64-meson
             mingw-w64-x86_64-nasm
@@ -50,6 +51,7 @@ jobs:
             mingw-w64-x86_64-gcc-fortran
             mingw-w64-x86_64-gettext-tools
             mingw-w64-x86_64-harfbuzz
+            mingw-w64-x86_64-ladspa-sdk
             mingw-w64-x86_64-lame
             mingw-w64-x86_64-libarchive
             mingw-w64-x86_64-libepoxy
@@ -94,7 +96,7 @@ jobs:
         env:
           REQUESTED_VERSION: ${{ inputs.version }}
         run: |
-          VERSION="${REQUESTED_VERSION:-$(date +"%y.%-m.%-d")}"
+          VERSION="${REQUESTED_VERSION:-$(head -n1 VERSION)}"
           echo VERSION=$VERSION
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
@@ -102,7 +104,6 @@ jobs:
       - name: Install dependencies
         shell: msys2 {0}
         run: |
-          pacman --noconfirm -Rdd mingw-w64-x86_64-aom
           cd "$HOME"
           echo Downloading a few prebuilt dependencies
           curl -fLO --no-progress-meter https://s3.amazonaws.com/misc.meltymedia/shotcut-build/mlt-prebuilt-mingw64-v7.txz

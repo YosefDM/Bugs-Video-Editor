@@ -6,11 +6,17 @@ Everything runs in GitHub Actions. There are no secrets to set up.
 |----------|-----------|--------------|
 | **CI** | Pull requests, pushes to `main` | Checks code style, builds on Linux, runs the Simple mode tests |
 | **Build Windows installer** | Started by hand from the Actions tab | Builds the installer and attaches it to the run |
-| **Release** | A tag like `v26.11.1` is pushed | Builds the installer and creates a draft GitHub Release |
+| **Release** | A tag like `v1.0.0` is pushed | Builds the installer and creates a draft GitHub Release |
 
 ## Versions
 
-Versions are the release date, the same scheme Shotcut uses: `26.11.2` is 2 November 2026, tagged `v26.11.2`. A build made from a tag takes its version from the tag; any other build uses the date it was built. Release at most once a day; if a second release is really needed, use the next day's date.
+Versions look like `1.2.3`, and the current one is in the `VERSION` file:
+
+- **Last number** for fixes: 1.0.0 to 1.0.1.
+- **Middle number** for new features: 1.0.1 to 1.1.0.
+- **First number** for big changes: 1.4.2 to 2.0.0.
+
+Release tags are the version with a `v`: `v1.1.0`. The Release workflow refuses a tag that does not match `VERSION`, so bump the file first.
 
 `CHANGELOG.md` lists what changed. Move the **Unreleased** notes under a heading with the new version before tagging.
 
@@ -23,8 +29,8 @@ Versions are the release date, the same scheme Shotcut uses: `26.11.2` is 2 Nove
 ## To make a release
 
 1. Make sure CI is green on `main`.
-2. In `CHANGELOG.md`, rename **Unreleased** to the version and date, and merge that to `main`.
-3. Tag it, using the date as the version: `git tag v26.11.1 && git push origin v26.11.1`
+2. Set the new version in `VERSION`, move the **Unreleased** notes in `CHANGELOG.md` under it, and merge that to `main`.
+3. Tag it: `git tag v1.1.0 && git push origin v1.1.0`
 4. When the Release workflow finishes, open the draft under **Releases** and download the installer.
 5. Install it on a Windows machine and go through the checklist below.
 6. Publish the draft and send Levi the installer.
