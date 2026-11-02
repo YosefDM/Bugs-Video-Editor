@@ -32,14 +32,15 @@ jobs:
 
   build-and-test:
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    # The first run builds FFmpeg and MLT from source on 2 cores; later runs use the caches.
+    timeout-minutes: 300
     steps:
       - uses: actions/checkout@v6
 
       # Qt, FFmpeg and MLT take a long time to build and rarely change.
       - name: Restore dependencies
         id: deps
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: |
             ~/Qt
@@ -48,7 +49,7 @@ jobs:
           key: deps-${{ runner.os }}-${{ hashFiles('scripts/bugs/setup-dev-linux.sh') }}
 
       - name: Restore compiler cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: ~/.cache/ccache
           key: ccache-${{ runner.os }}-${{ github.sha }}
@@ -62,10 +63,28 @@ jobs:
           source scripts/bugs/env.sh
           cmake -B build/dev -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
 
+      # Saved straight away, so a later failure does not throw away hours of building.
+      - name: Save dependencies
+        if: steps.deps.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            ~/Qt
+            ~/ffmpeg9
+            ~/mlt
+          key: ${{ steps.deps.outputs.cache-primary-key }}
+
       - name: Build
         run: |
           source scripts/bugs/env.sh
           cmake --build build/dev
+
+      - name: Save compiler cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ~/.cache/ccache
+          key: ccache-${{ runner.os }}-${{ github.sha }}
 
       - name: Test
         run: |
