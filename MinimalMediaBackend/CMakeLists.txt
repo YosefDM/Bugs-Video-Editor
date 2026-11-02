@@ -17,3 +17,6 @@ target_link_libraries(minimalmediaplugin PRIVATE
   Qt6::Multimedia
   Qt6::MultimediaPrivate
 )
+
+# Next to the app, where it looks for its Qt plugins.
+install(TARGETS minimalmediaplugin LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib/qt6/multimedia)

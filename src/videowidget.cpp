@@ -146,8 +146,17 @@ void VideoWidget::initialize()
     LOG_DEBUG() << "end";
 }
 
+void VideoWidget::setPersistentVui(const QUrl &source)
+{
+    m_persistentVui = source;
+    m_savedQmlSource.clear();
+    setSource(source.isEmpty() ? QmlUtilities::blankVui() : source);
+}
+
 void VideoWidget::setBlankScene()
 {
+    if (!m_persistentVui.isEmpty())
+        return;
     quickWindow()->setColor(palette().window().color());
     setSource(QmlUtilities::blankVui());
     m_savedQmlSource.clear();
@@ -274,7 +283,9 @@ void VideoWidget::onFrameDisplayed(const SharedFrame &frame)
     m_sharedFrame = frame;
     m_mutex.unlock();
     bool isVui = frame.get_int(kShotcutVuiMetaProperty) && !m_hideVui;
-    if (!isVui && source() != QmlUtilities::blankVui()) {
+    if (!m_persistentVui.isEmpty()) {
+        // Simple mode owns the overlay.
+    } else if (!isVui && source() != QmlUtilities::blankVui()) {
         m_savedQmlSource = source();
         setSource(QmlUtilities::blankVui());
     } else if (isVui && !m_savedQmlSource.isEmpty() && source() != m_savedQmlSource) {
@@ -996,7 +1007,9 @@ void VideoWidget::showFrame(Mlt::Frame frame, QByteArray p016Buffer)
     m_sharedFrame = SharedFrame(frame);
     m_mutex.unlock();
     bool isVui = m_sharedFrame.get_int(kShotcutVuiMetaProperty) && !m_hideVui;
-    if (!isVui && source() != QmlUtilities::blankVui()) {
+    if (!m_persistentVui.isEmpty()) {
+        // Simple mode owns the overlay.
+    } else if (!isVui && source() != QmlUtilities::blankVui()) {
         m_savedQmlSource = source();
         setSource(QmlUtilities::blankVui());
     } else if (isVui && !m_savedQmlSource.isEmpty() && source() != m_savedQmlSource) {

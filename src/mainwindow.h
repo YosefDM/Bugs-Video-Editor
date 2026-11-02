@@ -58,6 +58,9 @@ class SubtitlesDock;
 class ScreenCapture;
 class HdrPreviewWindow;
 
+class SimpleModeWidget;
+class QToolButton;
+
 class MainWindow : public QMainWindow
 {
     Q_OBJECT
@@ -88,6 +91,10 @@ public:
     bool isSourceClipMyProject(QString resource = MLT.resource(), bool withDialog = true);
     bool keyframesDockIsVisible() const;
     Player *player() const { return m_player; }
+    bool isSimpleMode() const;
+    void enterSimpleMode();
+    void enterAdvancedMode();
+    void backToSimpleMode();
 
     void keyPressEvent(QKeyEvent *);
     void keyReleaseEvent(QKeyEvent *);
@@ -145,6 +152,7 @@ private:
     void connectUISignals();
     void setupAndConnectUndoStack();
     void setupAndConnectPlayerWidget();
+    void setupSimpleMode();
     void setupLayoutSwitcher();
     void centerLayoutInRemainingToolbarSpace();
     void setupAndConnectDocks();
@@ -231,6 +239,10 @@ private:
     ElementsDock *m_elementsDock;
     ScreenCapture *m_screenCapture;
     HdrPreviewWindow *m_hdrPreviewWindow{nullptr};
+    SimpleModeWidget *m_simpleMode{nullptr};
+    bool m_simpleCloseConfirmed{false};
+    QByteArray m_advancedState;
+    QToolButton *m_backToSimpleButton{nullptr};
 
 public slots:
     bool isCompatibleWithProcessingMode(MltXmlChecker &checker, QString &fileName, bool &converted);

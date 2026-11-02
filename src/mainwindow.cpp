@@ -65,6 +65,8 @@
 #include "screencapture/screencapture.h"
 #include "settings.h"
 #include "shotcut_mlt_properties.h"
+#include "simple/simplecontroller.h"
+#include "simple/simplemodewidget.h"
 #include "util.h"
 #include "videowidget.h"
 #include "widgets/alsawidget.h"
@@ -265,6 +267,7 @@ MainWindow::MainWindow()
             child->setWhatsThis(child->toolTip());
     }
 
+    setupSimpleMode();
     LOG_DEBUG() << "end";
 }
 
@@ -325,6 +328,78 @@ void MainWindow::setupAndConnectUndoStack()
     ui->menuEdit->addSeparator();
     ui->mainToolBar->insertAction(ui->undoEndSeparator, undoAction);
     ui->mainToolBar->insertAction(ui->undoEndSeparator, redoAction);
+}
+
+void MainWindow::setupSimpleMode()
+{
+    m_simpleMode = new SimpleModeWidget(this);
+    connect(m_simpleMode->controller(), &SimpleController::advancedRequested, this, [this]() {
+        enterAdvancedMode();
+    });
+    connect(m_simpleMode->controller(), &SimpleController::closeConfirmed, this, [this]() {
+        m_simpleCloseConfirmed = true;
+        close();
+        m_simpleCloseConfirmed = false;
+    });
+
+    m_backToSimpleButton = new QToolButton(this);
+    m_backToSimpleButton->setText(tr("Back to Simple"));
+    m_backToSimpleButton->setToolTip(tr("Return to the simple editor"));
+    m_backToSimpleButton->setToolButtonStyle(Qt::ToolButtonTextOnly);
+    m_backToSimpleButton->setCursor(Qt::PointingHandCursor);
+    m_backToSimpleButton->setStyleSheet(
+        "QToolButton { background: #E5392B; color: white; font-weight: 600;"
+        " border-radius: 6px; padding: 6px 14px; margin: 2px 6px; }"
+        "QToolButton:hover { background: #C92F23; }");
+    connect(m_backToSimpleButton, &QToolButton::clicked, this, [this]() { backToSimpleMode(); });
+    ui->mainToolBar->insertWidget(ui->mainToolBar->actions().value(0), m_backToSimpleButton);
+
+    enterSimpleMode();
+}
+
+bool MainWindow::isSimpleMode() const
+{
+    return m_simpleMode && m_simpleMode->isActive();
+}
+
+void MainWindow::enterSimpleMode()
+{
+    if (isSimpleMode())
+        return;
+    m_advancedState = saveState();
+    const auto docks = findChildren<QDockWidget *>();
+    for (auto *dock : docks)
+        dock->hide();
+    ui->mainToolBar->hide();
+    menuBar()->hide();
+    m_simpleMode->setGeometry(rect());
+    m_simpleMode->enter(m_player->videoWidget());
+}
+
+void MainWindow::enterAdvancedMode()
+{
+    if (!isSimpleMode())
+        return;
+    const QString resource = m_simpleMode->controller()->advancedResource();
+    m_simpleMode->leave();
+    m_player->restoreVideoWidget();
+    menuBar()->show();
+    ui->mainToolBar->show();
+    restoreState(m_advancedState);
+    ui->mainToolBar->setVisible(true);
+    MLT.setPreviewScale(Settings.playerPreviewScale());
+    MLT.close();
+    MLT.profile().set_explicit(false);
+    open(resource.isEmpty() ? untitledFileName() : resource, nullptr, false);
+}
+
+void MainWindow::backToSimpleMode()
+{
+    if (isSimpleMode() || !continueModified())
+        return;
+    setWindowModified(false);
+    on_actionClose_triggered();
+    enterSimpleMode();
 }
 
 void MainWindow::setupAndConnectPlayerWidget()
@@ -1148,7 +1223,7 @@ void MainWindow::setupSettingsMenu()
                        qApp->applicationName(),
                        tr("GPU processing is experimental and does not work on all computers. "
                           "Plan to do some testing after turning this on.\n\n"
-                          "Do you want to enable GPU processing and restart Shotcut?"),
+                          "Do you want to enable GPU processing and restart BUGS!?"),
                        QMessageBox::No | QMessageBox::Yes,
                        this);
             dialog.setDefaultButton(QMessageBox::Yes);
@@ -1169,7 +1244,7 @@ void MainWindow::setupSettingsMenu()
         } else if (oldMode == ShotcutSettings::Linear10GpuCpu) {
             QMessageBox dialog(QMessageBox::Information,
                                qApp->applicationName(),
-                               tr("Shotcut must restart to disable GPU processing.\n"
+                               tr("BUGS! must restart to disable GPU processing.\n"
                                   "Disable GPU processing and restart?"),
                                QMessageBox::No | QMessageBox::Yes,
                                this);
@@ -1228,7 +1303,7 @@ void MainWindow::setupSettingsMenu()
         Settings.setPlayerAudioDriver(action->data().toString());
         QMessageBox dialog(QMessageBox::Information,
                            qApp->applicationName(),
-                           tr("You must restart Shotcut to change the audio API.\n"
+                           tr("You must restart BUGS! to change the audio API.\n"
                               "Do you want to restart now?"),
                            QMessageBox::No | QMessageBox::Yes,
                            this);
@@ -1415,7 +1490,7 @@ void MainWindow::setupSettingsMenu()
         Settings.setPlayerOldVideoOutput(checked);
         QMessageBox dialog(QMessageBox::Information,
                            qApp->applicationName(),
-                           tr("Shotcut must restart to change the video output.\n"
+                           tr("BUGS! must restart to change the video output.\n"
                               "Restart now?"),
                            QMessageBox::No | QMessageBox::Yes,
                            this);
@@ -1866,15 +1941,15 @@ bool MainWindow::isCompatibleWithProcessingMode(MltXmlChecker &checker,
     converted = false;
     if (checker.needsGPU() && !Settings.playerGPU()) {
         LOG_INFO() << "file uses GPU but GPU not enabled";
-        QMessageBox dialog(
-            QMessageBox::Question,
-            qApp->applicationName(),
-            tr("The file you opened uses GPU processing, which is not enabled.\n"
-               "Do you want Shotcut to convert it for CPU? Conversion is an approximation.\n\n"
-               "If you choose Yes, Shotcut will create a copy of your project\n"
-               "with \"- Converted for CPU\" in the file name and open it."),
-            QMessageBox::No | QMessageBox::Yes,
-            this);
+        QMessageBox
+            dialog(QMessageBox::Question,
+                   qApp->applicationName(),
+                   tr("The file you opened uses GPU processing, which is not enabled.\n"
+                      "Do you want BUGS! to convert it for CPU? Conversion is an approximation.\n\n"
+                      "If you choose Yes, BUGS! will create a copy of your project\n"
+                      "with \"- Converted for CPU\" in the file name and open it."),
+                   QMessageBox::No | QMessageBox::Yes,
+                   this);
         dialog.setWindowModality(QmlApplication::dialogModality());
         dialog.setDefaultButton(QMessageBox::Yes);
         dialog.setEscapeButton(QMessageBox::No);
@@ -1887,8 +1962,8 @@ bool MainWindow::isCompatibleWithProcessingMode(MltXmlChecker &checker,
         QMessageBox dialog(QMessageBox::Question,
                            qApp->applicationName(),
                            tr("The file you opened uses CPU processing, which is not enabled.\n"
-                              "Do you want Shotcut to convert it for GPU?\n\n"
-                              "If you choose Yes, Shotcut will create a copy of your project\n"
+                              "Do you want BUGS! to convert it for GPU?\n\n"
+                              "If you choose Yes, BUGS! will create a copy of your project\n"
                               "with \"- Converted for GPU\" in the file name and open it."),
                            QMessageBox::No | QMessageBox::Yes,
                            this);
@@ -2006,9 +2081,9 @@ bool MainWindow::isXmlRepaired(MltXmlChecker &checker, QString &fileName)
         LOG_WARNING() << fileName;
         QMessageBox dialog(QMessageBox::Question,
                            qApp->applicationName(),
-                           tr("Shotcut noticed some problems in your project.\n"
-                              "Do you want Shotcut to try to repair it?\n\n"
-                              "If you choose Yes, Shotcut will create a copy of your project\n"
+                           tr("BUGS! noticed some problems in your project.\n"
+                              "Do you want BUGS! to try to repair it?\n\n"
+                              "If you choose Yes, BUGS! will create a copy of your project\n"
                               "with \"- Repaired\" in the file name and open it."),
                            QMessageBox::No | QMessageBox::Yes,
                            this);
@@ -2304,7 +2379,7 @@ void MainWindow::onAutosaveTimeout()
                               qApp->applicationName(),
                               tr("You are running low on available memory!\n\n"
                                  "Please close other applications or web browser tabs and retry.\n"
-                                 "Or save and restart Shotcut."),
+                                 "Or save and restart BUGS!."),
                               QMessageBox::Retry | QMessageBox::Save | QMessageBox::Ignore,
                               this);
         dialog->setDefaultButton(QMessageBox::Retry);
@@ -2469,6 +2544,10 @@ bool MainWindow::open(QString url, const Mlt::Properties *properties, bool play,
 // This one is invoked from the command line.
 void MainWindow::openMultiple(const QStringList &paths)
 {
+    if (isSimpleMode()) {
+        m_simpleMode->controller()->addPaths(paths);
+        return;
+    }
     if (paths.size() > 1) {
         QList<QUrl> urls;
         foreach (const QString &s, paths)
@@ -3101,16 +3180,21 @@ void MainWindow::updateWindowTitle()
 void MainWindow::on_actionAbout_Shotcut_triggered()
 {
     const auto copyright = QStringLiteral(
-        "Copyright &copy; 2011-2026 <a href=\"https://www.meltytech.com/\">Meltytech</a>, LLC");
+        "Shotcut is copyright &copy; 2011-2026 <a "
+        "href=\"https://www.meltytech.com/\">Meltytech</a>, "
+        "LLC. BUGS! changes are copyright &copy; 2026 their contributors.");
     const auto license = QStringLiteral(
         "<a href=\"https://www.gnu.org/licenses/gpl.html\">GNU General Public License v3.0</a>");
-    const auto url = QStringLiteral("https://www.shotcut.org/");
+    const auto url = QStringLiteral("https://github.com/YosefDM/Bugs-Video-Editor");
     QMessageBox::about(
         this,
         tr("About %1").arg(qApp->applicationName()),
         QStringLiteral(
-            "<h1>Shotcut version %2</h1>"
-            "<p><a href=\"%3\">%1</a> is a free, open source, cross platform video editor.</p>"
+            "<h1>%1 version %2</h1>"
+            "<p>A simple, free, open source video editor that works offline.</p>"
+            "<p>BUGS! Video Editor is based on <a href=\"https://www.shotcut.org/\">Shotcut</a> by "
+            "Meltytech, LLC, and includes the full Shotcut editor under Advanced. "
+            "Thank you to everyone who makes Shotcut.</p>"
             "<small><p>%4</p>"
             "<p>Licensed under the %5</p>"
             "<p>This program proudly uses the following projects:<ul>"
@@ -3449,8 +3533,18 @@ void MainWindow::dropEvent(QDropEvent *event)
 void MainWindow::closeEvent(QCloseEvent *event)
 {
     m_timelineDock->stopRecording();
+    if (isSimpleMode() && !m_simpleCloseConfirmed
+        && m_simpleMode->controller()->hasUnfinishedEdits()) {
+        // Simple mode asks in its own style; closeConfirmed comes back if Levi agrees.
+        m_simpleMode->controller()->askToClose();
+        event->ignore();
+        return;
+    }
     if (continueJobsRunning() && continueModified()) {
         LOG_DEBUG() << "begin";
+        // Simple mode hides the docks. Save the Advanced layout, not that.
+        if (isSimpleMode())
+            restoreState(m_advancedState);
         JOBS.cleanup();
         if (m_exitCode != EXIT_RESET) {
             writeSettings();
@@ -3496,6 +3590,11 @@ void MainWindow::showEvent(QShowEvent *event)
     on_actionShowTextUnderIcons_toggled(Settings.textUnderIcons());
     ui->actionShowSmallIcons->setChecked(Settings.smallIcons());
     on_actionShowSmallIcons_toggled(Settings.smallIcons());
+    if (isSimpleMode()) {
+        ui->mainToolBar->hide();
+        m_simpleMode->setGeometry(rect());
+        m_simpleMode->raise();
+    }
 
     windowHandle()->installEventFilter(this);
 
@@ -3525,6 +3624,8 @@ void MainWindow::resizeEvent(QResizeEvent *event)
 {
     QMainWindow::resizeEvent(event);
     adjustMainToolbar();
+    if (isSimpleMode())
+        m_simpleMode->setGeometry(rect());
 }
 
 void MainWindow::on_actionOpenOther_triggered()
@@ -4556,7 +4657,7 @@ void MainWindow::showUpgradePrompt()
         showStatusMessage("Checking for upgrade...");
         m_network.get(versionCheckRequest());
     } else {
-        QAction *action = new QAction(tr("Click here to check for a new version of Shotcut."), 0);
+        QAction *action = new QAction(tr("Click here to check for a new version of BUGS!."), 0);
         connect(action, SIGNAL(triggered(bool)), SLOT(on_actionUpgrade_triggered()));
         showStatusMessage(action, 15 /* seconds */);
     }
@@ -4725,7 +4826,7 @@ void MainWindow::onLanguageTriggered(QAction *action)
     Settings.setLanguage(action->data().toString());
     QMessageBox dialog(QMessageBox::Information,
                        qApp->applicationName(),
-                       tr("You must restart Shotcut to switch to the new language.\n"
+                       tr("You must restart BUGS! to switch to the new language.\n"
                           "Do you want to restart now?"),
                        QMessageBox::No | QMessageBox::Yes,
                        this);
@@ -5235,7 +5336,7 @@ bool MainWindow::confirmProfileChange()
     QMessageBox dialog(QMessageBox::Warning,
                        QCoreApplication::applicationName(),
                        tr("<p>Please review your entire project after making this change.</p>"
-                          "<p>Shotcut does not automatically adjust things that are sensitive to "
+                          "<p>BUGS! does not automatically adjust things that are sensitive to "
                           "size and position if you change resolution or aspect ratio.</p"
                           "<br>The timing of edits and keyframes may be slightly different if you "
                           "change frame rate.</p>"
@@ -5259,7 +5360,7 @@ bool MainWindow::confirmRestartExternalMonitor()
 {
     QMessageBox dialog(QMessageBox::Information,
                        qApp->applicationName(),
-                       tr("Shotcut must restart to change external monitoring.\n"
+                       tr("BUGS! must restart to change external monitoring.\n"
                           "Do you want to restart now?"),
                        QMessageBox::No | QMessageBox::Yes,
                        this);
@@ -5498,7 +5599,7 @@ void MainWindow::onDrawingMethodTriggered(QAction *action)
     Settings.setDrawMethod(action->data().toInt());
     QMessageBox dialog(QMessageBox::Information,
                        qApp->applicationName(),
-                       tr("You must restart Shotcut to change the display method.\n"
+                       tr("You must restart BUGS! to change the display method.\n"
                           "Do you want to restart now?"),
                        QMessageBox::No | QMessageBox::Yes,
                        this);
@@ -5518,7 +5619,7 @@ void MainWindow::onGpuAdapterTriggered(QAction *action)
     Settings.setGpuAdapterDeviceId(action->property("deviceId").toUInt());
     QMessageBox dialog(QMessageBox::Information,
                        qApp->applicationName(),
-                       tr("You must restart Shotcut to change the graphics adapter.\n"
+                       tr("You must restart BUGS! to change the graphics adapter.\n"
                           "Do you want to restart now?"),
                        QMessageBox::No | QMessageBox::Yes,
                        this);
@@ -5614,7 +5715,7 @@ void MainWindow::onUpgradeCheckFinished(QNetworkReply *reply)
             if (current != "adhoc"
                 && QVersionNumber::fromString(current) < QVersionNumber::fromString(latest)) {
                 QAction *action = new QAction(
-                    tr("Shotcut version %1 is available! Click here to get it.").arg(latest), 0);
+                    tr("BUGS! version %1 is available! Click here to get it.").arg(latest), 0);
                 connect(action, SIGNAL(triggered(bool)), SLOT(onUpgradeTriggered()));
                 if (!json.object().value("url").isUndefined()) {
                     const QString candidate = json.object().value("url").toString();
@@ -5623,7 +5724,7 @@ void MainWindow::onUpgradeCheckFinished(QNetworkReply *reply)
                 }
                 showStatusMessage(action, 15 /* seconds */);
             } else {
-                showStatusMessage(tr("You are running the latest version of Shotcut."));
+                showStatusMessage(tr("You are running the latest version of BUGS!."));
             }
             reply->deleteLater();
             return;
@@ -5767,7 +5868,7 @@ void MainWindow::on_actionAppDataSet_triggered()
 {
     QMessageBox dialog(QMessageBox::Information,
                        qApp->applicationName(),
-                       tr("You must restart Shotcut to change the data directory.\n"
+                       tr("You must restart BUGS! to change the data directory.\n"
                           "Do you want to continue?"),
                        QMessageBox::No | QMessageBox::Yes,
                        this);
@@ -6383,7 +6484,7 @@ void MainWindow::onSceneGraphInitialized()
                    qApp->applicationName(),
                    tr("GPU processing is EXPERIMENTAL, UNSTABLE and UNSUPPORTED! Unsupported "
                       "means do not report bugs about it.\n\n"
-                      "Do you want to disable GPU processing and restart Shotcut?"),
+                      "Do you want to disable GPU processing and restart BUGS!?"),
                    QMessageBox::No | QMessageBox::Yes,
                    this);
         dialog.setDefaultButton(QMessageBox::Yes);
@@ -7005,7 +7106,7 @@ void MainWindow::on_actionReset_triggered()
     QMessageBox
         dialog(QMessageBox::Question,
                qApp->applicationName(),
-               tr("This will reset <b>all</b> settings, and Shotcut must restart afterwards.\n"
+               tr("This will reset <b>all</b> settings, and BUGS! must restart afterwards.\n"
                   "Do you want to reset and restart now?"),
                QMessageBox::No | QMessageBox::Yes,
                this);
@@ -7042,7 +7143,7 @@ void MainWindow::on_actionLeaveSafeMode_triggered()
     if (Settings.safeMode()) {
         QMessageBox dialog(QMessageBox::Question,
                            qApp->applicationName(),
-                           tr("Safe mode may have enabled because Shotcut crashed during startup.\n"
+                           tr("Safe mode may have enabled because BUGS! crashed during startup.\n"
                               "Safe mode disables external plugins.\n"
                               "\n"
                               "Do you want to turn off safe mode and restart now?"),

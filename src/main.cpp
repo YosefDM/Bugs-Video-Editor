@@ -86,8 +86,8 @@ static bool isVulkanDrawMethod(int argc, char **argv, QString *detail)
     if (appDataDir.isEmpty()) {
         QSettings settings(QSettings::NativeFormat,
                            QSettings::UserScope,
-                           QStringLiteral("Meltytech"),
-                           QStringLiteral("Shotcut"));
+                           QStringLiteral("BUGS"),
+                           QStringLiteral("BUGS! Video Editor"));
         appDataDir = settings.value(QStringLiteral("appdatadir")).toString();
         if (appDataDir.isEmpty() || !QFile::exists(appDataDir + QStringLiteral("/shotcut.ini"))) {
             const int value
@@ -177,7 +177,7 @@ public:
 #ifdef Q_OS_WIN
 #include <winbase.h>
         SetDllDirectoryA(appPath.toLocal8Bit());
-        CreateMutexA(NULL, FALSE, "Meltytech Shotcut Running Mutex");
+        CreateMutexA(NULL, FALSE, "BUGS Video Editor Running Mutex");
 #else
         dir.cdUp();
 #endif
@@ -189,14 +189,13 @@ public:
         dir.cd("qt6");
 #endif
         addLibraryPath(dir.absolutePath());
-        setOrganizationName("Meltytech");
+        // Separate from Shotcut so both can be installed without sharing settings.
+        setOrganizationName("BUGS");
+        setOrganizationDomain("bugs-video-editor.local");
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
-        setOrganizationDomain("shotcut.org");
-        setDesktopFileName("org.shotcut.Shotcut");
-#else
-        setOrganizationDomain("meltytech.com");
+        setDesktopFileName("bugs-video-editor");
 #endif
-        setApplicationName("Shotcut");
+        setApplicationName("BUGS! Video Editor");
         setApplicationVersion(SHOTCUT_VERSION);
 
         // Process command line options.
@@ -204,18 +203,17 @@ public:
         parser.addHelpOption();
         parser.addVersionOption();
 #ifndef Q_OS_WIN
-        QCommandLineOption fullscreenOption(
-            "fullscreen",
-            QCoreApplication::translate("main", "Fill the screen with the Shotcut window."));
+        QCommandLineOption
+            fullscreenOption("fullscreen",
+                             QCoreApplication::translate("main",
+                                                         "Fill the screen with the BUGS! window."));
         parser.addOption(fullscreenOption);
 #endif
         QCommandLineOption noupgradeOption(
             "noupgrade", QCoreApplication::translate("main", "Hide upgrade prompt and menu item."));
         parser.addOption(noupgradeOption);
-        QCommandLineOption
-            glaxnimateOption("glaxnimate",
-                             QCoreApplication::translate("main",
-                                                         "Run Glaxnimate instead of Shotcut."));
+        QCommandLineOption glaxnimateOption(
+            "glaxnimate", QCoreApplication::translate("main", "Run Glaxnimate instead of BUGS!."));
         parser.addOption(glaxnimateOption);
         QCommandLineOption gpuOption("gpu",
                                      QCoreApplication::translate("main", "Use GPU processing."));
@@ -391,7 +389,7 @@ protected:
                 bool sent = false;
                 for (int i = 0; i < 15 && !sent; ++i) {
                     QLocalSocket socket;
-                    socket.connectToServer("shotcut-file-open");
+                    socket.connectToServer("bugs-video-editor-file-open");
                     if (socket.waitForConnected(1000)) {
                         socket.write(openEvent->file().toUtf8());
                         socket.waitForBytesWritten(500);
@@ -638,8 +636,8 @@ int main(int argc, char **argv)
         // QFileOpenEvent file paths (e.g. files opened from Finder on macOS)
         // to this child process which holds the actual main window.
         QLocalServer fileOpenServer;
-        QLocalServer::removeServer("shotcut-file-open");
-        fileOpenServer.listen("shotcut-file-open");
+        QLocalServer::removeServer("bugs-video-editor-file-open");
+        fileOpenServer.listen("bugs-video-editor-file-open");
         QObject::connect(&fileOpenServer, &QLocalServer::newConnection, [&]() {
             QLocalSocket *socket = fileOpenServer.nextPendingConnection();
             QObject::connect(socket, &QLocalSocket::readyRead, [socket, &a]() {
@@ -655,7 +653,7 @@ int main(int argc, char **argv)
             for (auto &s : a.resourceArg)
                 ls << QFileInfo(QDir::currentPath(), s).filePath();
             a.mainWindow->openMultiple(ls);
-        } else {
+        } else if (!a.mainWindow->isSimpleMode()) {
             a.mainWindow->open(a.mainWindow->untitledFileName());
         }
 

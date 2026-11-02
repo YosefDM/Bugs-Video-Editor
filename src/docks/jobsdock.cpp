@@ -21,6 +21,7 @@
 #include "Logger.h"
 #include "dialogs/textviewerdialog.h"
 #include "jobqueue.h"
+#include "mainwindow.h"
 
 #include <QtWidgets>
 
@@ -79,8 +80,11 @@ void JobsDock::onJobAdded()
     connect(JOBS.jobFromIndex(index),
             SIGNAL(progressUpdated(QStandardItem *, int)),
             SLOT(onProgressUpdated(QStandardItem *, int)));
-    show();
-    raise();
+    // Simple mode shows its own progress on the Finish button.
+    if (!MAIN.isSimpleMode()) {
+        show();
+        raise();
+    }
 }
 
 void JobsDock::onProgressUpdated(QStandardItem *item, int percent)

@@ -139,6 +139,10 @@ add_executable(shotcut WIN32 MACOSX_BUNDLE
   scrubbar.cpp scrubbar.h
   settings.cpp settings.h
   sharedframe.cpp sharedframe.h
+  simple/simplecontroller.cpp simple/simplecontroller.h
+  simple/simpleedit.cpp simple/simpleedit.h
+  simple/simplemedia.cpp simple/simplemedia.h
+  simple/simplemodewidget.cpp simple/simplemodewidget.h
   shotcut_mlt_properties.h
   transcoder.cpp transcoder.h
   screencapture/rectangleselector.cpp
@@ -326,6 +330,11 @@ target_sources(shotcut PRIVATE ${QML_SRC})
 
 target_include_directories(shotcut PRIVATE ${CMAKE_SOURCE_DIR}/CuteLogger/include)
 target_compile_definitions(shotcut PRIVATE SHOTCUT_VERSION="${SHOTCUT_VERSION}")
+# BUGS! works fully offline, so it never checks shotcut.org for updates.
+target_compile_definitions(shotcut PRIVATE SHOTCUT_NOUPGRADE)
+if(NOT APPLE)
+  set_target_properties(shotcut PROPERTIES OUTPUT_NAME "bugs-video-editor")
+endif()
 
 # Add compile definitions when certain custom cache variables are ON
 if(EXTERNAL_LAUNCHERS)

@@ -62,6 +62,9 @@ public:
     void moveVideoToScreen(int screen = -1);
     void setPauseAfterOpen(bool pause);
     TabIndex tabIndex() const;
+    QWidget *videoWidget() const { return m_videoWidget; }
+    // Puts the video widget back after Simple mode borrowed it.
+    void restoreVideoWidget();
 
 signals:
     void endOfStream();

@@ -118,6 +118,8 @@ public:
     bool oldVideoOutput() const;
     void toggleVuiDisplay();
     Q_INVOKABLE void setVideoSink(QVideoSink *sink);
+    // Keeps this overlay loaded regardless of filters. An empty URL returns to normal behavior.
+    void setPersistentVui(const QUrl &source);
 
 public slots:
     void setGrid(int grid);
@@ -169,6 +171,7 @@ private:
     float m_zoom;
     QPoint m_offset;
     QUrl m_savedQmlSource;
+    QUrl m_persistentVui;
     bool m_hideVui;
     bool m_snapToGrid;
     QTimer m_refreshTimer;

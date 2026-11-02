@@ -917,6 +917,15 @@ void Player::reset()
     m_previousIn = m_previousOut = -1;
 }
 
+void Player::restoreVideoWidget()
+{
+    auto *grid = qobject_cast<QGridLayout *>(m_videoScrollWidget->layout());
+    if (grid) {
+        grid->addWidget(m_videoWidget, 0, 0);
+        m_videoWidget->show();
+    }
+}
+
 void Player::onProducerOpened(bool play)
 {
     if (!MLT.producer() || !MLT.producer()->is_valid())
