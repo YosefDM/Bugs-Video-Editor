@@ -143,7 +143,7 @@ jobs:
 
       - name: Restore the libraries
         id: deps
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v6
         with:
           path: build/Shotcut
           key: ${{ steps.deps_key.outputs.key }}
@@ -155,7 +155,7 @@ jobs:
 
       - name: Save the libraries
         if: steps.deps.outputs.cache-hit != 'true'
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: build/Shotcut
           key: ${{ steps.deps_key.outputs.key }}
