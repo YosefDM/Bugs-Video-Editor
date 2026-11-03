@@ -10,8 +10,10 @@
 
 $ErrorActionPreference = 'Continue'
 $Repo = 'YosefDM/Bugs-Video-Editor'
-$Gh = Join-Path $env:ProgramFiles 'GitHub CLI\gh.exe'
-if (-not (Test-Path $Gh)) { $Gh = 'gh' }
+$Gh = 'gh'
+if ($env:ProgramFiles -and (Test-Path (Join-Path $env:ProgramFiles 'GitHub CLI\gh.exe'))) {
+    $Gh = Join-Path $env:ProgramFiles 'GitHub CLI\gh.exe'
+}
 $Failed = 0
 
 function Step($name, [scriptblock]$action) {
@@ -26,15 +28,17 @@ function Step($name, [scriptblock]$action) {
 }
 
 function Api($method, $path, $json) {
+    # An empty path means the repository itself, with no trailing slash.
+    $path = if ($path) { "/$path" } else { '' }
     if ($json) {
         $file = New-TemporaryFile
         [IO.File]::WriteAllText($file, $json)
-        & $Gh api -X $method -H 'Accept: application/vnd.github+json' "repos/$Repo/$path" --input $file
+        & $Gh api -X $method -H 'Accept: application/vnd.github+json' "repos/$Repo$path" --input $file
         $code = $LASTEXITCODE
         Remove-Item $file
         $global:LASTEXITCODE = $code
     } else {
-        & $Gh api -X $method -H 'Accept: application/vnd.github+json' "repos/$Repo/$path"
+        & $Gh api -X $method -H 'Accept: application/vnd.github+json' "repos/$Repo$path"
     }
 }
 
@@ -102,23 +106,30 @@ Step 'Release tags (v1.2.3) cannot be moved or deleted' {
 }
 
 Write-Host "`nGitHub Actions" -ForegroundColor Cyan
+# Only GitHub's own actions and the MSYS2 setup the Windows build uses.
+Step 'Only GitHub-made actions and msys2/setup-msys2 may run' {
+    Api PUT 'actions/permissions' '{ "enabled": true, "allowed_actions": "selected" }'
+    if ($LASTEXITCODE -eq 0) {
+        Api PUT 'actions/permissions/selected-actions' '{ "github_owned_allowed": true, "verified_allowed": false, "patterns_allowed": ["msys2/setup-msys2@*"] }'
+    }
+}
 Step 'Workflows get read-only access unless they ask for more' {
     Api PUT 'actions/permissions/workflow' '{ "default_workflow_permissions": "read", "can_approve_pull_request_reviews": false }'
 }
-Step 'Pull requests from outside contributors wait for your approval before CI runs' {
+Step 'Pull requests from outside contributors wait for your approval before CI runs (public only)' {
     Api PUT 'actions/permissions/fork-pr-contributor-approval' '{ "approval_policy": "all_external_contributors" }'
 }
 
 Write-Host "`nSecurity" -ForegroundColor Cyan
-Step 'Private vulnerability reporting (the Security tab form)' { Api PUT 'private-vulnerability-reporting' }
+Step 'Private vulnerability reporting, the Security tab form (public only)' { Api PUT 'private-vulnerability-reporting' }
 Step 'Dependabot alerts' { Api PUT 'vulnerability-alerts' }
 Step 'Dependabot security fixes' { Api PUT 'automated-security-fixes' }
-Step 'Secret scanning and push protection (works once the repository is public)' {
+Step 'Secret scanning and push protection (public only)' {
     Api PATCH '' '{ "security_and_analysis": { "secret_scanning": { "status": "enabled" }, "secret_scanning_push_protection": { "status": "enabled" } } }'
 }
 
 if ($Failed -eq 0) {
     Write-Host "`nAll settings applied." -ForegroundColor Green
 } else {
-    Write-Host "`n$Failed step(s) did not apply. If it is only secret scanning and the repository is still private, that is expected." -ForegroundColor Yellow
+    Write-Host "`n$Failed step(s) did not apply. Steps marked (public only) fail while the repository is private; run this again after making it public." -ForegroundColor Yellow
 }
