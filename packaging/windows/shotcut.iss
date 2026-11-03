@@ -119,7 +119,11 @@ begin
     ExtractTemporaryFile('bugs-spider-' + IntToStr(Size) + '-' + IntToStr(I) + '.bmp');
   WizardForm.Repaint;
 
+#if Ver >= EncodeVer(6, 5, 0)
+  Form := CreateCustomForm(Size, Size, True, True);
+#else
   Form := CreateCustomForm;
+#endif
   try
     Form.BorderStyle := bsNone;
     Form.FormStyle := fsStayOnTop;

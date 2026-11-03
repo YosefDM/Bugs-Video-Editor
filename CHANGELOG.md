@@ -5,9 +5,18 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 
 ## Unreleased
 
+## 1.0.1
+
+The first release. Built on Shotcut 26.9.27. Version 1.0.0 was tagged, but its Windows
+installer build stalled, so it was never released.
+
+### Fixed
+- The Windows installer build: it now uses the build machine's own Inno Setup, and stops after
+  15 minutes instead of hanging.
+
 ## 1.0.0
 
-The first version. Built on Shotcut 26.9.27.
+Not released. Everything below first ships in 1.0.1.
 
 ### Added
 - Simple mode, which opens by default: a library of Originals and Finished files, a preview, a filmstrip, and six tools: Trim, Cut out, Crop, Caption, Text and Save picture.
