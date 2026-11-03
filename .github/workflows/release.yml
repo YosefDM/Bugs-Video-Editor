@@ -45,7 +45,7 @@ jobs:
       contents: write
     steps:
       - name: Download installer
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v8
         with:
           name: windows-installer
           path: dist
