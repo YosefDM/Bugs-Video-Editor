@@ -31,7 +31,16 @@ add_executable(test_simple_pipeline
   test_simple_pipeline.cpp
   ${CMAKE_SOURCE_DIR}/src/simple/simpleedit.cpp
   ${CMAKE_SOURCE_DIR}/src/simple/simplemedia.cpp
+  ${CMAKE_SOURCE_DIR}/src/simple/collage.cpp
 )
 target_include_directories(test_simple_pipeline PRIVATE ${CMAKE_SOURCE_DIR}/src/simple ${CMAKE_SOURCE_DIR}/CuteLogger/include)
 target_link_libraries(test_simple_pipeline PRIVATE Qt6::Core Qt6::Gui Qt6::Test CuteLogger PkgConfig::mlt++)
 add_test(NAME simple_pipeline COMMAND test_simple_pipeline)
+
+add_executable(test_collage
+  test_collage.cpp
+  ${CMAKE_SOURCE_DIR}/src/simple/collage.cpp
+)
+target_include_directories(test_collage PRIVATE ${CMAKE_SOURCE_DIR}/src/simple)
+target_link_libraries(test_collage PRIVATE Qt6::Core Qt6::Test)
+add_test(NAME simple_collage COMMAND test_collage)

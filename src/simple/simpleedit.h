@@ -18,6 +18,7 @@
 #ifndef SIMPLEEDIT_H
 #define SIMPLEEDIT_H
 
+#include <QImage>
 #include <QPointF>
 #include <QRect>
 #include <QRectF>
@@ -43,16 +44,19 @@ enum class CaptionStyle { Bar, Center, Bold };
 // Words placed anywhere on the picture, such as a name next to a person.
 struct TextLabel
 {
-    QString text;                             // can have several lines
-    QPointF center{0.5, 0.5};                 // fraction of the finished picture
-    int size{1};                              // 0 small, 1 medium, 2 large
-    QString color{QStringLiteral("#F04AD9")}; // pink, like the names people add to photos
-    QString font{QStringLiteral("clean")};    // an id from labelFonts()
+    QString text;             // can have several lines
+    QPointF center{0.5, 0.5}; // fraction of the finished picture
+    int size{1};              // 0 small, 1 medium, 2 large
+    QString color{QStringLiteral("#FFFFFF")};
+    QString font{QStringLiteral("clean")}; // an id from labelFonts()
+    // Until Levi picks a colour himself, BUGS! keeps picking the one that stands out most
+    // against the picture behind the label.
+    bool autoColor{true};
 
     bool operator==(const TextLabel &o) const
     {
         return text == o.text && center == o.center && size == o.size && color == o.color
-               && font == o.font;
+               && font == o.font && autoColor == o.autoColor;
     }
     bool isEmpty() const { return text.trimmed().isEmpty(); }
 };
@@ -72,6 +76,9 @@ const QVector<LabelFont> &labelFonts();
 QString labelFontFamily(const QString &id);
 // The colours Levi can pick for labels.
 const QStringList &labelColors();
+// The label colour that stands out most against `picture` around `center` (fractions of the
+// picture), by the average WCAG contrast ratio over the area the words cover.
+QString contrastingLabelColor(const QImage &picture, const QPointF &center);
 
 // Everything Levi has done to one file. A plain value, so undo is a stack of copies and
 // nothing here can reach the original file.

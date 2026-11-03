@@ -52,7 +52,9 @@ Rectangle {
 
             Text {
                 Layout.fillWidth: true
-                text: simple.hasFile ? "Editing: " + simple.fileName : "Pick a video or photo to start"
+                text: simple.collageActive ? "Collage of " + simple.collageCells.length + " photos"
+                      : simple.collagePicking ? "Pick photos for your collage"
+                      : simple.hasFile ? "Editing: " + simple.fileName : "Pick a video or photo to start"
                 color: root.t.text
                 font.family: "Inter"
                 font.pixelSize: 14
@@ -120,7 +122,7 @@ Rectangle {
             icon: "check"
             text: "Finish"
             primary: true
-            enabled: simple.hasFile && !simple.loading
+            enabled: (simple.hasFile || simple.collageActive) && !simple.loading
             onClicked: simple.finish()
         }
 
