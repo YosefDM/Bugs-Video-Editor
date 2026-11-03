@@ -32,6 +32,7 @@
 #include <QStandardPaths>
 #include <QTextOption>
 #include <QTransform>
+#include <QtMath>
 
 namespace Simple {
 
@@ -541,6 +542,125 @@ QImage renderFrame(const Edit &edit, int editedFrame)
     }
     delete frame;
     return image;
+}
+
+QString uprightPhotoPath(const QString &path, QSize *size)
+{
+    QString readable = path;
+    if (isHeic(path)) {
+        readable = heicWorkingCopy(path);
+        if (readable.isEmpty())
+            return QString();
+    }
+    QImageReader reader(readable);
+    reader.setAutoTransform(true);
+    QSize raw = reader.size();
+    if (!raw.isValid())
+        return QString();
+    // The reader reports the stored size; a quarter turn swaps it.
+    if (reader.transformation() & QImageIOHandler::TransformationRotate90)
+        raw.transpose();
+    if (size)
+        *size = raw;
+    return readable;
+}
+
+QImage loadPhotoToCover(const QString &readablePath, const QSize &cover)
+{
+    QImageReader reader(readablePath);
+    reader.setAutoTransform(true);
+    QSize stored = reader.size();
+    const bool turned = reader.transformation() & QImageIOHandler::TransformationRotate90;
+    const QSize upright = turned ? stored.transposed() : stored;
+    if (upright.isValid() && cover.isValid()) {
+        const double scale = qMax(double(cover.width()) / upright.width(),
+                                  double(cover.height()) / upright.height());
+        // Only ever shrink while reading; enlarging happens when drawing.
+        if (scale < 1.0)
+            reader.setScaledSize(QSize(qMax(1, qCeil(stored.width() * scale)),
+                                       qMax(1, qCeil(stored.height() * scale))));
+    }
+    return reader.read();
+}
+
+QVector<QRect> collageCellRects(const Collage::Page &page, const QSize &size)
+{
+    // Edges are rounded on their own, so neighbouring cells share an edge with no gap.
+    const double s = size.width() / page.w();
+    QVector<QRect> rects;
+    for (const Collage::Cell *cell : page.photoCells()) {
+        const int left = qRound(cell->x() * s);
+        const int top = qRound(cell->y() * s);
+        const int right = qRound((cell->x() + cell->w()) * s);
+        const int bottom = qRound((cell->y() + cell->h()) * s);
+        rects << QRect(QPoint(left, top), QPoint(right - 1, bottom - 1));
+    }
+    return rects;
+}
+
+QImage renderCollage(const Collage::Page &page,
+                     const QSize &size,
+                     const CollageStyle &style,
+                     const std::function<QImage(int cell, const QSize &cellSize)> &image)
+{
+    QImage canvas(size, QImage::Format_RGB32);
+    canvas.fill(style.borderColor);
+    QPainter painter(&canvas);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+
+    const auto cells = page.photoCells();
+    const QVector<QRect> rects = collageCellRects(page, size);
+    for (int i = 0; i < int(cells.size()); ++i) {
+        const QRect target = rects.at(i);
+        const QImage picture = image(i, target.size());
+        if (picture.isNull() || target.isEmpty())
+            continue;
+        // Fill the cell, cropping the photo around its offset point.
+        const Collage::Photo *photo = cells[i]->photo();
+        const double cellRatio = double(target.height()) / target.width();
+        const double pictureRatio = double(picture.height()) / picture.width();
+        QRectF source(0, 0, picture.width(), picture.height());
+        if (pictureRatio < cellRatio) {
+            // Too wide: crop the sides
+            const double w = picture.height() / cellRatio;
+            source = QRectF((picture.width() - w) * photo->offsetW, 0, w, picture.height());
+        } else if (pictureRatio > cellRatio) {
+            // Too tall: crop the top and bottom
+            const double h = picture.width() * cellRatio;
+            source = QRectF(0, (picture.height() - h) * photo->offsetH, picture.width(), h);
+        }
+        painter.drawImage(QRectF(target), picture, source);
+    }
+
+    // Borders: a frame round the edge and a line along every edge between cells, as in
+    // PhotoCollage's draw_borders().
+    const double border = style.border * qMin(size.width(), size.height());
+    if (border > 0) {
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(style.borderColor);
+        const double s = size.width() / page.w();
+        const double half = border / 2.0;
+        painter.drawRect(QRectF(0, 0, border, size.height()));
+        painter.drawRect(QRectF(size.width() - border, 0, border, size.height()));
+        painter.drawRect(QRectF(0, 0, size.width(), border));
+        painter.drawRect(QRectF(0, size.height() - border, size.width(), border));
+        for (const auto &col : page.cols) {
+            const double x = col->x() * s;
+            const double w = col->w * s;
+            for (size_t j = 1; j < col->cells.size(); ++j) {
+                const double y = col->cells[j]->y() * s;
+                painter.drawRect(QRectF(x, y - half, w, border));
+            }
+            if (col->x() > 0) {
+                for (const Collage::Cell *cell : col->cells) {
+                    if (!cell->isExtension())
+                        painter.drawRect(QRectF(x - half, cell->y() * s, border, cell->h() * s));
+                }
+            }
+        }
+    }
+    painter.end();
+    return canvas;
 }
 
 } // namespace Simple

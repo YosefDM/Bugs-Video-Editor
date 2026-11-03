@@ -101,6 +101,10 @@ SimpleModeWidget::SimpleModeWidget(QWidget *parent)
     auto *preview = new QWidget(this);
     m_previewLayout = new QVBoxLayout(preview);
     m_previewLayout->setContentsMargins(24, 20, 24, 0);
+    // Takes the video's place while a collage is open.
+    m_collageView = addView(QStringLiteral("CollageView.qml"));
+    m_collageView->hide();
+    m_previewLayout->addWidget(m_collageView);
     m_centerLayout->addWidget(preview, 1);
 
     auto *controls = addView(QStringLiteral("Editor.qml"));
@@ -136,6 +140,7 @@ SimpleModeWidget::SimpleModeWidget(QWidget *parent)
 
     connect(m_controller, &SimpleController::changed, this, &SimpleModeWidget::applyTheme);
     connect(m_controller, &SimpleController::changed, this, &SimpleModeWidget::updateWelcome);
+    connect(m_controller, &SimpleController::changed, this, &SimpleModeWidget::updateCollageView);
     applyTheme();
     hide();
 }
@@ -168,6 +173,14 @@ void SimpleModeWidget::applyTheme()
         if (view != m_dialogs)
             view->setClearColor(background);
     }
+}
+
+void SimpleModeWidget::updateCollageView()
+{
+    const bool collage = m_active && m_controller->collageActive();
+    m_collageView->setVisible(collage);
+    if (m_videoWidget)
+        m_videoWidget->setVisible(!collage);
 }
 
 void SimpleModeWidget::updateWelcome()

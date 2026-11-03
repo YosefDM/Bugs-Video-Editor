@@ -7,7 +7,7 @@ Rectangle {
     id: root
 
     readonly property var t: Theme.colors(simple.dark)
-    readonly property bool showTimeline: simple.hasFile && !simple.isPhoto
+    readonly property bool showTimeline: simple.hasFile && !simple.isPhoto && !simple.collageActive
 
     color: t.bg
 
@@ -99,8 +99,24 @@ Rectangle {
         }
 
         // Tools. A photo only offers the ones that make sense for it.
+        Text {
+            visible: simple.collageActive
+            Layout.fillWidth: true
+            Layout.preferredHeight: 64
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            text: simple.collageSelected >= 0 ? "Now tap the photo to swap it with."
+                                              : "Tap a photo, then another, to swap them. Finish saves the collage."
+            wrapMode: Text.WordWrap
+            color: root.t.muted
+            font.family: "Inter"
+            font.pixelSize: 14
+        }
+
         Row {
             id: toolRow
+
+            visible: !simple.collageActive
 
             readonly property var tools: simple.isPhoto
                 ? [{ id: "crop", label: "Crop", icon: "crop" },

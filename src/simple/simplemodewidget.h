@@ -49,6 +49,7 @@ private:
     QQuickWidget *addView(const QString &fileName);
     void applyTheme();
     void updateWelcome();
+    void updateCollageView();
 
     SimpleController *m_controller;
     QVBoxLayout *m_centerLayout;
@@ -57,6 +58,7 @@ private:
     QList<QQuickWidget *> m_views;
     QQuickWidget *m_welcome{nullptr};
     QQuickWidget *m_dialogs{nullptr};
+    QQuickWidget *m_collageView{nullptr};
     bool m_active{false};
 };
 

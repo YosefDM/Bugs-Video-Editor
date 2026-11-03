@@ -18,7 +18,10 @@
 #ifndef SIMPLEMEDIA_H
 #define SIMPLEMEDIA_H
 
+#include "collage.h"
 #include "simpleedit.h"
+
+#include <QColor>
 
 #include <QImage>
 #include <QString>
@@ -61,6 +64,27 @@ QString photoForEdit(const Edit &edit);
 
 // Renders one frame of the edited result at full size. Safe to call from a worker thread.
 QImage renderFrame(const Edit &edit, int editedFrame);
+
+// The file a photo's pixels are read from (a working copy for HEIC), upright, and its upright
+// size. Returns an empty path if it cannot be read. Safe to call from a worker thread.
+QString uprightPhotoPath(const QString &path, QSize *size);
+// Reads a photo upright, just large enough to cover `cover` without losing quality.
+QImage loadPhotoToCover(const QString &readablePath, const QSize &cover);
+
+struct CollageStyle
+{
+    double border{0}; // fraction of the collage's shorter side
+    QColor borderColor{Qt::white};
+};
+// Draws a collage laid out by Collage::makePage (a page 1 wide) at `size`. `image(i)` returns the
+// picture for photo cell i, at any size. Ported from PhotoCollage's render.py: each photo fills
+// its cell and is cropped around its offset point, and borders run along the cell edges.
+QImage renderCollage(const Collage::Page &page,
+                     const QSize &size,
+                     const CollageStyle &style,
+                     const std::function<QImage(int cell, const QSize &cellSize)> &image);
+// Cell rectangles in pixels for a page drawn at `size`, matching renderCollage().
+QVector<QRect> collageCellRects(const Collage::Page &page, const QSize &size);
 
 } // namespace Simple
 

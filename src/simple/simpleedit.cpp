@@ -17,8 +17,10 @@
 
 #include "simpleedit.h"
 
+#include <QColor>
 #include <QDir>
 #include <QFileInfo>
+#include <QImage>
 #include <QRegularExpression>
 #include <QXmlStreamWriter>
 
@@ -116,6 +118,56 @@ const QStringList &labelColors()
                                     QStringLiteral("#9B5CFF"),
                                     QStringLiteral("#21D4FD")};
     return colors;
+}
+
+namespace {
+
+// WCAG relative luminance of an sRGB colour.
+double luminance(QRgb rgb)
+{
+    const auto channel = [](int value) {
+        const double c = value / 255.0;
+        return c <= 0.03928 ? c / 12.92 : std::pow((c + 0.055) / 1.055, 2.4);
+    };
+    return 0.2126 * channel(qRed(rgb)) + 0.7152 * channel(qGreen(rgb))
+           + 0.0722 * channel(qBlue(rgb));
+}
+
+} // namespace
+
+QString contrastingLabelColor(const QImage &picture, const QPointF &center)
+{
+    const QStringList &colors = labelColors();
+    if (picture.isNull())
+        return colors.first();
+    // Roughly where a medium label's words sit: a band around its centre.
+    const QRect area = QRect(int((center.x() - 0.15) * picture.width()),
+                             int((center.y() - 0.04) * picture.height()),
+                             qMax(1, int(0.3 * picture.width())),
+                             qMax(1, int(0.08 * picture.height())))
+                           .intersected(picture.rect());
+    if (area.isEmpty())
+        return colors.first();
+    QVector<double> backdrop;
+    const int step = qMax(1, qMax(area.width(), area.height()) / 40);
+    for (int y = area.top(); y <= area.bottom(); y += step) {
+        for (int x = area.left(); x <= area.right(); x += step)
+            backdrop << luminance(picture.pixel(x, y));
+    }
+    QString best = colors.first();
+    double bestScore = -1;
+    for (const auto &color : colors) {
+        const double l = luminance(QColor(color).rgb());
+        double sum = 0;
+        for (const double b : std::as_const(backdrop))
+            sum += (qMax(l, b) + 0.05) / (qMin(l, b) + 0.05);
+        const double score = sum / backdrop.size();
+        if (score > bestScore) {
+            bestScore = score;
+            best = color;
+        }
+    }
+    return best;
 }
 
 bool Edit::isHdr() const

@@ -106,7 +106,7 @@ Rectangle {
 
             // Nothing open yet
             Text {
-                visible: !simple.hasFile
+                visible: !simple.hasFile && !simple.collageActive
                 Layout.fillWidth: true
                 Layout.leftMargin: 18
                 Layout.rightMargin: 18
@@ -117,9 +117,196 @@ Rectangle {
                 font.pixelSize: 14
             }
 
+            // Collage
+            ColumnLayout {
+                visible: simple.collageActive
+                Layout.fillWidth: true
+                Layout.leftMargin: 18
+                Layout.rightMargin: 18
+                spacing: 14
+
+                Heading {
+                    title: "Collage"
+                    body: "Pick a shape and a border. Shuffle tries a new arrangement, and tapping two photos swaps them."
+                }
+
+                Text {
+                    text: "Shape"
+                    color: root.t.text2
+                    font.family: "Inter"
+                    font.pixelSize: 13
+                }
+
+                Grid {
+                    id: collageShapes
+
+                    Layout.fillWidth: true
+                    columns: 2
+                    spacing: 8
+
+                    Repeater {
+                        model: [
+                            { id: "square", label: "Square", w: 22, h: 22 },
+                            { id: "story", label: "Story", w: 14, h: 24 },
+                            { id: "wide", label: "Wide", w: 32, h: 18 },
+                            { id: "portrait", label: "4:5", w: 18, h: 22 }
+                        ]
+
+                        delegate: Rectangle {
+                            required property var modelData
+                            readonly property bool selected: simple.collageShape === modelData.id
+
+                            width: (collageShapes.width - 8) / 2
+                            height: 56
+                            radius: 10
+                            color: selected ? root.t.accentSoft : "transparent"
+                            border.width: 1.5
+                            border.color: selected ? root.t.accent : root.t.softBorder
+                            Accessible.role: Accessible.Button
+                            Accessible.name: modelData.label
+
+                            Row {
+                                anchors.centerIn: parent
+                                spacing: 10
+
+                                Rectangle {
+                                    width: modelData.w
+                                    height: modelData.h
+                                    radius: 3
+                                    color: "transparent"
+                                    border.width: 2
+                                    border.color: parent.parent.selected ? root.t.accent : root.t.muted
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+
+                                Text {
+                                    text: modelData.label
+                                    color: root.t.text
+                                    font.family: "Inter"
+                                    font.pixelSize: 13
+                                    font.weight: Font.DemiBold
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: simple.setCollageShape(modelData.id)
+                            }
+                        }
+                    }
+                }
+
+                ActionButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 44
+                    icon: "shuffle"
+                    text: "Shuffle"
+                    onClicked: simple.shuffleCollage()
+                }
+
+                Text {
+                    text: "Border"
+                    color: root.t.text2
+                    font.family: "Inter"
+                    font.pixelSize: 13
+                }
+
+                Row {
+                    id: borderRow
+
+                    Layout.fillWidth: true
+                    spacing: 8
+
+                    Repeater {
+                        model: ["None", "Thin", "Thick"]
+
+                        delegate: Rectangle {
+                            required property string modelData
+                            required property int index
+                            readonly property bool selected: simple.collageBorder === index
+
+                            width: (borderRow.width - 16) / 3
+                            height: 40
+                            radius: 10
+                            color: selected ? root.t.accentSoft : "transparent"
+                            border.width: 1.5
+                            border.color: selected ? root.t.accent : root.t.softBorder
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: modelData
+                                color: root.t.text
+                                font.family: "Inter"
+                                font.pixelSize: 13
+                                font.weight: Font.DemiBold
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: simple.setCollageBorder(index)
+                            }
+                        }
+                    }
+                }
+
+                Row {
+                    visible: simple.collageBorder > 0
+                    spacing: 10
+
+                    Repeater {
+                        model: ["#FFFFFF", "#111111", "#E5392B"]
+
+                        delegate: Rectangle {
+                            required property string modelData
+                            readonly property bool selected: simple.collageBorderColor.toLowerCase() === modelData.toLowerCase()
+
+                            width: 40
+                            height: 40
+                            radius: 20
+                            color: "transparent"
+                            border.width: selected ? 2.5 : 0
+                            border.color: root.t.accent
+
+                            Rectangle {
+                                anchors.fill: parent
+                                anchors.margins: 5
+                                radius: width / 2
+                                color: parent.modelData
+                                border.width: 1
+                                border.color: root.t.softBorder
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: simple.setCollageBorderColor(modelData)
+                            }
+                        }
+                    }
+                }
+
+                Text {
+                    text: "Back to my photos"
+                    color: root.t.muted
+                    font.family: "Inter"
+                    font.pixelSize: 12
+                    font.underline: true
+
+                    MouseArea {
+                        anchors.fill: parent
+                        anchors.margins: -8
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: simple.leaveCollage()
+                    }
+                }
+            }
+
             // Trim
             ColumnLayout {
-                visible: simple.hasFile && simple.tool === "trim"
+                visible: simple.hasFile && !simple.collageActive && simple.tool === "trim"
                 Layout.fillWidth: true
                 Layout.leftMargin: 18
                 Layout.rightMargin: 18
@@ -179,7 +366,7 @@ Rectangle {
 
             // Cut out
             ColumnLayout {
-                visible: simple.hasFile && simple.tool === "cut"
+                visible: simple.hasFile && !simple.collageActive && simple.tool === "cut"
                 Layout.fillWidth: true
                 Layout.leftMargin: 18
                 Layout.rightMargin: 18
@@ -298,7 +485,7 @@ Rectangle {
 
             // Crop
             ColumnLayout {
-                visible: simple.hasFile && simple.tool === "crop"
+                visible: simple.hasFile && !simple.collageActive && simple.tool === "crop"
                 Layout.fillWidth: true
                 Layout.leftMargin: 18
                 Layout.rightMargin: 18
@@ -392,7 +579,7 @@ Rectangle {
 
             // Caption
             ColumnLayout {
-                visible: simple.hasFile && simple.tool === "caption"
+                visible: simple.hasFile && !simple.collageActive && simple.tool === "caption"
                 Layout.fillWidth: true
                 Layout.leftMargin: 18
                 Layout.rightMargin: 18
@@ -500,7 +687,7 @@ Rectangle {
                 readonly property var label: selected >= 0 && selected < simple.labels.length
                                              ? simple.labels[selected] : null
 
-                visible: simple.hasFile && simple.tool === "text"
+                visible: simple.hasFile && !simple.collageActive && simple.tool === "text"
                 Layout.fillWidth: true
                 Layout.leftMargin: 18
                 Layout.rightMargin: 18
@@ -744,7 +931,7 @@ Rectangle {
 
             // Save picture
             ColumnLayout {
-                visible: simple.hasFile && simple.tool === "frame"
+                visible: simple.hasFile && !simple.collageActive && simple.tool === "frame"
                 Layout.fillWidth: true
                 Layout.leftMargin: 18
                 Layout.rightMargin: 18

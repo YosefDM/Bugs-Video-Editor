@@ -26,7 +26,7 @@ jobs:
       - name: Check style
         run: |
           # Two older test files from Shotcut are not formatted, so tests are checked by name.
-          find src tests/test_simple_*.cpp -type f \( -name '*.h' -o -name '*.c' -o -name '*.cpp' \) \
+          find src tests/test_simple_*.cpp tests/test_collage.cpp -type f \( -name '*.h' -o -name '*.c' -o -name '*.cpp' \) \
             ! -path '*spatialmedia*' ! -name 'defaultlayouts.h' -print0 \
             | xargs -0 clang-format-14 --dry-run --Werror -style=file
 

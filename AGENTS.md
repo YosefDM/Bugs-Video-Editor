@@ -7,6 +7,7 @@ BUGS! is a fork of Shotcut for one non-technical user, Levi. It opens into **Sim
 | Where | What |
 |-------|------|
 | `src/simple/simpleedit.*` | `Simple::Edit`, a plain value holding everything Levi changed, and `compileXml()` |
+| `src/simple/collage.*` | Collage layout, ported from PhotoCollage; its tests are in `tests/test_collage.cpp` |
 | `src/simple/simplemedia.*` | Opening files, thumbnails, filmstrip, caption picture, single-frame rendering |
 | `src/simple/simplecontroller.*` | All Simple mode state and actions, exposed to QML as `simple` |
 | `src/simple/simplemodewidget.*` | Lays out the views; borrows the video widget from the player |

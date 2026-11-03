@@ -18,6 +18,7 @@
 // Saves real files through the real engine and inspects the results with ffprobe. Needs ffmpeg,
 // ffprobe and melt-7 (or melt) on the PATH, and a display for MLT's Qt module (xvfb-run is fine).
 
+#include "collage.h"
 #include "simpleedit.h"
 #include "simplemedia.h"
 
@@ -36,6 +37,8 @@
 #include <QTemporaryDir>
 #include <QTransform>
 #include <QtTest/QtTest>
+
+#include <deque>
 
 using namespace Simple;
 
@@ -674,6 +677,45 @@ private slots:
                                         picture.height() / 2),
                            plain.copy(0, plain.height() / 2, plain.width() / 2, plain.height() / 2))
                 < 1.0);
+    }
+
+    // Each photo fills its own cell, the border goes round the edge, and the picture is the size
+    // asked for.
+    void collageDrawsEachPhotoInItsCell()
+    {
+        const QColor colours[] = {Qt::red, Qt::green, Qt::blue, Qt::yellow};
+        const QSize shapes[] = {{1200, 900}, {900, 1200}, {1000, 1000}, {1600, 900}};
+        std::deque<Collage::Photo> photos;
+        std::vector<Collage::Photo *> pointers;
+        QHash<QString, QColor> colourOf;
+        for (int i = 0; i < 4; ++i) {
+            QImage image(shapes[i], QImage::Format_RGB32);
+            image.fill(colours[i]);
+            const QString file = path(QStringLiteral("solid%1.png").arg(i));
+            QVERIFY(image.save(file));
+            QSize size;
+            const QString readable = uprightPhotoPath(file, &size);
+            QCOMPARE(size, shapes[i]);
+            photos.push_back(Collage::Photo{readable, size.width(), size.height()});
+            pointers.push_back(&photos.back());
+            colourOf.insert(readable, colours[i]);
+        }
+        auto page = Collage::makeGaplessPage(pointers, 16.0 / 9.0, 7);
+        const QSize size(1350, 2400);
+        CollageStyle style;
+        style.border = 0.02;
+        style.borderColor = Qt::white;
+        const auto cells = page->photoCells();
+        const QImage collage = renderCollage(*page, size, style, [&](int i, const QSize &cover) {
+            return loadPhotoToCover(cells[i]->photo()->path, cover);
+        });
+        QCOMPARE(collage.size(), size);
+        const QVector<QRect> rects = collageCellRects(*page, size);
+        QCOMPARE(rects.size(), 4);
+        for (int i = 0; i < 4; ++i)
+            QCOMPARE(collage.pixelColor(rects[i].center()), colourOf.value(cells[i]->photo()->path));
+        QCOMPARE(collage.pixelColor(2, 2), QColor(Qt::white));
+        QCOMPARE(collage.pixelColor(size.width() - 3, size.height() - 3), QColor(Qt::white));
     }
 
     void captionPictureHasText()

@@ -11,7 +11,8 @@ The first version. Built on Shotcut 26.9.27.
 
 ### Added
 - Simple mode, which opens by default: a library of Originals and Finished files, a preview, a filmstrip, and six tools: Trim, Cut out, Crop, Caption, Text and Save picture.
-- Text: put words anywhere on a photo or video, such as names next to people. Add as many as you like, drag them into place, and pick from six fonts (two with Hebrew), ten colours and three sizes.
+- Text: put words anywhere on a photo or video, such as names next to people. Add as many as you like, drag them into place, and pick from six fonts (two with Hebrew), ten colours and three sizes. New text takes whichever colour stands out best against the picture behind it.
+- Collage: pick several photos and get a neat layout, in Square, Story (9:16), Wide (16:9) or 4:5. Shuffle for another arrangement, tap two photos to swap them, and choose a border. The layout comes from PhotoCollage by Adrien Vergé.
 - Finish saves a new H.264/AAC MP4 (or a JPG/PNG for photos) to the Finished folder. Originals are never changed, and existing files are never overwritten.
 - Phone videos (including HEVC, portrait and HDR), WhatsApp videos, older formats, and JPG, PNG and HEIC photos.
 - Light and dark mode, remembered between sessions.

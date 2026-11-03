@@ -18,10 +18,12 @@
 #ifndef SIMPLECONTROLLER_H
 #define SIMPLECONTROLLER_H
 
+#include "collage.h"
 #include "simpleedit.h"
 
 #include <QFileSystemWatcher>
 #include <QHash>
+#include <QImage>
 #include <QObject>
 #include <QPointer>
 #include <QRectF>
@@ -29,6 +31,9 @@
 #include <QTimer>
 #include <QUrl>
 #include <QVariantList>
+
+#include <deque>
+#include <memory>
 
 class AbstractJob;
 class SharedFrame;
@@ -56,6 +61,17 @@ class SimpleController : public QObject
     Q_PROPERTY(QString fileName READ fileName NOTIFY changed)
     Q_PROPERTY(QString currentPath READ currentPath NOTIFY changed)
     Q_PROPERTY(QString tool READ tool WRITE setTool NOTIFY changed)
+    // Collage: picking photos, then the collage screen
+    Q_PROPERTY(bool collagePicking READ collagePicking NOTIFY changed)
+    Q_PROPERTY(int collagePickCount READ collagePickCount NOTIFY changed)
+    Q_PROPERTY(bool collageActive READ collageActive NOTIFY changed)
+    Q_PROPERTY(QString collageShape READ collageShape NOTIFY changed)
+    Q_PROPERTY(int collageBorder READ collageBorder NOTIFY changed)
+    Q_PROPERTY(QString collageBorderColor READ collageBorderColor NOTIFY changed)
+    Q_PROPERTY(QString collagePreview READ collagePreview NOTIFY changed)
+    Q_PROPERTY(double collageAspect READ collageAspect NOTIFY changed)
+    Q_PROPERTY(QVariantList collageCells READ collageCells NOTIFY changed)
+    Q_PROPERTY(int collageSelected READ collageSelected NOTIFY changed)
     Q_PROPERTY(bool canUndo READ canUndo NOTIFY changed)
     Q_PROPERTY(bool canRedo READ canRedo NOTIFY changed)
     // Timeline, in source frames
@@ -120,8 +136,20 @@ public:
     QString currentPath() const { return m_edit.sourcePath; }
     QString tool() const { return m_tool; }
     void setTool(const QString &tool);
-    bool canUndo() const { return !m_undo.isEmpty(); }
-    bool canRedo() const { return !m_redo.isEmpty(); }
+    // Undo is for the open file; the collage screen has Shuffle instead.
+    bool canUndo() const { return !m_collageActive && !m_undo.isEmpty(); }
+    bool canRedo() const { return !m_collageActive && !m_redo.isEmpty(); }
+
+    bool collagePicking() const { return m_collagePicking; }
+    int collagePickCount() const { return m_collagePicks.size(); }
+    bool collageActive() const { return m_collageActive; }
+    QString collageShape() const { return m_collageShape; }
+    int collageBorder() const { return m_collageBorder; }
+    QString collageBorderColor() const { return m_collageBorderColor; }
+    QString collagePreview() const { return m_collagePreview; }
+    double collageAspect() const;
+    QVariantList collageCells() const;
+    int collageSelected() const { return m_collageSelected; }
 
     int frames() const { return m_edit.frames; }
     int trimStart() const { return m_edit.trim.start; }
@@ -216,6 +244,16 @@ public slots:
 
     void savePicture();
     void finish();
+
+    void startCollage();
+    void toggleCollagePick(const QString &path);
+    void makeCollage();
+    void leaveCollage();
+    void setCollageShape(const QString &shape);
+    void setCollageBorder(int border);
+    void setCollageBorderColor(const QString &color);
+    void shuffleCollage();
+    void tapCollage(double x, double y);
     void cancelFinish();
     void requestAdvanced();
     void showAbout();
@@ -294,10 +332,33 @@ private:
     bool m_playing{false};
     QTimer m_captionTimer;
     int m_selectedLabel{-1};
+    QImage labelBackdrop();
+    QImage m_labelBackdrop;
+    QString m_labelBackdropKey;
     bool m_labelDragging{false};
     QTimer m_frameThumbTimer;
     QString m_frameThumb;
     QString m_dialog;
+
+    bool m_collagePicking{false};
+    QStringList m_collagePicks;
+    bool m_collageActive{false};
+    std::deque<Collage::Photo> m_collagePhotos; // .path is the readable file, upright
+    std::unique_ptr<Collage::Page> m_collagePage;
+    QString m_collageShape{QStringLiteral("square")};
+    int m_collageBorder{1};
+    QString m_collageBorderColor{QStringLiteral("#FFFFFF")};
+    unsigned m_collageSeed{1};
+    int m_collageSelected{-1};
+    QString m_collagePreview;
+    int m_collageGeneration{0};
+    QHash<QString, QImage> m_collageThumbs; // preview-size pictures by readable path
+    void layoutCollage();
+    void drawCollagePreview();
+    QSize collageSize(int longSide) const;
+    // Height / width of the chosen shape. Preview and save must use exactly the same value, or
+    // they could get different layouts.
+    double collageRatio() const;
     int m_frameThumbGeneration{0};
 
     QString m_toast;

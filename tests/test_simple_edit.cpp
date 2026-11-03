@@ -346,6 +346,26 @@ private slots:
         QVERIFY(edit.labels.isEmpty());
     }
 
+    void labelsPickAColourThatStandsOut()
+    {
+        QImage white(400, 300, QImage::Format_RGB32);
+        white.fill(Qt::white);
+        QCOMPARE(contrastingLabelColor(white, QPointF(0.5, 0.5)), QStringLiteral("#111111"));
+        QImage black(400, 300, QImage::Format_RGB32);
+        black.fill(Qt::black);
+        QCOMPARE(contrastingLabelColor(black, QPointF(0.5, 0.5)), QStringLiteral("#FFFFFF"));
+        // Only the area under the label counts: dark on top, light below.
+        QImage split(400, 300, QImage::Format_RGB32);
+        split.fill(Qt::white);
+        for (int y = 0; y < 150; ++y) {
+            for (int x = 0; x < 400; ++x)
+                split.setPixel(x, y, qRgb(10, 10, 10));
+        }
+        QCOMPARE(contrastingLabelColor(split, QPointF(0.5, 0.2)), QStringLiteral("#FFFFFF"));
+        QCOMPARE(contrastingLabelColor(split, QPointF(0.5, 0.8)), QStringLiteral("#111111"));
+        QVERIFY(labelColors().contains(contrastingLabelColor(QImage(), QPointF(0.5, 0.5))));
+    }
+
     void labelFontsAndColours()
     {
         QCOMPARE(labelFonts().size(), 6);

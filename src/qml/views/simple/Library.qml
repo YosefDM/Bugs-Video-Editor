@@ -148,6 +148,64 @@ Rectangle {
             }
         }
 
+        // Collage: start picking, then the picking bar
+        ActionButton {
+            visible: root.onOriginals && !simple.collagePicking && !simple.collageActive
+            Layout.fillWidth: true
+            Layout.preferredHeight: 40
+            icon: "collage"
+            text: "Make a collage"
+            onClicked: simple.startCollage()
+        }
+
+        Rectangle {
+            visible: simple.collagePicking
+            Layout.fillWidth: true
+            Layout.preferredHeight: pickColumn.implicitHeight + 24
+            radius: 12
+            color: root.t.accentSoft
+            border.width: 1
+            border.color: root.t.accent
+
+            ColumnLayout {
+                id: pickColumn
+
+                anchors.fill: parent
+                anchors.margins: 12
+                spacing: 10
+
+                Text {
+                    Layout.fillWidth: true
+                    text: simple.collagePickCount < 2
+                          ? "Tap the photos for your collage. Pick at least two."
+                          : simple.collagePickCount + " photos picked. Tap more, or make it."
+                    wrapMode: Text.WordWrap
+                    color: root.t.text
+                    font.family: "Inter"
+                    font.pixelSize: 13
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+
+                    ActionButton {
+                        Layout.fillWidth: true
+                        text: "Cancel"
+                        onClicked: simple.leaveCollage()
+                    }
+
+                    ActionButton {
+                        Layout.fillWidth: true
+                        text: "Make collage"
+                        primary: true
+                        enabled: simple.collagePickCount >= 2
+                        onClicked: simple.makeCollage()
+                    }
+                }
+            }
+        }
+
         // All / Videos / Photos
         Row {
             spacing: 6
@@ -231,7 +289,7 @@ Rectangle {
                             source: cell.modelData.thumb
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
-                            opacity: cell.modelData.missing ? 0.3 : 1
+                            opacity: cell.modelData.missing || (simple.collagePicking && !cell.modelData.pickable) ? 0.3 : 1
                         }
 
                         Rectangle {
@@ -251,6 +309,27 @@ Rectangle {
                                 color: "#FFFFFF"
                                 font.family: "Inter"
                                 font.pixelSize: 11
+                            }
+                        }
+
+                        // Collage pick number
+                        Rectangle {
+                            visible: cell.modelData.pick > 0
+                            x: 6
+                            y: 6
+                            width: 26
+                            height: 26
+                            radius: 13
+                            color: root.t.accent
+                            z: 3
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: cell.modelData.pick
+                                color: root.t.onAccent
+                                font.family: "Inter"
+                                font.pixelSize: 13
+                                font.weight: Font.Bold
                             }
                         }
 
@@ -274,7 +353,7 @@ Rectangle {
 
                         // Takes it off this list only. The file itself stays where it is.
                         Rectangle {
-                            visible: !cell.modelData.done && cellMouse.containsMouse
+                            visible: !cell.modelData.done && cellMouse.containsMouse && !simple.collagePicking
                             anchors.right: parent.right
                             anchors.top: parent.top
                             anchors.margins: 6
@@ -316,7 +395,8 @@ Rectangle {
                     z: -1
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: simple.openFile(cell.modelData.path)
+                    onClicked: simple.collagePicking ? simple.toggleCollagePick(cell.modelData.path)
+                                                     : simple.openFile(cell.modelData.path)
                 }
             }
         }
