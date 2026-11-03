@@ -1,95 +1,51 @@
+<p align="center">
+  <img src="docs/bugs/design/logo/bugs-logo-horizontal.svg" alt="BUGS! Video Editor" width="360">
+</p>
+
 # BUGS! Video Editor
 
-A simple video and photo editor for Windows: open a file, trim it, cut a piece out, crop it, add a caption, and save a new copy. Your original is never changed. It works offline with no account.
+A simple, friendly video and photo editor for Windows. Open a video or photo, fix it up, and save a finished copy that is ready to share. Your original is never changed.
 
-BUGS! is based on [Shotcut](https://www.shotcut.org/) by Meltytech, LLC, and keeps the full Shotcut editor under Advanced. See `docs/bugs/HANDOVER.md` for the product brief and `AGENTS.md` for how the code is organised.
+- **Works offline.** No internet connection and no account needed.
+- **One file at a time,** like editing in WhatsApp or a phone's Photos app. No projects, tracks or timelines.
+- **Never touches your originals.** Every save is a new file in the Finished tab.
 
-To build the Windows installer, run the **Build Windows installer** workflow in GitHub Actions.
+## What you can do
 
----
+| Tool | What it does |
+|------|--------------|
+| **Trim** | Cut off the start or end by dragging the handles on the filmstrip, or type exact times. |
+| **Cut out** | Remove one or more parts from the middle of a video. The rest joins up seamlessly. |
+| **Crop** | Square, 9:16, 16:9, 4:5 or free shapes, plus rotate and flip. Works on videos and photos. |
+| **Caption** | Put a name or title across the bottom, in one of three styles. |
+| **Text** | Put words anywhere, such as names next to people, in six fonts, ten colours and three sizes. |
+| **Save picture** | Save any moment of a video as a full-quality photo with one click. |
 
-The original Shotcut README follows.
+**Finish** saves the result as an MP4 that plays anywhere and shares easily, including on WhatsApp. Photos are saved as JPG or PNG.
 
-[![build-shotcut-linux](https://github.com/mltframework/shotcut/workflows/build-shotcut-linux/badge.svg)](https://github.com/mltframework/shotcut/actions?query=workflow%3Abuild-shotcut-linux+is%3Acompleted+branch%3Amaster)
-[![build-shotcut-macos](https://github.com/mltframework/shotcut/workflows/build-shotcut-macos/badge.svg)](https://github.com/mltframework/shotcut/actions?query=workflow%3Abuild-shotcut-macos+is%3Acompleted+branch%3Amaster)
-[![build-shotcut-windows](https://github.com/mltframework/shotcut/workflows/build-shotcut-windows/badge.svg)](https://github.com/mltframework/shotcut/actions?query=workflow%3Abuild-shotcut-windows+is%3Acompleted+branch%3Amaster)
+It opens videos from iPhones (including HEVC and HDR) and Android phones, videos received through WhatsApp, older formats, and JPG, PNG and HEIC photos. Light and dark mode are both built in.
 
+For bigger jobs, such as combining clips, **Combine clips** opens the full editor with your file, and **Back to Simple** returns.
 
-# Shotcut - a free, open source, cross-platform **video editor**
+## Installing
 
-<div align="center">
+Download `bugs-video-editor-setup-<version>.exe` from [Releases](../../releases) and run it. It installs for your user account without asking for administrator rights.
 
-<img src="https://www.shotcut.org/assets/img/screenshots/Shotcut-18.11.18.png" alt="screenshot" />
+Windows may show a SmartScreen warning the first time, because the installer is not yet code signed. Choose **More info**, then **Run anyway**.
 
-</div>
+## For developers
 
-- Features: https://www.shotcut.org/features/
-- Roadmap: https://www.shotcut.org/roadmap/
+| | |
+|---|---|
+| Product brief and designs | [`docs/bugs/`](docs/bugs/) |
+| How the code is organised | [`AGENTS.md`](AGENTS.md) |
+| Releasing a new version | [`docs/bugs/RELEASING.md`](docs/bugs/RELEASING.md) |
+| What changed in each version | [`CHANGELOG.md`](CHANGELOG.md) |
 
-## Install
-
-Binaries are regularly built and are available at https://www.shotcut.org/download/.
-
-## Contributors
-
-- Dan Dennedy <<http://www.dennedy.org>> : main author
-- Brian Matherly <<code@brianmatherly.com>> : contributor
-
-## Dependencies
-
-Shotcut's direct (linked or hard runtime) dependencies are:
-
-- [MLT](https://www.mltframework.org/): multimedia authoring framework
-- [Qt 6 (6.4 minimum)](https://www.qt.io/): application and UI framework
-- [FFTW](https://fftw.org/)
-- [FFmpeg](https://www.ffmpeg.org/): multimedia format and codec libraries
-- [Frei0r](https://www.dyne.org/software/frei0r/): video plugins
-- [SDL](http://www.libsdl.org/): cross-platform audio playback
-
-See https://shotcut.org/credits/ for a more complete list including indirect
-and bundled dependencies.
+Set up a Linux development build with `scripts/bugs/setup-dev-linux.sh`, or build on Windows with `scripts/bugs/build-windows.ps1`. Every pull request is checked by CI, and pushing a `v1.2.3` tag that matches the `VERSION` file builds the Windows installer and drafts a release.
 
 ## License
 
-GPLv3. See [COPYING](COPYING).
+Copyright © 2026 Yosef. BUGS! Video Editor is free software under the [GNU General Public License v3](COPYING).
 
-## How to build
-
-**Warning**: building Shotcut should only be reserved to beta testers or contributors who know what they are doing.
-
-### Qt Creator
-
-The fastest way to build and try Shotcut development version is through [Qt Creator](https://www.qt.io/download#qt-creator).
-
-### From command line
-
-First, check dependencies are satisfied and various paths are correctly set to find different libraries and include files (Qt, MLT, frei0r and so forth).
-
-#### Configure
-
-In a new directory in which to make the build (separate from the source):
-
-```
-cmake -DCMAKE_INSTALL_PREFIX=/usr/local/ /path/to/shotcut
-```
-
-We recommend using the Ninja generator by adding `-GNinja` to the above command line.
-
-#### Build
-
-```
-cmake --build .
-```
-
-#### Install
-
-If you do not install, Shotcut may fail when you run it because it cannot locate its QML
-files that it reads at run-time.
-
-```
-cmake --install .
-```
-
-## Translation
-
-If you want to translate Shotcut to another language, please use [Transifex](https://explore.transifex.com/ddennedy/shotcut/).
+Built with open-source software, including [Shotcut](https://www.shotcut.org/) by Meltytech, LLC, [MLT](https://www.mltframework.org/), [FFmpeg](https://ffmpeg.org/) and [Qt](https://www.qt.io/). The bundled fonts are licensed under the SIL Open Font License; see `src/qml/views/simple/fonts/`.
