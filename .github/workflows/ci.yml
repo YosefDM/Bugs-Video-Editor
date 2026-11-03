@@ -18,7 +18,7 @@ jobs:
   format:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Install clang-format
         run: sudo apt-get install -y clang-format-14
@@ -35,7 +35,7 @@ jobs:
     # The first run builds FFmpeg and MLT from source on 2 cores; later runs use the caches.
     timeout-minutes: 300
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       # Qt, FFmpeg and MLT take a long time to build and rarely change.
       - name: Restore dependencies
