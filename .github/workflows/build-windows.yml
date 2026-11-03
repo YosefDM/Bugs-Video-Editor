@@ -1,7 +1,11 @@
 name: Build Windows installer
 
-# Slow and uses Windows minutes, so it only runs on request or for a release.
+# Runs on request, for a release, and twice a week on main. GitHub only shares caches made on main
+# and drops ones unused for 7 days, so the scheduled runs keep the libraries below ready for
+# releases: a release then builds only BUGS! itself (about 20 minutes instead of 90).
 on:
+  schedule:
+    - cron: '0 6 * * 1,4'
   workflow_dispatch:
     inputs:
       version:
@@ -16,6 +20,9 @@ on:
 
 permissions:
   contents: read
+
+env:
+  MLT_REVISION: v7.42.0
 
 jobs:
   build:
@@ -111,7 +118,7 @@ jobs:
           tar -xJf mlt-prebuilt-mingw64-v7.txz
           rm mlt-prebuilt-mingw64-v7.txz
 
-      - name: Build
+      - name: Configure the build
         shell: msys2 {0}
         run: |
           echo INSTALL_DIR=\"$(pwd)/build\" > build-shotcut.conf
@@ -121,8 +128,41 @@ jobs:
           echo SHOTCUT_HEAD=0 >> build-shotcut.conf
           echo SHOTCUT_REVISION=${{ github.sha }} >> build-shotcut.conf
           echo MLT_HEAD=0 >> build-shotcut.conf
-          echo MLT_REVISION=v7.42.0 >> build-shotcut.conf
-          bash scripts/build-shotcut-msys2.sh
+          echo MLT_REVISION=$MLT_REVISION >> build-shotcut.conf
+
+      # FFmpeg, MLT and the other libraries take about 70 minutes, so they are cached. The key
+      # changes with the build script, MLT's version, and the names of MSYS2's DLLs, which change
+      # whenever a library they link to does.
+      - name: Work out the libraries' cache key
+        id: deps_key
+        shell: msys2 {0}
+        run: |
+          DLLS=$(ls /mingw64/bin/*.dll | sort | sha256sum | cut -c1-16)
+          SCRIPT=$(sha256sum scripts/build-shotcut-msys2.sh | cut -c1-16)
+          echo "key=windows-deps-$MLT_REVISION-$SCRIPT-$DLLS" >> "$GITHUB_OUTPUT"
+
+      - name: Restore the libraries
+        id: deps
+        uses: actions/cache/restore@v4
+        with:
+          path: build/Shotcut
+          key: ${{ steps.deps_key.outputs.key }}
+
+      - name: Build the libraries
+        if: steps.deps.outputs.cache-hit != 'true'
+        shell: msys2 {0}
+        run: BUGS_PART=deps bash scripts/build-shotcut-msys2.sh
+
+      - name: Save the libraries
+        if: steps.deps.outputs.cache-hit != 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: build/Shotcut
+          key: ${{ steps.deps_key.outputs.key }}
+
+      - name: Build BUGS!
+        shell: msys2 {0}
+        run: BUGS_PART=app bash scripts/build-shotcut-msys2.sh
 
       # The runner's own Inno Setup. Packing takes a few minutes; anything longer is a hang.
       - name: Build the installer

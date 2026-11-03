@@ -416,6 +416,13 @@ function set_globals {
     SUBDIRS="$SUBDIRS mlt shotcut"
   fi
 
+  # BUGS!: the Windows build caches everything but the app. BUGS_PART=deps builds the rest without
+  # packaging it; BUGS_PART=app then builds and packages only the app on top of it.
+  case "$BUGS_PART" in
+    deps) SUBDIRS="${SUBDIRS% shotcut}"; DEPLOY=0 ;;
+    app) SUBDIRS="shotcut" ;;
+  esac
+
   if [ "$DEBUG_BUILD" = "1" ]; then
     CONFIGURE_DEBUG_FLAG="--enable-debug"
     QMAKE_DEBUG_FLAG="CONFIG+=debug"

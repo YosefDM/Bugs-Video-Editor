@@ -55,6 +55,6 @@ Use a real iPhone HEVC video, an Android video, a video received through WhatsAp
 
 ## Good to know
 
-- The Windows build compiles FFmpeg and other dependencies from source, so expect it to take hours. Windows minutes count double against the GitHub Actions allowance on a private repository.
+- The Windows build caches FFmpeg, MLT and the other libraries it compiles. Scheduled runs on main (Monday and Thursday) keep the cache ready, so a release takes about 20 minutes. Without the cache, such as after MSYS2 updates a library, it takes about 90.
 - The installer is not code signed, so Windows SmartScreen warns on first run until it is. Choose **More info**, then **Run anyway**.
 - Files in a private repository's releases can only be downloaded by people with access to it. Send Levi the installer directly.
