@@ -1,86 +1,54 @@
-There are a number of ways to contribute for people all skills and skill levels.
+# Contributing to BUGS! Video Editor
 
-Translation
------------
+Thanks for helping. BUGS! is a video and photo editor for people who are not technical, so every change is judged by one question: would someone who has never edited a video understand it straight away?
 
-We use the
-[Transifex](https://explore.transifex.com/ddennedy/shotcut/)
-collaboration web site to translate the Shotcut user interface.
-Additional languages are already started but have not yet reached the
-60% minimum level to be included in a Shotcut release.
+## What BUGS! promises
 
-Please do not open a pull request to update a translation. Your request
-will be rejected unless it is for the English language to add a plural form
-or disambiguation comment.
+These are not up for debate in a pull request:
 
-Support Other Users
--------------------
+- **Originals are never changed.** Nothing writes to the file someone opened. Every save is a new file in the Finished folder, and an existing file is never overwritten.
+- **The preview matches the saved file.** Preview and save are built from the same description of the edit (`compileXml()` in `src/simple/simpleedit.cpp`). An effect that only appears in one of them is a bug.
+- **No technical questions.** Finish never asks about formats, codecs or settings.
+- **Works offline,** with no account and no network calls.
+- **Plain words.** Write "Cut out a part", not "Remove segment". Short sentences, no jargon.
 
-An easy way for non-programmers to help is simply to participate in the
-[Shotcut Forum](https://forum.shotcut.org/) by answering user's questions.
-Alternatively, consider making a tutorial video on YouTube or similar.
+## Report a bug
 
-Write Documentation
--------------------
+Open an issue with the **Bug report** template. Include the BUGS! version (shown in the ⓘ About screen), your Windows version, what you did, and what happened. A screenshot or the file that caused it helps a lot.
 
-We are now building [documentation in the
-forum](https://forum.shotcut.org/c/docs/docs-english) using its wiki-mode where
-any trusted user (some forum experience required or manual promotion) can edit
-the topic. Please treat this like real documentation you would see in a user
-manual. Some day these topics might get compiled into an offline help file or
-large document. Initially, we only have English, but it is a sub-category with
-the hope that some day a volunteer will offer to translate to another language.
+## Suggest an idea
 
-Report a Bug
-------------
+Open an issue with the **Feature idea** template and describe what you were trying to do, rather than how the screen should look. Simple mode stays small on purpose; anything advanced can already be done under **Combine clips**.
 
-You can report a bug on the [Shotcut Forum](https://forum.shotcut.org/) using
-the Bug category or on [GitHub Issues](https://github.com/mltframework/shotcut/issues/). Bug reports must include the Shotcut version, your operating system,
-and the steps. It can helpful to include a screenshot, screencast video, or
-project file. Please do not use this to request a feature.
+## Change the code
 
-Make a Preset
--------------
+1. **Set up.** On Linux (or this repository's devcontainer), run `scripts/bugs/setup-dev-linux.sh`. It builds the same FFmpeg and MLT versions as the Windows release. On Windows, `scripts/bugs/build-windows.ps1` builds the app with MSYS2.
+2. **Read** [`AGENTS.md`](AGENTS.md) for how the code is organised. Simple mode lives in `src/simple/` and `src/qml/views/simple/`.
+3. **Build and test.**
+   ```bash
+   source scripts/bugs/env.sh
+   cmake --build build/dev && cmake --install build/dev
+   Xvfb :99 &   # the tests need a display
+   ctest --test-dir build/dev -R simple --output-on-failure
+   ```
+   Add a test for what you change. `tests/test_simple_edit.cpp` covers the edit model; `tests/test_simple_pipeline.cpp` saves real files and checks them.
+4. **Format** C++ with `clang-format-14 -i <files>`. CI checks this.
+5. **Open a pull request** against `main`. CI builds and tests it, and it is merged once CI passes and it has been reviewed.
 
-After you make a filter preset that you think others would like,
-you can share it on the
-[Shotcut Forum](https://forum.shotcut.org/) or as a
-[GitHub Pull Request](https://github.com/mltframework/shotcut/pulls).
-You can locate presets on your system by choosing **Settings > App Data
-Directory > Show...** and navigating to the presets folder.
+### Code style
 
-Add a Filter
-------------
+- Follow the code around you. The C++ conventions are in [`AGENTS.md`](AGENTS.md): `m_` members, `PascalCase` classes, new-style `connect()`.
+- Comments explain why, not what.
+- Colours, icons and spacing for Simple mode come from `src/qml/views/simple/Theme.js`. Match the designs in `docs/bugs/design/`.
 
-The engine has many additional filters that are not yet exposed. You can easily
-add a Shotcut UI for it.
-You can see existing filter UIs and add your own in your Shotcut install folder, look in the folder
-share/shotcut/qml/filters
-(Shotcut.app/Contents/Resources/shotcut/qml/filters on macOS).
+### Advanced mode
 
-See [How to Make a Plugin](https://www.shotcut.com/notes/make-plugins/)
-for more information. You can share your filter UI on the
-[Shotcut Forum](https://forum.shotcut.org/) or as a [GitHub Pull
-Request](https://github.com/mltframework/shotcut/pulls).
+Advanced mode is the full Shotcut editor. Keep changes there small, so updates from Shotcut can still be merged. Shotcut updates arrive as a merge of an upstream release tag, kept separate from BUGS! changes.
 
-Write Code
-----------
+## Releases
 
-The biggest impact you can make is to contribute a code change and submit that
-as a [GitHub Pull Request](https://github.com/mltframework/shotcut/pulls).
-To make working on Shotcut code and some of its dependencies easier we provide
-some SDKs with setup instructions. Of course, you are free to try to work on
-the Shotcut code another way, but there is no help provided for that as it gets
-very complicated quickly.
+Maintainers release by bumping `VERSION`, updating `CHANGELOG.md` and pushing a matching tag. See [`docs/bugs/RELEASING.md`](docs/bugs/RELEASING.md).
 
-Your code format must be consistent with ours and will be checked automatically
-using clang-format version 14. You can get that and run something like `ninja clang-format`
-and/or `ninja clang-format-check`.
+## License
 
-[How To Use the Windows SDK](https://www.shotcut.com/notes/windowsdev/)
-
-All code contributions should assign copyright to Meltytech, LLC; however,
-exceptions may be considered for a major contribution.
-
-See our [User Interface Conventions](https://www.shotcut.com/notes/ui-conventions/) for
-info about usage of case, alignment, and spacing.
+By contributing you agree that your contribution is licensed under the [GNU General Public License v3](COPYING), like the rest of BUGS!.

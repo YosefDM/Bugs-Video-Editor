@@ -1,28 +1,24 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Something in BUGS! does not work as it should
 title: ''
-labels: ''
+labels: bug
 assignees: ''
 
 ---
 
-This tracker is for defects only! For feature requests, see [our discussion forum](https://forum.shotcut.org/).
+**BUGS! version:** (shown in the ⓘ About screen, for example 1.0.0)
+**Windows version:** (for example Windows 11 23H2)
 
-**OS and Version (please complete the following information):**
- - Operating System: [e.g. Windows, macOS]
- - Shotcut Version: [e.g. 24.01] (For Linux, specify *how* you installed because there are many different builds.)
+**What happened**
+A short description of the problem.
 
-**Describe the bug**
-A clear and concise description of what the bug is.
-
-**Steps To Reproduce**
-1. Start Shotcut
+**Steps to make it happen**
+1. Open...
 2. Click...
-3. Choose....
+3. ...
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+**What you expected**
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**Screenshots or files**
+If you can, attach a screenshot, or the video or photo that caused it.
