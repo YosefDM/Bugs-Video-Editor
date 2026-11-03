@@ -124,15 +124,26 @@ jobs:
           echo MLT_REVISION=v7.42.0 >> build-shotcut.conf
           bash scripts/build-shotcut-msys2.sh
 
-      - name: Install Inno Setup
+      # Pinned to the version the installer script is tested with. Inno Setup 6.7 changed
+      # CreateCustomForm, which the installer's [Code] uses.
+      - name: Install Inno Setup 6.4.3
         shell: pwsh
-        run: choco install innosetup --no-progress -y
+        run: |
+          $url = 'https://github.com/jrsoftware/issrc/releases/download/is-6_4_3/innosetup-6.4.3.exe'
+          $sha256 = 'F3C42116542C4CC57263C5BA6C4FEABFC49FE771F2F98A79D2F7628B8762723B'
+          Invoke-WebRequest $url -OutFile innosetup.exe
+          if ((Get-FileHash innosetup.exe -Algorithm SHA256).Hash -ne $sha256) {
+            throw 'The Inno Setup download does not match the expected checksum.'
+          }
+          Start-Process innosetup.exe -Wait -ArgumentList '/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', '/ALLUSERS', '/DIR=C:\InnoSetup643'
+          if (-not (Test-Path 'C:\InnoSetup643\ISCC.exe')) { throw 'Inno Setup did not install.' }
 
       - name: Build the installer
         shell: pwsh
         working-directory: build
         run: |
-          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" /O"$PWD\installer" shotcut.iss
+          & 'C:\InnoSetup643\ISCC.exe' /O"$PWD\installer" shotcut.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 
       - name: Upload installer
         uses: actions/upload-artifact@v7
