@@ -19,9 +19,16 @@ Rules that keep the product's promises:
 - **Preview matches the saved file** because both load the same `compileXml()` output. Do not add effects to only one path.
 - **Finish never asks questions.** Output is always H.264/AAC MP4.
 
-Set up with `scripts/bugs/setup-dev-linux.sh`. Test with `ctest --test-dir build/dev -R simple --output-on-failure` (needs a display, such as Xvfb).
+## Developing BUGS!
 
-The rest of this file is Shotcut's own guidance, which still applies to everything under Advanced. The executable is now `bugs-video-editor`, though the CMake target is still `shotcut`.
+- **Linux** (this repo's devcontainer): `scripts/bugs/setup-dev-linux.sh` installs Qt 6.10.3, builds FFmpeg `release/9.0` and MLT `v7.42.0` (the versions the Windows release uses), configures `build/dev`, and writes `scripts/bugs/env.sh`. Then `source scripts/bugs/env.sh && cmake --build build/dev && cmake --install build/dev`.
+- **Tests:** `ctest --test-dir build/dev -R simple --output-on-failure`, with a display such as `Xvfb :99 &`. They are `simple_edit` (`tests/test_simple_edit.cpp`), `simple_collage` (`tests/test_collage.cpp`) and `simple_pipeline` (`tests/test_simple_pipeline.cpp`, which saves real files and checks them).
+- **Format** C++ with `clang-format-14 -i <files>`. CI uses version 14 and fails on any difference.
+- **Windows:** `scripts/bugs/build-windows.ps1` builds on a Windows PC the same way as the release: MSYS2, then `scripts/build-shotcut-msys2.sh`. Setting `BUGS_PART=deps` or `BUGS_PART=app` builds only the libraries or only the app, which the release workflow uses to cache the libraries.
+- **CI and releases** are in `.github/workflows/` and described in `docs/bugs/RELEASING.md`. The version is in `VERSION`; changes go in `CHANGELOG.md` under **Unreleased**.
+- **Git:** work on a `bugs/<topic>` branch and open a pull request; `main` only accepts merges that pass `format` and `build-and-test`. Release tags cannot be moved or deleted. `scripts/bugs/configure-github.ps1` holds the repository settings.
+
+The rest of this file is Shotcut's own guidance, which still applies to everything under Advanced. The executable is now `bugs-video-editor`, though the CMake target is still `shotcut`. Where Shotcut's guidance below says to use the `cc-debug` preset, BUGS! development uses `build/dev` as above.
 
 ---
 
@@ -92,9 +99,9 @@ To properly debug on Windows you must set the environment variable `QSG_RHI_BACK
 - `src/actions.cpp` — global action registry
 - `src/settings.cpp` — persistent settings
 
-## No Automated Tests
+## Tests
 
-There are no C++ unit tests. The only automated tests are JavaScript tests for EDL/chapters export:
+BUGS! adds C++ tests for Simple mode, described at the top of this file. Shotcut's own `tests/` (`gpuinfo`, `mix_transition_order`) build with them. Shotcut also has JavaScript tests for EDL/chapters export:
 
 ```bash
 node src/qml/export-edl/test-node.js

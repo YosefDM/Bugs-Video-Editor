@@ -52,11 +52,13 @@ Windows may show a SmartScreen warning the first time, because the installer is 
 | | |
 |---|---|
 | Product brief and designs | [`docs/bugs/`](docs/bugs/) |
+| How to contribute | [`CONTRIBUTING.md`](CONTRIBUTING.md) |
 | How the code is organised | [`AGENTS.md`](AGENTS.md) |
 | Releasing a new version | [`docs/bugs/RELEASING.md`](docs/bugs/RELEASING.md) |
 | What changed in each version | [`CHANGELOG.md`](CHANGELOG.md) |
+| Reporting a security problem | [`SECURITY.md`](SECURITY.md) |
 
-Set up a Linux development build with `scripts/bugs/setup-dev-linux.sh`, or build on Windows with `scripts/bugs/build-windows.ps1`. Every pull request is checked by CI, and pushing a `v1.2.3` tag that matches the `VERSION` file builds the Windows installer and drafts a release.
+Set up a Linux development build with `scripts/bugs/setup-dev-linux.sh`, or build on Windows with `scripts/bugs/build-windows.ps1`. Every pull request is checked by CI and scanned by CodeQL, and pushing a `v1.2.3` tag that matches the `VERSION` file builds the Windows installer and drafts a release.
 
 ## License
 

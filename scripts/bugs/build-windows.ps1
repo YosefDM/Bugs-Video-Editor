@@ -1,7 +1,7 @@
 # Builds BUGS! Video Editor on this Windows computer and puts a shortcut on the desktop.
 #
 # Run in an elevated (administrator) PowerShell. The one-line way to start it:
-#   winget install -e --id GitHub.cli --accept-source-agreements --accept-package-agreements; $gh="$env:ProgramFiles\GitHub CLI\gh.exe"; & $gh auth status 2>$null; if(-not $?){& $gh auth login -w -p https}; & $gh api -H "Accept: application/vnd.github.raw" "repos/YosefDM/Bugs-Video-Editor/contents/scripts/bugs/build-windows.ps1?ref=bugs/simple-mode" | Out-String | iex
+#   winget install -e --id GitHub.cli --accept-source-agreements --accept-package-agreements; $gh="$env:ProgramFiles\GitHub CLI\gh.exe"; & $gh auth status 2>$null; if(-not $?){& $gh auth login -w -p https}; & $gh api -H "Accept: application/vnd.github.raw" "repos/YosefDM/Bugs-Video-Editor/contents/scripts/bugs/build-windows.ps1?ref=main" | Out-String | iex
 #
 # It follows the same steps as .github/workflows/build-windows.yml: MSYS2, then Shotcut's
 # scripts/build-shotcut-msys2.sh. Running it again updates the code and rebuilds.
@@ -9,7 +9,7 @@
 # Not 'Stop': Windows PowerShell treats any stderr output from git or gh as fatal. Each step
 # checks its own result instead.
 $ErrorActionPreference = 'Continue'
-$Branch = if ($env:BUGS_BRANCH) { $env:BUGS_BRANCH } else { 'bugs/simple-mode' }
+$Branch = if ($env:BUGS_BRANCH) { $env:BUGS_BRANCH } else { 'main' }
 $Msys = 'C:\msys64'
 $Bash = Join-Path $Msys 'usr\bin\bash.exe'
 $Gh = Join-Path $env:ProgramFiles 'GitHub CLI\gh.exe'
@@ -23,7 +23,7 @@ if (-not (Test-Path $Bash)) {
     if (-not (Test-Path $Bash)) { Write-Host "MSYS2 did not install to $Msys" -ForegroundColor Red; return }
 }
 
-# 2. Access to the private repository, through the GitHub sign-in
+# 2. The GitHub sign-in, used to download the code
 if (-not (Test-Path $Gh)) { Write-Host 'GitHub CLI is missing. Run the one-line command from the top of this script.' -ForegroundColor Red; return }
 & $Gh auth status 2>$null
 if (-not $?) { & $Gh auth login --web --git-protocol https }
