@@ -3182,7 +3182,7 @@ void MainWindow::on_actionAbout_Shotcut_triggered()
     const auto copyright = QStringLiteral(
         "Shotcut is copyright &copy; 2011-2026 <a "
         "href=\"https://www.meltytech.com/\">Meltytech</a>, "
-        "LLC. BUGS! changes are copyright &copy; 2026 their contributors.");
+        "LLC. BUGS! is copyright &copy; 2026 Yosef.");
     const auto license = QStringLiteral(
         "<a href=\"https://www.gnu.org/licenses/gpl.html\">GNU General Public License v3.0</a>");
     const auto url = QStringLiteral("https://github.com/YosefDM/Bugs-Video-Editor");
@@ -3192,6 +3192,7 @@ void MainWindow::on_actionAbout_Shotcut_triggered()
         QStringLiteral(
             "<h1>%1 version %2</h1>"
             "<p>A simple, free, open source video editor that works offline.</p>"
+            "<p>Created by Yosef.</p>"
             "<p>BUGS! Video Editor is based on <a href=\"https://www.shotcut.org/\">Shotcut</a> by "
             "Meltytech, LLC, and includes the full Shotcut editor under Advanced. "
             "Thank you to everyone who makes Shotcut.</p>"

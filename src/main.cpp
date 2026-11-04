@@ -26,6 +26,7 @@
 #include <QCommandLineParser>
 #include <QElapsedTimer>
 #include <QFile>
+#include <QIcon>
 #include <QLocalServer>
 #include <QLocalSocket>
 #include <QProcess>
@@ -197,6 +198,12 @@ public:
 #endif
         setApplicationName("BUGS! Video Editor");
         setApplicationVersion(SHOTCUT_VERSION);
+        // The simpler mark stays sharp in the title bar and taskbar; the full icon from 48 px up.
+        QIcon icon;
+        for (int size : {16, 24, 32})
+            icon.addFile(QStringLiteral(":/icons/shotcut-logo-%1.png").arg(size), QSize(size, size));
+        icon.addFile(QStringLiteral(":/icons/shotcut-logo-64.svg"));
+        setWindowIcon(icon);
 
         // Process command line options.
         QCommandLineParser parser;
