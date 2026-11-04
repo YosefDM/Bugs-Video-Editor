@@ -410,6 +410,8 @@ void MainWindow::enterAdvancedMode()
             [this, resource]() {
                 Mlt::Producer clip(MLT.profile(), "xml", resource.toUtf8().constData());
                 if (clip.is_valid()) {
+                    // Named after Levi's file rather than the project file behind it.
+                    clip.set(kShotcutCaptionProperty, m_combineName.toUtf8().constData());
                     m_timelineDock->model()->createIfNeeded();
                     m_timelineDock->model()->appendClip(0, clip);
                 }
