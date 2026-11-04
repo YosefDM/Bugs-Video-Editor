@@ -88,15 +88,23 @@ Rectangle {
         }
     }
 
+    // On a small screen a tool's options need all the height: the note gives way, and the
+    // scroll bar stays visible so it is clear there is more below.
+    readonly property bool roomForNote: options.implicitHeight + note.implicitHeight + 28 <= height
+
     ScrollView {
         id: scroll
 
         anchors.fill: parent
-        anchors.bottomMargin: note.height + 28
+        anchors.bottomMargin: root.roomForNote ? note.height + 28 : 0
         contentWidth: availableWidth
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
+        ScrollBar.vertical.policy: options.implicitHeight > scroll.height ? ScrollBar.AlwaysOn
+                                                                          : ScrollBar.AlwaysOff
 
         ColumnLayout {
+            id: options
+
             width: scroll.availableWidth
             spacing: 16
 
@@ -299,7 +307,7 @@ Rectangle {
                         anchors.fill: parent
                         anchors.margins: -8
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: simple.leaveCollage()
+                        onClicked: simple.askToLeaveCollage()
                     }
                 }
             }
@@ -987,6 +995,7 @@ Rectangle {
     Rectangle {
         id: note
 
+        visible: root.roomForNote
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom

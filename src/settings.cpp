@@ -2084,7 +2084,9 @@ int ShotcutSettings::notesZoom() const
 void ShotcutSettings::reset()
 {
     for (auto &key : settings.allKeys()) {
-        settings.remove(key);
+        // BUGS!: Simple mode's library and choices are not Advanced settings.
+        if (!key.startsWith(QLatin1String("simple/")))
+            settings.remove(key);
     }
 }
 

@@ -258,8 +258,21 @@ Rectangle {
             boundsBehavior: Flickable.StopAtBounds
             model: simple.items
 
+            // The list is rebuilt whenever anything changes, even which file is open, and a new
+            // model scrolls back to the top. Keep where Levi scrolled to.
+            property real keptY: 0
+            onMovementEnded: keptY = contentY
+            onModelChanged: Qt.callLater(() => {
+                contentY = Math.max(0, Math.min(keptY, contentHeight - height));
+            })
+            onCountChanged: if (count === 0) keptY = 0
+            // Another tab or filter is a different list, which starts at the top.
+            readonly property string listKey: simple.tab + "/" + simple.filter
+            onListKeyChanged: keptY = 0
+
             ScrollBar.vertical: ScrollBar {
                 policy: ScrollBar.AsNeeded
+                onPressedChanged: if (!pressed) grid.keptY = grid.contentY
             }
 
             delegate: Item {

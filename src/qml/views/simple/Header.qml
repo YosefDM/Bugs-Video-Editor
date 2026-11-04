@@ -127,8 +127,13 @@ Rectangle {
         }
 
         Row {
+            id: savingRow
             visible: simple.saving
             spacing: 8
+
+            // Stop sits where Finish was, so the second click of a double-click must not stop.
+            property double shownAt: 0
+            onVisibleChanged: if (visible) shownAt = Date.now()
 
             Rectangle {
                 width: 150
@@ -156,7 +161,10 @@ Rectangle {
 
             ActionButton {
                 text: "Stop"
-                onClicked: simple.cancelFinish()
+                onClicked: {
+                    if (Date.now() - savingRow.shownAt > 1000)
+                        simple.cancelFinish()
+                }
             }
         }
     }

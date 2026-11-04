@@ -164,11 +164,20 @@ Rectangle {
 
                         Text {
                             id: label
+                            // In a narrow window "Save picture" goes onto two lines, not over
+                            // its neighbour.
+                            width: Math.min(implicitWidth, parent.parent.width - 8)
                             text: modelData.label
                             color: parent.parent.selected ? root.t.accent : root.t.text2
                             font.family: "Inter"
                             font.pixelSize: 13
                             font.weight: Font.DemiBold
+                            horizontalAlignment: Text.AlignHCenter
+                            wrapMode: Text.WordWrap
+                            maximumLineCount: 2
+                            // A single long word, like "Caption", gets a little smaller instead.
+                            fontSizeMode: Text.HorizontalFit
+                            minimumPixelSize: 10
                             anchors.horizontalCenter: parent.horizontalCenter
                         }
                     }

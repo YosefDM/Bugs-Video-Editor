@@ -282,9 +282,15 @@ Shotcut.VuiBase {
                         if (!pressed)
                             return;
                         var at = mapToItem(labelLayer, mouse.x, mouse.y);
+                        // Keep all of the words on the picture, or they are cut off when saved.
+                        var keep = function(centre, half) {
+                            return half >= 0.5 ? 0.5 : Math.max(half, Math.min(1 - half, centre));
+                        };
                         simple.moveLabel(labelItem.modelData.index,
-                                         (at.x - grab.x) / labelLayer.width,
-                                         (at.y - grab.y) / labelLayer.height);
+                                         keep((at.x - grab.x) / labelLayer.width,
+                                              labelItem.width / 2 / labelLayer.width),
+                                         keep((at.y - grab.y) / labelLayer.height,
+                                              labelItem.height / 2 / labelLayer.height));
                     }
                     onReleased: simple.endLabelDrag()
                 }

@@ -59,6 +59,8 @@ private:
     QQuickWidget *m_welcome{nullptr};
     QQuickWidget *m_dialogs{nullptr};
     QQuickWidget *m_collageView{nullptr};
+    QQuickWidget *m_library{nullptr};
+    QQuickWidget *m_options{nullptr};
     bool m_active{false};
 };
 

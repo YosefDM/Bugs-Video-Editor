@@ -21,6 +21,7 @@
 #include "collage.h"
 #include "simpleedit.h"
 
+#include <QElapsedTimer>
 #include <QFileSystemWatcher>
 #include <QHash>
 #include <QImage>
@@ -193,9 +194,14 @@ public:
     // Called by the Simple mode widget when the screen takes over or gives way.
     void activate();
     void deactivate();
-    // The file and edits to carry into Advanced: an MLT file when there are edits.
+    // The edits to carry into Advanced, as an MLT file Advanced puts on its timeline.
     QString advancedResource();
+    // Where Advanced keeps the Combine clips project for the open file, so work kept there
+    // reopens next time. Empty when no file is open.
+    QString combineProject() const;
     bool hasUnfinishedEdits() const;
+    // Names of the files with unfinished edits, for the close dialog.
+    Q_INVOKABLE QStringList unfinishedFileNames() const;
 
 public slots:
     void addFiles();
@@ -260,6 +266,10 @@ public slots:
     // Shows the "close without finishing?" question, then answers it.
     void askToClose();
     void closeAnyway();
+    // Leaves a collage that was never saved, after Levi agreed, and opens the file he picked.
+    void leaveCollageAnyway();
+    // Leaves the collage, asking first when it was never saved.
+    void askToLeaveCollage();
     void dismissDialog();
 
 signals:
@@ -288,6 +298,8 @@ private:
     void refreshFinished();
     void ensureThumbnail(const QString &path);
     void showToast(const QString &text, bool isError = false);
+    // False, with a message, when a file the save needs has been moved or deleted since it was opened.
+    bool filesStillThere(const QStringList &paths);
     void pushUndo(const Simple::Edit &before, const QString &coalesceKey = QString());
     void afterEdit(bool rebuildPreview);
     void rebuildPreview(int sourceFrame);
@@ -302,6 +314,8 @@ private:
     void detectHardwareEncoder();
 
     QSettings m_settings;
+    QString m_lastPicture; // file and frame, so a double-click saves one picture, not two
+    QElapsedTimer m_lastPictureTime;
     bool m_dark{true};
     bool m_active{false};
     QString m_tab{QStringLiteral("originals")};
@@ -339,10 +353,12 @@ private:
     QTimer m_frameThumbTimer;
     QString m_frameThumb;
     QString m_dialog;
+    QString m_openAfterCollage;
 
     bool m_collagePicking{false};
     QStringList m_collagePicks;
     bool m_collageActive{false};
+    bool m_collageUnsaved{false};               // changed since it was last saved
     std::deque<Collage::Photo> m_collagePhotos; // .path is the readable file, upright
     std::unique_ptr<Collage::Page> m_collagePage;
     QString m_collageShape{QStringLiteral("square")};
