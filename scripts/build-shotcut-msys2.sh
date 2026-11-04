@@ -80,6 +80,7 @@ PYTHON_VERSION_DLL=$(python3 --version | awk '{split($2, parts, "."); print part
 ################################################################################
 # Location of config file - if not overridden on command line
 CONFIGFILE=build-shotcut.conf
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # If defined to 1, outputs trace log lines
 TRACE=0
@@ -415,6 +416,13 @@ function set_globals {
     fi
     SUBDIRS="$SUBDIRS mlt shotcut"
   fi
+
+  # BUGS!: the Windows build caches everything but the app. BUGS_PART=deps builds the rest without
+  # packaging it; BUGS_PART=app then builds and packages only the app on top of it.
+  case "$BUGS_PART" in
+    deps) SUBDIRS="${SUBDIRS% shotcut}"; DEPLOY=0 ;;
+    app) SUBDIRS="shotcut" ;;
+  esac
 
   if [ "$DEBUG_BUILD" = "1" ]; then
     CONFIGURE_DEBUG_FLAG="--enable-debug"
@@ -958,9 +966,10 @@ function get_subproject {
           [ "$SDK" = "1" -a "shotcut" != "$1" -a "mlt" != "$1" ] && cmd rm -rf .git
       fi
 
-      # Apply FFmpeg patch from the shotcut subproject
-      if test "shotcut" = "$1" ; then
-           PATCH_FILE="$SOURCE_DIR/shotcut/scripts/ffmpeg9-hwcontext_d3d11va.patch"
+      # Apply FFmpeg patch. BUGS!: straight after getting FFmpeg, from this script's own folder, so
+      # FFmpeg is patched even when the app is built separately (BUGS_PART).
+      if test "FFmpeg" = "$1" ; then
+           PATCH_FILE="$SCRIPT_DIR/ffmpeg9-hwcontext_d3d11va.patch"
            if test -f "$PATCH_FILE" ; then
                feedback_status "Applying FFmpeg patch"
                cmd cd "$SOURCE_DIR/FFmpeg" || die "Unable to change to directory $SOURCE_DIR/FFmpeg"
