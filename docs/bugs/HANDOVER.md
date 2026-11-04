@@ -1,5 +1,7 @@
 # BUGS! Video Editor — Product Brief
 
+> The original brief BUGS! was built from, kept for its reasoning. For what BUGS! does now, see the [README](../../README.md) and [CHANGELOG](../../CHANGELOG.md); for how it is built, [AGENTS.md](../../AGENTS.md).
+
 This brief covers **what** to build and **why**. The **how** is entirely yours: architecture, approach, tooling, sequencing and testing. If anything here conflicts with good engineering, flag it to Yosef rather than following it blindly.
 
 ## 1. The user

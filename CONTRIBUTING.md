@@ -2,6 +2,8 @@
 
 Thanks for helping. BUGS! is a video and photo editor for people who are not technical, so every change is judged by one question: would someone who has never edited a video understand it straight away?
 
+Everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md). Security problems are reported privately, as described in [SECURITY.md](SECURITY.md).
+
 ## What BUGS! promises
 
 These are not up for debate in a pull request:
@@ -22,7 +24,7 @@ Open an issue with the **Feature idea** template and describe what you were tryi
 
 ## Change the code
 
-1. **Set up.** On Linux (or this repository's devcontainer), run `scripts/bugs/setup-dev-linux.sh`. It builds the same FFmpeg and MLT versions as the Windows release. On Windows, `scripts/bugs/build-windows.ps1` builds the app with MSYS2.
+1. **Set up.** On Linux (or this repository's devcontainer), run `scripts/bugs/setup-dev-linux.sh`. It builds the same FFmpeg and MLT versions as the Windows release. On Windows, `scripts/bugs/build-windows.ps1` builds the app with MSYS2, the same way the release does, and puts a shortcut on the desktop.
 2. **Read** [`AGENTS.md`](AGENTS.md) for how the code is organised. Simple mode lives in `src/simple/` and `src/qml/views/simple/`.
 3. **Build and test.**
    ```bash
@@ -31,9 +33,9 @@ Open an issue with the **Feature idea** template and describe what you were tryi
    Xvfb :99 &   # the tests need a display
    ctest --test-dir build/dev -R simple --output-on-failure
    ```
-   Add a test for what you change. `tests/test_simple_edit.cpp` covers the edit model; `tests/test_simple_pipeline.cpp` saves real files and checks them.
-4. **Format** C++ with `clang-format-14 -i <files>`. CI checks this.
-5. **Open a pull request** against `main`. CI builds and tests it, and it is merged once CI passes and it has been reviewed.
+   Add a test for what you change. `tests/test_simple_edit.cpp` covers the edit model, `tests/test_collage.cpp` the collage layout, and `tests/test_simple_pipeline.cpp` saves real files and checks them.
+4. **Format** C++ with `clang-format-14 -i <files>` (the setup script installs it). CI checks this, and uses version 14 exactly.
+5. **Open a pull request** against `main`, from a branch named `bugs/<topic>`. CI checks the formatting, builds and tests it, and CodeQL scans it. It can be merged once CI passes and the maintainer has looked at it. A first-time contributor's CI waits for the maintainer's approval before it runs.
 
 ### Code style
 
@@ -43,7 +45,7 @@ Open an issue with the **Feature idea** template and describe what you were tryi
 
 ### Advanced mode
 
-Advanced mode is the full Shotcut editor. Keep changes there small, so updates from Shotcut can still be merged. Shotcut updates arrive as a merge of an upstream release tag, kept separate from BUGS! changes.
+Advanced mode is the full Shotcut editor. Keep changes there small: Simple mode is where BUGS! does its own thing.
 
 ## Releases
 

@@ -1,8 +1,9 @@
 # Security
 
-BUGS! Video Editor runs entirely on your computer and makes no network connections, but files from
-other people (videos and photos received through WhatsApp, for example) are still opened by it, so
-security problems matter.
+BUGS! Video Editor runs entirely on your computer. It never checks for updates or sends anything
+anywhere; the only download is a speech-to-text model, and only if you ask for one under Advanced.
+Files from other people (videos and photos received through WhatsApp, for example) are still opened
+by it, so security problems matter.
 
 ## Reporting a problem
 
