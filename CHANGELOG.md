@@ -5,6 +5,15 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 
 ## Unreleased
 
+## 1.0.2
+
+### Fixed
+- The taskbar, title bar and the Advanced About box showed Shotcut's logo instead of BUGS!'s.
+- Small icons, such as in the title bar, use a simpler BUGS! mark that stays sharp.
+
+### Changed
+- The Advanced About box credits Yosef.
+
 ## 1.0.1
 
 The first release. Built on Shotcut 26.9.27. Version 1.0.0 was tagged, but its Windows
