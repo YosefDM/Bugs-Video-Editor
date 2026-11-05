@@ -5,6 +5,8 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 
 ## Unreleased
 
+## 1.0.3
+
 ### Fixed
 - Work done in **Combine clips** was lost: going back and in again started over. Now the video starts on the timeline, and **Keep it** keeps your work for the next time you press Combine clips for that file.
 - If a video or photo was moved or deleted while open, **Finish** saved a video that just said "INVALID". It now says the file can't be found.
