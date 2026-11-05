@@ -112,7 +112,8 @@ Rectangle {
         ActionButton {
             icon: "combine"
             text: "Combine clips"
-            enabled: !simple.saving
+            // Starts from the open file; with none, the full editor would open on an empty project.
+            enabled: simple.hasFile && !simple.saving
             onClicked: simple.requestAdvanced()
         }
 

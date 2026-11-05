@@ -110,6 +110,7 @@
 #include <QProcess>
 #include <QQuickItem>
 #include <QQuickWindow>
+#include <QScreen>
 #include <QStandardPaths>
 #include <QThreadPool>
 #include <QTimer>
@@ -393,6 +394,15 @@ void MainWindow::enterAdvancedMode()
     ui->mainToolBar->show();
     restoreState(m_advancedState);
     ui->mainToolBar->setVisible(true);
+    // Advanced's panels need more room than Simple mode. On a small laptop screen they would push
+    // the window past the edges, so it fills the screen instead.
+    if (!isMaximized() && !isFullScreen() && screen()) {
+        const QRect available = screen()->availableGeometry();
+        const QSize needed = minimumSizeHint().expandedTo(size());
+        if (needed.width() > available.width() || needed.height() > available.height()
+            || !available.contains(frameGeometry()))
+            showMaximized();
+    }
     MLT.setPreviewScale(Settings.playerPreviewScale());
     MLT.close();
     MLT.profile().set_explicit(false);
@@ -428,6 +438,9 @@ void MainWindow::enterAdvancedMode()
             static_cast<Qt::ConnectionType>(Qt::QueuedConnection | Qt::SingleShotConnection));
         open(resource, nullptr, false);
     }
+    // open() shows the path of the file behind it, which means nothing to Levi.
+    if (!m_combineName.isEmpty())
+        showStatusMessage(tr("Combine clips: %1").arg(m_combineName));
 }
 
 void MainWindow::backToSimpleMode()

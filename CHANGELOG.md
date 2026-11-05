@@ -19,6 +19,9 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 - Choosing Hebrew in Combine clips swapped Simple mode's panels around.
 - On small screens, the Text tool's colours and sizes were hidden, and tool names overlapped in a narrow window.
 - The title bar said "Untitled - Automatic". The close warning now names the files with unsaved changes.
+- **Combine clips** with nothing open showed the full editor's "New Project" screen; it now waits until a video or photo is open.
+- On a small laptop screen, Combine clips could run off the edges of the screen. It now fills the screen instead.
+- When a collage leaves out a photo BUGS! can't open, the message names it, and problem messages stay up longer.
 
 ## 1.0.2
 

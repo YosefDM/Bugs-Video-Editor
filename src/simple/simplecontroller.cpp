@@ -1539,7 +1539,9 @@ void SimpleController::makeCollage()
         return;
     }
     if (!unreadable.isEmpty())
-        showToast(QStringLiteral("Left out %1 photo(s) BUGS! couldn't open.").arg(unreadable.size()),
+        showToast(QStringLiteral("BUGS! couldn't open %1, so the collage is without %2.")
+                      .arg(unreadable.join(QStringLiteral(", ")),
+                           unreadable.size() == 1 ? QStringLiteral("it") : QStringLiteral("them")),
                   true);
     m_collagePicking = false;
     m_collageActive = true;
@@ -1790,6 +1792,7 @@ void SimpleController::showToast(const QString &text, bool isError)
 {
     m_toast = text;
     m_toastIsError = isError;
-    m_toastTimer.start();
+    // Problems take longer to read, and matter more, than "Saved".
+    m_toastTimer.start(isError ? 2 * kToastMs : kToastMs);
     emit toastChanged();
 }
