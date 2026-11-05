@@ -234,6 +234,7 @@ Item {
     // Trim handles. They sit inside the kept area so they stay on the strip at the ends.
     Rectangle {
         id: startHandle
+        opacity: strip.cutTool ? 0.5 : 1
 
         x: strip.xForFrame(simple.trimStart)
         width: strip.handleWidth
@@ -254,6 +255,8 @@ Item {
         MouseArea {
             anchors.fill: parent
             anchors.margins: -4
+            // In Cut out the red box's edges can sit on these; dragging them must not trim.
+            enabled: !strip.cutTool
             cursorShape: Qt.SizeHorCursor
             onPressed: simple.beginTrimDrag()
             onPositionChanged: (mouse) => {
@@ -266,6 +269,7 @@ Item {
 
     Rectangle {
         id: endHandle
+        opacity: strip.cutTool ? 0.5 : 1
 
         x: strip.xForFrame(simple.trimEnd) - width
         width: strip.handleWidth
@@ -286,6 +290,8 @@ Item {
         MouseArea {
             anchors.fill: parent
             anchors.margins: -4
+            // In Cut out the red box's edges can sit on these; dragging them must not trim.
+            enabled: !strip.cutTool
             cursorShape: Qt.SizeHorCursor
             onPressed: simple.beginTrimDrag()
             onPositionChanged: (mouse) => {

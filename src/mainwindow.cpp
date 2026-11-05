@@ -110,6 +110,7 @@
 #include <QProcess>
 #include <QQuickItem>
 #include <QQuickWindow>
+#include <QScreen>
 #include <QStandardPaths>
 #include <QThreadPool>
 #include <QTimer>
@@ -374,29 +375,105 @@ void MainWindow::enterSimpleMode()
     menuBar()->hide();
     m_simpleMode->setGeometry(rect());
     m_simpleMode->enter(m_player->videoWidget());
+    updateWindowTitle();
 }
 
 void MainWindow::enterAdvancedMode()
 {
     if (!isSimpleMode())
         return;
-    const QString resource = m_simpleMode->controller()->advancedResource();
+    SimpleController *simple = m_simpleMode->controller();
+    m_combineProject = simple->combineProject();
+    m_combineName = QFileInfo(simple->currentPath()).fileName();
+    // Work Levi kept here last time reopens as it was; otherwise start from his Simple edits.
+    const bool kept = !m_combineProject.isEmpty() && QFileInfo::exists(m_combineProject);
+    const QString resource = kept ? QString() : simple->advancedResource();
     m_simpleMode->leave();
     m_player->restoreVideoWidget();
     menuBar()->show();
     ui->mainToolBar->show();
     restoreState(m_advancedState);
     ui->mainToolBar->setVisible(true);
+    // Advanced's panels need more room than Simple mode. On a small laptop screen they would push
+    // the window past the edges, so it fills the screen instead.
+    if (!isMaximized() && !isFullScreen() && screen()) {
+        const QRect available = screen()->availableGeometry();
+        const QSize needed = minimumSizeHint().expandedTo(size());
+        if (needed.width() > available.width() || needed.height() > available.height()
+            || !available.contains(frameGeometry()))
+            showMaximized();
+    }
     MLT.setPreviewScale(Settings.playerPreviewScale());
     MLT.close();
     MLT.profile().set_explicit(false);
-    open(resource.isEmpty() ? untitledFileName() : resource, nullptr, false);
+    if (kept) {
+        open(m_combineProject, nullptr, false);
+    } else if (resource.isEmpty()) {
+        open(untitledFileName(), nullptr, false);
+    } else {
+        // Opening the edit sets the video mode from it. Once it is open, it goes on the timeline as
+        // the first clip, so there is something to combine with, in a project file of its own.
+        connect(
+            this,
+            &MainWindow::producerOpened,
+            this,
+            [this, resource]() {
+                Mlt::Producer clip(MLT.profile(), "xml", resource.toUtf8().constData());
+                if (clip.is_valid()) {
+                    // Named after Levi's file rather than the project file behind it.
+                    clip.set(kShotcutCaptionProperty, m_combineName.toUtf8().constData());
+                    m_timelineDock->model()->createIfNeeded();
+                    m_timelineDock->model()->appendClip(0, clip);
+                }
+                {
+                    QMutexLocker locker(&m_autosaveMutex);
+                    m_autosaveFile.reset(new AutoSaveFile(m_combineProject));
+                }
+                setCurrentFile(m_combineProject);
+                m_undoStack->clear();
+                setWindowModified(false);
+            },
+            // Queued: open() still uses the producer after emitting producerOpened, and the
+            // timeline replaces it.
+            static_cast<Qt::ConnectionType>(Qt::QueuedConnection | Qt::SingleShotConnection));
+        open(resource, nullptr, false);
+    }
+    // open() shows the path of the file behind it, which means nothing to Levi.
+    if (!m_combineName.isEmpty())
+        showStatusMessage(tr("Combine clips: %1").arg(m_combineName));
 }
 
 void MainWindow::backToSimpleMode()
 {
-    if (isSimpleMode() || !continueModified())
+    if (isSimpleMode())
         return;
+    if (isWindowModified() && !m_combineProject.isEmpty() && m_currentFile == m_combineProject) {
+        QMessageBox dialog(QMessageBox::Question,
+                           qApp->applicationName(),
+                           tr("Keep what you did in Combine clips?\n\n"
+                              "It will be here again the next time you press Combine clips for "
+                              "%1.")
+                               .arg(m_combineName),
+                           QMessageBox::NoButton,
+                           this);
+        auto *keep = dialog.addButton(tr("Keep it"), QMessageBox::AcceptRole);
+        auto *discard = dialog.addButton(tr("Throw it away"), QMessageBox::DestructiveRole);
+        auto *cancel = dialog.addButton(tr("Keep working"), QMessageBox::RejectRole);
+        dialog.setDefaultButton(keep);
+        dialog.setEscapeButton(cancel);
+        dialog.setWindowModality(QmlApplication::dialogModality());
+        dialog.exec();
+        if (dialog.clickedButton() == cancel)
+            return;
+        if (dialog.clickedButton() == keep && !on_actionSave_triggered())
+            return;
+        if (dialog.clickedButton() == discard) {
+            QMutexLocker locker(&m_autosaveMutex);
+            m_autosaveFile.reset();
+        }
+    } else if (!continueModified()) {
+        return;
+    }
     setWindowModified(false);
     on_actionClose_triggered();
     enterSimpleMode();
@@ -3154,8 +3231,14 @@ void MainWindow::setCurrentFile(const QString &filename)
 
 void MainWindow::updateWindowTitle()
 {
+    if (isSimpleMode()) {
+        setWindowTitle(qApp->applicationName());
+        return;
+    }
     QString shownName = tr("Untitled");
-    if (!m_currentFile.isEmpty()) {
+    if (!m_combineProject.isEmpty() && m_currentFile == m_combineProject) {
+        shownName = tr("Combine clips: %1").arg(m_combineName);
+    } else if (!m_currentFile.isEmpty()) {
         shownName = QFileInfo(m_currentFile).filePath();
         shownName = fontMetrics().elidedText(shownName, Qt::ElideLeft, width() / 4);
     }
@@ -3539,6 +3622,28 @@ void MainWindow::closeEvent(QCloseEvent *event)
         m_simpleMode->controller()->askToClose();
         event->ignore();
         return;
+    }
+    if (!isSimpleMode() && !m_simpleCloseConfirmed
+        && m_simpleMode->controller()->hasUnfinishedEdits()) {
+        // Closing, or restarting for a setting, from Advanced would lose Simple mode's work too.
+        QMessageBox dialog(QMessageBox::Warning,
+                           qApp->applicationName(),
+                           tr("Close without finishing?\n\n"
+                              "Your changes in BUGS! haven't been saved. To keep them, go Back to "
+                              "Simple and press Finish."),
+                           QMessageBox::NoButton,
+                           this);
+        dialog.addButton(tr("Close anyway"), QMessageBox::DestructiveRole);
+        auto *keep = dialog.addButton(tr("Keep editing"), QMessageBox::RejectRole);
+        dialog.setDefaultButton(keep);
+        dialog.setEscapeButton(keep);
+        dialog.setWindowModality(QmlApplication::dialogModality());
+        dialog.exec();
+        if (dialog.clickedButton() == keep) {
+            m_exitCode = EXIT_SUCCESS;
+            event->ignore();
+            return;
+        }
     }
     if (continueJobsRunning() && continueModified()) {
         LOG_DEBUG() << "begin";

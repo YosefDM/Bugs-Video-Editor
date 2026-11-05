@@ -42,6 +42,10 @@ namespace {
 const int kHeaderHeight = 64;
 const int kLibraryWidth = 300;
 const int kOptionsWidth = 300;
+// Below this window width, such as a window snapped to half the screen, the side panels narrow
+// so the video and tools keep enough room.
+const int kNarrowWindow = 1100;
+const int kNarrowSideWidth = 240;
 const int kControlsHeight = 178;
 
 QDir simpleQmlDir()
@@ -74,6 +78,9 @@ SimpleModeWidget::SimpleModeWidget(QWidget *parent)
     setAcceptDrops(true);
     setFocusPolicy(Qt::StrongFocus);
     setAutoFillBackground(true);
+    // Simple mode is in English. A right-to-left language chosen in Advanced would otherwise
+    // swap the library and tool panels while the words stay left to right.
+    setLayoutDirection(Qt::LeftToRight);
 
     auto *root = new QVBoxLayout(this);
     root->setContentsMargins(0, 0, 0, 0);
@@ -88,9 +95,9 @@ SimpleModeWidget::SimpleModeWidget(QWidget *parent)
     body->setSpacing(0);
     root->addLayout(body, 1);
 
-    auto *library = addView(QStringLiteral("Library.qml"));
-    library->setFixedWidth(kLibraryWidth);
-    body->addWidget(library);
+    m_library = addView(QStringLiteral("Library.qml"));
+    m_library->setFixedWidth(kLibraryWidth);
+    body->addWidget(m_library);
 
     m_centerLayout = new QVBoxLayout;
     m_centerLayout->setContentsMargins(0, 0, 0, 0);
@@ -111,9 +118,9 @@ SimpleModeWidget::SimpleModeWidget(QWidget *parent)
     controls->setFixedHeight(kControlsHeight);
     m_centerLayout->addWidget(controls);
 
-    auto *options = addView(QStringLiteral("Options.qml"));
-    options->setFixedWidth(kOptionsWidth);
-    body->addWidget(options);
+    m_options = addView(QStringLiteral("Options.qml"));
+    m_options->setFixedWidth(kOptionsWidth);
+    body->addWidget(m_options);
 
     m_welcome = addView(QStringLiteral("Welcome.qml"));
     m_welcome->setParent(this);
@@ -249,6 +256,13 @@ bool SimpleModeWidget::eventFilter(QObject *watched, QEvent *event)
             // Advanced's hundreds of keyboard shortcuts must not act on its hidden timeline.
             event->accept();
             return false;
+        case QEvent::KeyPress:
+            // The video widget hands keys it does not use to Advanced, which swallows Space.
+            if (watched == m_videoWidget) {
+                keyPressEvent(static_cast<QKeyEvent *>(event));
+                return event->isAccepted();
+            }
+            break;
         case QEvent::Wheel:
             // Advanced uses the wheel to zoom the video.
             if (watched == m_videoWidget)
@@ -264,6 +278,9 @@ bool SimpleModeWidget::eventFilter(QObject *watched, QEvent *event)
 void SimpleModeWidget::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
+    const bool narrow = width() < kNarrowWindow;
+    m_library->setFixedWidth(narrow ? kNarrowSideWidth : kLibraryWidth);
+    m_options->setFixedWidth(narrow ? kNarrowSideWidth : kOptionsWidth);
     if (m_welcome)
         m_welcome->setGeometry(rect());
     if (m_dialogs)

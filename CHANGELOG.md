@@ -5,6 +5,24 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 
 ## Unreleased
 
+### Fixed
+- Work done in **Combine clips** was lost: going back and in again started over. Now the video starts on the timeline, and **Keep it** keeps your work for the next time you press Combine clips for that file.
+- If a video or photo was moved or deleted while open, **Finish** saved a video that just said "INVALID". It now says the file can't be found.
+- Closing BUGS!, or restarting it for a setting, from Combine clips now warns about changes you haven't finished.
+- Resetting settings in Combine clips no longer empties your list of videos and photos.
+- Clicking a file while a collage was open threw the collage away. BUGS! now asks first.
+- The space bar plays and pauses again after clicking the picture.
+- Double-clicking **Finish** stopped the save straight away. Double-clicking **Save this picture** saved it twice.
+- In **Cut out**, dragging the red box at the very start or end could trim the video instead.
+- The list of videos and photos jumped back to the top after opening one.
+- Text could be dragged partly off the picture and was then cut off in the saved file.
+- Choosing Hebrew in Combine clips swapped Simple mode's panels around.
+- On small screens, the Text tool's colours and sizes were hidden, and tool names overlapped in a narrow window.
+- The title bar said "Untitled - Automatic". The close warning now names the files with unsaved changes.
+- **Combine clips** with nothing open showed the full editor's "New Project" screen; it now waits until a video or photo is open.
+- On a small laptop screen, Combine clips could run off the edges of the screen. It now fills the screen instead.
+- When a collage leaves out a photo BUGS! can't open, the message names it, and problem messages stay up longer.
+
 ## 1.0.2
 
 ### Fixed

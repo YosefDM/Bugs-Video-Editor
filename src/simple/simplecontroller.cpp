@@ -27,6 +27,7 @@
 #include "simplemedia.h"
 #include "videowidget.h"
 
+#include <QCryptographicHash>
 #include <QDate>
 #include <QDesktopServices>
 #include <QDir>
@@ -316,7 +317,14 @@ void SimpleController::storeSession()
 
 void SimpleController::openFile(const QString &path)
 {
-    // Opening a file from the library while a collage is open leaves the collage.
+    // Opening a file from the library while a collage is open leaves the collage. A collage that
+    // was made but not saved cannot be undone, so that asks first.
+    if (m_collageActive && m_collageUnsaved && m_dialog.isEmpty()) {
+        m_openAfterCollage = path;
+        m_dialog = QStringLiteral("leaveCollage");
+        emit dialogChanged();
+        return;
+    }
     if (m_collageActive || m_collagePicking)
         leaveCollage();
     if (path == m_edit.sourcePath && hasFile())
@@ -753,17 +761,30 @@ void SimpleController::deactivate()
     disconnect(previewWidget(), nullptr, this, nullptr);
 }
 
+QString SimpleController::combineProject() const
+{
+    if (!hasFile())
+        return QString();
+    const QDir dir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation));
+    dir.mkpath(QStringLiteral("combine"));
+    // The path is part of the name, so two files called IMG_0001.MOV do not share a project.
+    const QString key = QString::fromLatin1(
+        QCryptographicHash::hash(m_edit.sourcePath.toUtf8(), QCryptographicHash::Sha1)
+            .toHex()
+            .left(10));
+    return dir.filePath(QStringLiteral("combine/%1 %2.mlt")
+                            .arg(QFileInfo(m_edit.sourcePath).completeBaseName(), key));
+}
+
 QString SimpleController::advancedResource()
 {
     if (!hasFile())
         return QString();
-    if (!m_edit.hasChanges() && !m_edit.isHdr())
-        return m_edit.sourcePath;
     CompileOptions options;
     options.captionImage = writeCaptionImage(m_edit);
-    const QString path = QDir(cacheDir())
-                             .filePath(QFileInfo(m_edit.sourcePath).completeBaseName()
-                                       + QStringLiteral(" - edit.mlt"));
+    // Next to the project, which refers to it, and so out of the cache that Windows may clear.
+    QString path = combineProject();
+    path.replace(path.length() - 4, 4, QStringLiteral(" clip.mlt"));
     QFile file(path);
     if (!file.open(QIODevice::WriteOnly))
         return m_edit.sourcePath;
@@ -772,6 +793,39 @@ QString SimpleController::advancedResource()
     file.write(xml.toUtf8());
     file.close();
     return path;
+}
+
+bool SimpleController::filesStillThere(const QStringList &paths)
+{
+    for (const QString &path : paths) {
+        if (!path.isEmpty() && !QFileInfo::exists(path)) {
+            showToast(QStringLiteral("BUGS! can't find %1 any more. It may have been moved or "
+                                     "deleted, so it can't be saved.")
+                          .arg(QFileInfo(path).fileName()),
+                      true);
+            emit libraryChanged();
+            return false;
+        }
+    }
+    return true;
+}
+
+QStringList SimpleController::unfinishedFileNames() const
+{
+    QStringList names;
+    const auto add = [&](const Edit &edit) {
+        if (edit.hasChanges()
+            && (!m_savedEdits.contains(edit.sourcePath)
+                || m_savedEdits.value(edit.sourcePath) != edit))
+            names << QFileInfo(edit.sourcePath).fileName();
+    };
+    if (hasFile())
+        add(m_edit);
+    for (auto it = m_sessions.cbegin(); it != m_sessions.cend(); ++it) {
+        if (it.key() != m_edit.sourcePath)
+            add(it->edit);
+    }
+    return names;
 }
 
 bool SimpleController::hasUnfinishedEdits() const
@@ -1172,8 +1226,14 @@ void SimpleController::updateFrameThumb()
 
 void SimpleController::savePicture()
 {
-    if (!hasFile() || m_edit.isPhoto)
+    if (!hasFile() || m_edit.isPhoto || !filesStillThere({m_edit.sourcePath, m_edit.mediaPath}))
         return;
+    const QString picture = m_edit.sourcePath + QLatin1Char('|') + QString::number(m_playhead);
+    if (picture == m_lastPicture && m_lastPictureTime.isValid()
+        && m_lastPictureTime.elapsed() < 1500)
+        return;
+    m_lastPicture = picture;
+    m_lastPictureTime.start();
     pausePreview();
     const Edit edit = m_edit;
     const int position = m_edit.editedFromSource(m_playhead);
@@ -1220,6 +1280,11 @@ void SimpleController::finish()
         QStringList files;
         for (const Collage::Cell *cell : m_collagePage->photoCells())
             files << cell->photo()->path;
+        if (!filesStillThere(files)) {
+            m_saving = false;
+            emit savingChanged();
+            return;
+        }
         // The layout is copied by redrawing from the same seed on the worker, so nothing it reads
         // can change underneath it.
         std::vector<Collage::Photo> photos(m_collagePhotos.begin(), m_collagePhotos.end());
@@ -1259,18 +1324,23 @@ void SimpleController::finish()
                         return;
                     self->m_saving = false;
                     emit self->savingChanged();
-                    if (ok)
+                    if (ok) {
+                        self->m_collageUnsaved = false;
                         self->afterSaved(path, QStringLiteral("Collage saved to Finished"));
-                    else
+                    } else {
                         self->showToast(QStringLiteral(
                                             "Sorry, the collage didn't save. Please try again."),
                                         true);
+                    }
                 },
                 Qt::QueuedConnection);
         });
         return;
     }
     if (!hasFile() || m_saving)
+        return;
+    // MLT would save its "INVALID" placeholder in place of a file that is gone.
+    if (!filesStillThere({m_edit.sourcePath, m_edit.mediaPath}))
         return;
     pausePreview();
     if (!m_edit.isPhoto) {
@@ -1469,7 +1539,9 @@ void SimpleController::makeCollage()
         return;
     }
     if (!unreadable.isEmpty())
-        showToast(QStringLiteral("Left out %1 photo(s) BUGS! couldn't open.").arg(unreadable.size()),
+        showToast(QStringLiteral("BUGS! couldn't open %1, so the collage is without %2.")
+                      .arg(unreadable.join(QStringLiteral(", ")),
+                           unreadable.size() == 1 ? QStringLiteral("it") : QStringLiteral("them")),
                   true);
     m_collagePicking = false;
     m_collageActive = true;
@@ -1533,6 +1605,7 @@ void SimpleController::drawCollagePreview()
 {
     if (!m_collagePage)
         return;
+    m_collageUnsaved = true;
     const QSize size = collageSize(1200);
     CollageStyle style;
     style.border = m_collageBorder == 0 ? 0.0 : m_collageBorder == 1 ? 0.012 : 0.03;
@@ -1688,6 +1761,27 @@ void SimpleController::dismissDialog()
     emit dialogChanged();
 }
 
+void SimpleController::askToLeaveCollage()
+{
+    if (m_collageActive && m_collageUnsaved) {
+        m_openAfterCollage.clear();
+        m_dialog = QStringLiteral("leaveCollage");
+        emit dialogChanged();
+        return;
+    }
+    leaveCollage();
+}
+
+void SimpleController::leaveCollageAnyway()
+{
+    dismissDialog();
+    leaveCollage();
+    const QString path = m_openAfterCollage;
+    m_openAfterCollage.clear();
+    if (!path.isEmpty())
+        openFile(path);
+}
+
 void SimpleController::closeAnyway()
 {
     dismissDialog();
@@ -1698,6 +1792,7 @@ void SimpleController::showToast(const QString &text, bool isError)
 {
     m_toast = text;
     m_toastIsError = isError;
-    m_toastTimer.start();
+    // Problems take longer to read, and matter more, than "Saved".
+    m_toastTimer.start(isError ? 2 * kToastMs : kToastMs);
     emit toastChanged();
 }

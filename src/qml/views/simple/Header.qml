@@ -112,7 +112,8 @@ Rectangle {
         ActionButton {
             icon: "combine"
             text: "Combine clips"
-            enabled: !simple.saving
+            // Starts from the open file; with none, the full editor would open on an empty project.
+            enabled: simple.hasFile && !simple.saving
             onClicked: simple.requestAdvanced()
         }
 
@@ -127,8 +128,13 @@ Rectangle {
         }
 
         Row {
+            id: savingRow
             visible: simple.saving
             spacing: 8
+
+            // Stop sits where Finish was, so the second click of a double-click must not stop.
+            property double shownAt: 0
+            onVisibleChanged: if (visible) shownAt = Date.now()
 
             Rectangle {
                 width: 150
@@ -156,7 +162,10 @@ Rectangle {
 
             ActionButton {
                 text: "Stop"
-                onClicked: simple.cancelFinish()
+                onClicked: {
+                    if (Date.now() - savingRow.shownAt > 1000)
+                        simple.cancelFinish()
+                }
             }
         }
     }

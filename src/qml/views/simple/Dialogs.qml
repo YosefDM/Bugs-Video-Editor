@@ -87,7 +87,13 @@ Rectangle {
         }
 
         Body {
-            text: "Your changes haven't been saved. To keep them, go back and press <b>Finish</b>.<br><br>Your original stays untouched either way."
+            // Names the files, since the one on screen may not be the one with changes.
+            readonly property var names: simple.dialog === "close" ? simple.unfinishedFileNames() : []
+            text: (names.length === 1 ? "Your changes to <b>" + names[0] + "</b> haven't been saved."
+                   : names.length > 1 ? "Your changes to " + names.length + " files haven't been saved: <b>"
+                                        + names.slice(0, 3).join(", ") + (names.length > 3 ? "…" : "") + "</b>."
+                   : "Your changes haven't been saved.")
+                  + " To keep them, go back and press <b>Finish</b>.<br><br>Your original stays untouched either way."
         }
 
         RowLayout {
@@ -106,6 +112,49 @@ Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 44
                 text: "Keep editing"
+                primary: true
+                onClicked: simple.dismissDialog()
+            }
+        }
+    }
+
+    // Leaving a collage that was never saved
+    Card {
+        visible: simple.dialog === "leaveCollage"
+        Accessible.name: leaveTitle.text
+
+        Text {
+            id: leaveTitle
+
+            Layout.fillWidth: true
+            text: "Leave your collage?"
+            wrapMode: Text.WordWrap
+            color: root.t.text
+            font.family: "Inter"
+            font.pixelSize: 18
+            font.weight: Font.DemiBold
+        }
+
+        Body {
+            text: "This collage hasn't been saved. To keep it, stay and press <b>Finish</b>."
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.topMargin: 4
+            spacing: 8
+
+            ActionButton {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 44
+                text: "Leave it"
+                onClicked: simple.leaveCollageAnyway()
+            }
+
+            ActionButton {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 44
+                text: "Stay"
                 primary: true
                 onClicked: simple.dismissDialog()
             }
