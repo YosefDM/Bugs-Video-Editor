@@ -188,7 +188,81 @@ Rectangle {
 
                 Heading {
                     title: "Collage"
-                    body: "Add words and stickers, then drag them into place. Tap two photos to swap them."
+                    body: "Add words and stickers, then drag them into place. Tap a photo to zoom or move it, or tap two photos to swap them."
+                }
+
+                // The photo tapped on the collage, at the top so it shows without scrolling.
+                Rectangle {
+                    visible: simple.collageSelected >= 0
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: photoColumn.implicitHeight + 24
+                    radius: 12
+                    color: root.t.drop
+                    border.width: 1
+                    border.color: root.t.accent
+
+                    ColumnLayout {
+                        id: photoColumn
+
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.margins: 12
+                        spacing: 10
+
+                        RowLayout {
+                            Layout.fillWidth: true
+
+                            Text {
+                                Layout.fillWidth: true
+                                text: "Selected photo"
+                                color: root.t.text2
+                                font.family: "Inter"
+                                font.pixelSize: 13
+                                font.weight: Font.DemiBold
+                            }
+
+                            Text {
+                                text: "Done"
+                                color: root.t.accent
+                                font.family: "Inter"
+                                font.pixelSize: 13
+                                font.weight: Font.DemiBold
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    anchors.margins: -8
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: simple.deselectCollagePhoto()
+                                }
+                            }
+                        }
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: "Drag it to move it in its frame. Tap another photo to swap them."
+                            wrapMode: Text.WordWrap
+                            color: root.t.muted
+                            font.family: "Inter"
+                            font.pixelSize: 12
+                        }
+
+                        LookSlider {
+                            title: "Zoom"
+                            from: 1
+                            to: 3
+                            value: simple.collagePhotoZoom
+                            onMoved: (value) => simple.setCollagePhotoZoom(value)
+                        }
+
+                        ActionButton {
+                            Layout.fillWidth: true
+                            icon: simple.collagePhotoIsBig ? "check" : "plus"
+                            text: simple.collagePhotoIsBig ? "This is the big photo" : "Make it the big photo"
+                            primary: !simple.collagePhotoIsBig
+                            onClicked: simple.setCollagePhotoBig(!simple.collagePhotoIsBig)
+                        }
+                    }
                 }
 
                 // Text and stickers
@@ -555,6 +629,84 @@ Rectangle {
                 }
 
                 // The photos
+                Text {
+                    text: "Layout"
+                    color: root.t.text2
+                    font.family: "Inter"
+                    font.pixelSize: 13
+                }
+
+                Row {
+                    id: layoutRow
+
+                    Layout.fillWidth: true
+                    spacing: 8
+
+                    Repeater {
+                        model: simple.collageLayouts
+
+                        delegate: Rectangle {
+                            required property var modelData
+                            readonly property bool selected: simple.collageLayout === modelData.id
+
+                            width: (collagePanel.width - 16) / 3
+                            height: width + 22
+                            radius: 10
+                            color: selected ? root.t.accentSoft : "transparent"
+                            border.width: 1.5
+                            border.color: selected ? root.t.accent : root.t.softBorder
+                            Accessible.role: Accessible.Button
+                            Accessible.name: "Layout " + modelData.title
+
+                            // A small picture of the layout, the collage's own shape.
+                            Item {
+                                id: thumb
+
+                                readonly property real box: parent.width - 20
+                                readonly property real aspect: simple.collageAspect
+
+                                x: (parent.width - width) / 2
+                                y: 8 + (box - height) / 2
+                                width: aspect >= 1 ? box : box * aspect
+                                height: aspect >= 1 ? box / aspect : box
+
+                                Repeater {
+                                    model: modelData.cells
+
+                                    delegate: Rectangle {
+                                        required property var modelData
+
+                                        x: modelData.x * thumb.width + 1
+                                        y: modelData.y * thumb.height + 1
+                                        width: Math.max(1, modelData.w * thumb.width - 2)
+                                        height: Math.max(1, modelData.h * thumb.height - 2)
+                                        radius: 2
+                                        color: modelData.big ? root.t.accent : root.t.muted
+                                        opacity: modelData.big ? 0.9 : 0.55
+                                    }
+                                }
+                            }
+
+                            Text {
+                                anchors.bottom: parent.bottom
+                                anchors.bottomMargin: 5
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: modelData.title
+                                color: root.t.text
+                                font.family: "Inter"
+                                font.pixelSize: 12
+                                font.weight: Font.DemiBold
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: simple.setCollageLayout(modelData.id)
+                            }
+                        }
+                    }
+                }
+
                 Text {
                     text: "Shape"
                     color: root.t.text2

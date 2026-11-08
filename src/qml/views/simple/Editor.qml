@@ -186,8 +186,8 @@ Rectangle {
             Layout.preferredHeight: 64
             horizontalAlignment: Text.AlignHCenter
             verticalAlignment: Text.AlignVCenter
-            text: simple.collageSelected >= 0 ? "Now tap the photo to swap it with."
-                                              : "Tap a photo, then another, to swap them. Finish saves the collage."
+            text: simple.collageSelected >= 0 ? "Drag the photo to move it in its frame, or tap another to swap them."
+                                              : "Tap a photo to zoom or move it, or tap two to swap them. Finish saves the collage."
             wrapMode: Text.WordWrap
             color: root.t.muted
             font.family: "Inter"

@@ -70,6 +70,12 @@ class SimpleController : public QObject
     Q_PROPERTY(bool collageMaking READ collageMaking NOTIFY changed)
     Q_PROPERTY(bool collageActive READ collageActive NOTIFY changed)
     Q_PROPERTY(QString collageShape READ collageShape NOTIFY changed)
+    // columns, mosaic or grid, and each one's picture for the picker: [{id, title, cells}]
+    Q_PROPERTY(QString collageLayout READ collageLayout NOTIFY changed)
+    Q_PROPERTY(QVariantList collageLayouts READ collageLayouts NOTIFY changed)
+    // The selected photo's zoom, and whether it is the big one
+    Q_PROPERTY(double collagePhotoZoom READ collagePhotoZoom NOTIFY changed)
+    Q_PROPERTY(bool collagePhotoIsBig READ collagePhotoIsBig NOTIFY changed)
     // Space between photos and round the edge, and photo corner rounding: fractions of the
     // shorter side. The background shows in the space.
     Q_PROPERTY(double collageSpacing READ collageSpacing NOTIFY changed)
@@ -156,8 +162,8 @@ public:
     QString currentPath() const { return m_edit.sourcePath; }
     QString tool() const { return m_tool; }
     void setTool(const QString &tool);
-    // On the collage screen, undo covers its text, stickers and look; Shuffle and swaps are
-    // not undone.
+    // On the collage screen, undo covers everything on it: layout, swaps, zoom, text, stickers
+    // and look.
     bool canUndo() const { return m_collageActive ? !m_collageUndo.isEmpty() : !m_undo.isEmpty(); }
     bool canRedo() const { return m_collageActive ? !m_collageRedo.isEmpty() : !m_redo.isEmpty(); }
 
@@ -165,7 +171,11 @@ public:
     int collagePickCount() const { return m_collagePicks.size(); }
     bool collageMaking() const { return m_collageMaking; }
     bool collageActive() const { return m_collageActive; }
-    QString collageShape() const { return m_collageShape; }
+    QString collageShape() const { return m_collageDesign.shape; }
+    QString collageLayout() const { return m_collageDesign.layoutStyle; }
+    QVariantList collageLayouts() const { return m_collageLayouts; }
+    double collagePhotoZoom() const;
+    bool collagePhotoIsBig() const;
     double collageSpacing() const { return m_collageDesign.spacing; }
     double collageCorners() const { return m_collageDesign.corners; }
     QString collageBackground() const { return m_collageDesign.background; }
@@ -318,6 +328,15 @@ public slots:
     void sendCollageItemToBack(int index);
     void shuffleCollage();
     void tapCollage(double x, double y);
+    void setCollageLayout(const QString &style);
+    // For the selected photo: make it the big one (or not), zoom it, and move it in its frame.
+    // `dx`, `dy` are how far the pointer moved, as fractions of the frame.
+    void setCollagePhotoBig(bool big);
+    void setCollagePhotoZoom(double zoom);
+    void zoomCollagePhoto(double factor);
+    void panCollagePhoto(double dx, double dy);
+    void endCollagePhotoGesture();
+    void deselectCollagePhoto();
     void cancelFinish();
     void requestAdvanced();
     void showAbout();
@@ -435,8 +454,6 @@ private:
     bool m_collageActive{false};
     bool m_collageUnsaved{false};               // changed since it was last saved
     std::deque<Collage::Photo> m_collagePhotos; // .path is the readable file, upright
-    std::unique_ptr<Collage::Page> m_collagePage;
-    QString m_collageShape{QStringLiteral("square")};
     // Everything on the collage that undo covers.
     struct CollageDesign
     {
@@ -444,11 +461,20 @@ private:
         double spacing{0.012};
         double corners{0};
         QString background{QStringLiteral("#FFFFFF")};
-        bool operator==(const CollageDesign &o) const
+        QString shape{QStringLiteral("square")};
+        QString layoutStyle{QStringLiteral("columns")}; // columns, mosaic or grid
+        unsigned seed{1};
+        int hero{-1}; // the photo Mosaic makes biggest, or -1
+        Collage::Layout layout;
+        QVector<Collage::PhotoCrop> crops; // by photo index
+        // Everything but the text and stickers, which QML draws over the picture.
+        bool sameLook(const CollageDesign &o) const
         {
-            return items == o.items && spacing == o.spacing && corners == o.corners
-                   && background == o.background;
+            return spacing == o.spacing && corners == o.corners && background == o.background
+                   && shape == o.shape && layoutStyle == o.layoutStyle && seed == o.seed
+                   && hero == o.hero && layout == o.layout && crops == o.crops;
         }
+        bool operator==(const CollageDesign &o) const { return items == o.items && sameLook(o); }
         bool operator!=(const CollageDesign &o) const { return !(*this == o); }
     };
     CollageDesign m_collageDesign;
@@ -467,12 +493,17 @@ private:
     QImage stickerImage(const QString &id) const;
     mutable QHash<QString, QImage> m_stickerImages;
     mutable QVariantList m_stickerCategories;
-    unsigned m_collageSeed{1};
     int m_collageSelected{-1};
     QString m_collagePreview;
     int m_collageGeneration{0};
     QHash<QString, QImage> m_collageThumbs; // preview-size pictures by readable path
-    void layoutCollage();
+    // Lays the photos out again for the design's shape, style, seed and big photo.
+    Collage::Layout buildCollageLayout(const CollageDesign &design) const;
+    // Changes the design with one undo step and redraws.
+    void changeCollageDesign(const CollageDesign &design, const QString &coalesceKey = QString());
+    QVariantList m_collageLayouts; // the three layout pictures for the picker
+    void updateCollageLayoutChoices();
+    bool m_collagePhotoGesture{false};
     void collagePhotosRead(const std::vector<Collage::Photo> &photos,
                            const QHash<QString, QImage> &thumbs,
                            const QStringList &unreadable);

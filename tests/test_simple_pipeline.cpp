@@ -701,19 +701,20 @@ private slots:
             colourOf.insert(readable, colours[i]);
         }
         auto page = Collage::makeGaplessPage(pointers, 16.0 / 9.0, 7);
+        const Collage::Layout layout = Collage::layoutFromPage(*page, pointers);
         const QSize size(1350, 2400);
         CollageStyle style;
         style.border = 0.02;
         style.borderColor = Qt::white;
-        const auto cells = page->photoCells();
-        const QImage collage = renderCollage(*page, size, style, [&](int i, const QSize &cover) {
-            return loadPhotoToCover(cells[i]->photo()->path, cover);
+        const QImage collage = renderCollage(layout, {}, size, style, [&](int i, const QSize &cover) {
+            return loadPhotoToCover(pointers[size_t(i)]->path, cover);
         });
         QCOMPARE(collage.size(), size);
-        const QVector<QRect> rects = collageCellRects(*page, size);
+        const QVector<QRect> rects = collageCellRects(layout, size);
         QCOMPARE(rects.size(), 4);
         for (int i = 0; i < 4; ++i)
-            QCOMPARE(collage.pixelColor(rects[i].center()), colourOf.value(cells[i]->photo()->path));
+            QCOMPARE(collage.pixelColor(rects[i].center()),
+                     colourOf.value(pointers[size_t(layout[size_t(i)].photo)]->path));
         QCOMPARE(collage.pixelColor(2, 2), QColor(Qt::white));
         QCOMPARE(collage.pixelColor(size.width() - 3, size.height() - 3), QColor(Qt::white));
     }
@@ -787,22 +788,53 @@ private slots:
             pointers.push_back(&photos.back());
         }
         auto page = Collage::makeGaplessPage(pointers, 1.0, 1);
+        const Collage::Layout layout = Collage::layoutFromPage(*page, pointers);
         CollageStyle style;
         style.border = 0.05;
         style.radius = 0.06;
         style.borderColor = Qt::yellow;
         const QSize size(1000, 1000);
-        const auto cells = page->photoCells();
-        const QImage collage = renderCollage(*page, size, style, [&](int i, const QSize &cover) {
-            return loadPhotoToCover(cells[i]->photo()->path, cover);
+        const QImage collage = renderCollage(layout, {}, size, style, [&](int i, const QSize &cover) {
+            return loadPhotoToCover(pointers[size_t(i)]->path, cover);
         });
-        const QVector<QRect> rects = collageCellRects(*page, size);
+        const QVector<QRect> rects = collageCellRects(layout, size);
         for (const QRect &rect : rects) {
             QCOMPARE(collage.pixelColor(rect.center()), QColor(Qt::blue));
             // Just inside the frame, at the corner, the rounding leaves background.
             QCOMPARE(collage.pixelColor(rect.left() + 52, rect.top() + 52), QColor(Qt::yellow));
         }
         QCOMPARE(collage.pixelColor(20, 500), QColor(Qt::yellow));
+    }
+
+    // Zoom and move show the chosen part of a photo, in the preview and the saved picture alike.
+    void collagePhotoZoomShowsThePartChosen()
+    {
+        // Left half red, right half blue.
+        QImage photo(QSize(1000, 1000), QImage::Format_RGB32);
+        photo.fill(Qt::blue);
+        QPainter painter(&photo);
+        painter.fillRect(0, 0, 500, 1000, Qt::red);
+        painter.end();
+        const Collage::Layout layout{Collage::Slot{QRectF(0, 0, 1, 1), 0}};
+        const auto draw = [&](const Collage::PhotoCrop &crop) {
+            return renderCollage(layout,
+                                 {crop},
+                                 QSize(400, 400),
+                                 CollageStyle(),
+                                 [&](int, const QSize &) { return photo; });
+        };
+        // Zoom 1: the whole photo, so both colours.
+        const QImage whole = draw(Collage::PhotoCrop());
+        QCOMPARE(whole.pixelColor(50, 200), QColor(Qt::red));
+        QCOMPARE(whole.pixelColor(350, 200), QColor(Qt::blue));
+        // Zoom 2 on the left half: all red.
+        const QImage left = draw(Collage::PhotoCrop{2.0, 0.25, 0.5});
+        QCOMPARE(left.pixelColor(20, 200), QColor(Qt::red));
+        QCOMPARE(left.pixelColor(380, 200), QColor(Qt::red));
+        // Moved past the edge, it stops at the edge rather than showing beyond the photo.
+        const QImage right = draw(Collage::PhotoCrop{2.0, 1.5, 0.5});
+        QCOMPARE(right.pixelColor(20, 200), QColor(Qt::blue));
+        QCOMPARE(right.pixelColor(380, 200), QColor(Qt::blue));
     }
 
     void captionPictureHasText()
