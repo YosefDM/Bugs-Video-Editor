@@ -10,7 +10,9 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 ### Added
 - **Collages with text and stickers.** Add words, or a ready phrase such as "Mazel Tov!", "מזל טוב" or "Good Shabbos", in six fonts and ten colours, and pick from 1,600 stickers: a Jewish group (Magen David, menorah, candle, kiddush cup, challah, the Israel flag and more), then faces, people, animals, food, celebrations, places, things and symbols. Drag them into place, pull the corner dot to resize, turn them with the knob, bring them to the front or back, or remove them. Anything not tznius or inappropriate is left out, and every figure of a person was checked by eye.
 - Collage spacing and rounded corners sliders, and ten background colours, in place of the three border choices.
-- Undo and redo on the collage screen, for its text, stickers and look.
+- Three collage layouts to pick from, each shown as a small picture: **Columns** (as before), **Mosaic**, which shapes each frame to fit its photo, and **Grid**.
+- Tap a collage photo to zoom it (slider or mouse wheel), drag it to move it in its frame, or make it the big photo.
+- Undo and redo on the collage screen, for everything on it: layout, shape, shuffle, swaps, zoom, text, stickers and look.
 - Buttons by Play to go back 10 seconds and forward 30 seconds.
 - A speed button by the strip: watch at 1×, 1.5× or 2× to find a moment faster. The saved video stays normal speed.
 - **Cut out** has **From** and **To** boxes, so a part can be cut by typing its times, such as 11:13 to 12:33.

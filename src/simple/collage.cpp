@@ -558,4 +558,158 @@ std::unique_ptr<Page> makeGaplessPage(const std::vector<Photo *> &photos,
     return page;
 }
 
+Layout layoutFromPage(const Page &page, const std::vector<Photo *> &photos)
+{
+    Layout layout;
+    const double w = page.w();
+    const double h = page.h();
+    if (w <= 0 || h <= 0)
+        return layout;
+    for (const Cell *cell : page.photoCells()) {
+        const auto found = std::find(photos.begin(), photos.end(), cell->photo());
+        if (found == photos.end())
+            continue;
+        layout.push_back(Slot{QRectF(cell->x() / w, cell->y() / h, cell->w() / w, cell->h() / h),
+                              int(found - photos.begin())});
+    }
+    return layout;
+}
+
+double cropLoss(const Layout &layout, const std::vector<double> &aspects, double ratio)
+{
+    double loss = 0;
+    double area = 0;
+    for (const Slot &slot : layout) {
+        if (slot.photo < 0 || slot.photo >= int(aspects.size()) || slot.rect.width() <= 0)
+            continue;
+        // In page units, where the page is 1 wide and `ratio` tall.
+        const double cellAspect = slot.rect.height() * ratio / slot.rect.width();
+        const double photoAspect = aspects[size_t(slot.photo)];
+        const double kept = std::min(cellAspect / photoAspect, photoAspect / cellAspect);
+        const double a = slot.rect.width() * slot.rect.height();
+        loss += (1.0 - kept) * a;
+        area += a;
+    }
+    return area > 0 ? loss / area : 0.0;
+}
+
+namespace {
+
+// Cuts `rect` (page units) between the photos in `ids`, recursively.
+void slice(const QRectF &rect,
+           const std::vector<int> &ids,
+           const std::vector<double> &weights,
+           std::mt19937 &rng,
+           Layout &out)
+{
+    if (ids.size() == 1) {
+        out.push_back(Slot{rect, ids.front()});
+        return;
+    }
+    // Split the photos into two groups somewhere near the middle, by weight.
+    std::uniform_real_distribution<double> unit(0.0, 1.0);
+    double total = 0;
+    for (int id : ids)
+        total += weights[size_t(id)];
+    const double target = total * (0.35 + 0.3 * unit(rng));
+    size_t cut = 1;
+    double first = weights[size_t(ids[0])];
+    while (cut < ids.size() - 1 && first + weights[size_t(ids[cut])] / 2 < target) {
+        first += weights[size_t(ids[cut])];
+        ++cut;
+    }
+    const std::vector<int> a(ids.begin(), ids.begin() + long(cut));
+    const std::vector<int> b(ids.begin() + long(cut), ids.end());
+    const double share = first / total;
+    // Usually across the longer side, so frames do not get thin; sometimes the other way.
+    const bool longSideIsWidth = rect.width() >= rect.height();
+    const bool sideBySide = unit(rng) < 0.8 ? longSideIsWidth : !longSideIsWidth;
+    if (sideBySide) {
+        const double w = rect.width() * share;
+        slice(QRectF(rect.x(), rect.y(), w, rect.height()), a, weights, rng, out);
+        slice(QRectF(rect.x() + w, rect.y(), rect.width() - w, rect.height()), b, weights, rng, out);
+    } else {
+        const double h = rect.height() * share;
+        slice(QRectF(rect.x(), rect.y(), rect.width(), h), a, weights, rng, out);
+        slice(QRectF(rect.x(), rect.y() + h, rect.width(), rect.height() - h), b, weights, rng, out);
+    }
+}
+
+// From page units (1 wide, `ratio` tall) to fractions of the page.
+Layout toFractions(Layout layout, double ratio)
+{
+    for (Slot &slot : layout)
+        slot.rect = QRectF(slot.rect.x(),
+                           slot.rect.y() / ratio,
+                           slot.rect.width(),
+                           slot.rect.height() / ratio);
+    return layout;
+}
+
+} // namespace
+
+Layout makeMosaicLayout(const std::vector<double> &aspects,
+                        const std::vector<double> &weights,
+                        double ratio,
+                        unsigned seed)
+{
+    const int n = int(aspects.size());
+    if (n == 0 || ratio <= 0)
+        return {};
+    std::vector<double> w = weights;
+    w.resize(size_t(n), 1.0);
+    std::mt19937 rng(seed);
+    Layout best;
+    double bestScore = 1e9;
+    for (int attempt = 0; attempt < 400; ++attempt) {
+        std::vector<int> ids(static_cast<size_t>(n));
+        for (int i = 0; i < n; ++i)
+            ids[size_t(i)] = i;
+        std::shuffle(ids.begin(), ids.end(), rng);
+        Layout layout;
+        slice(QRectF(0, 0, 1, ratio), ids, w, rng, layout);
+        // Crop loss, plus a little for very thin frames, which look odd even when they fit.
+        double score = cropLoss(toFractions(layout, ratio), aspects, ratio);
+        for (const Slot &slot : layout) {
+            const double thin = std::max(slot.rect.width() / slot.rect.height(),
+                                         slot.rect.height() / slot.rect.width());
+            if (thin > 3.0)
+                score += 0.05 * (thin - 3.0);
+        }
+        if (score < bestScore) {
+            bestScore = score;
+            best = layout;
+        }
+    }
+    return toFractions(best, ratio);
+}
+
+Layout makeGridLayout(int count, double ratio, unsigned seed)
+{
+    if (count <= 0 || ratio <= 0)
+        return {};
+    // Frames about square: rows / columns close to the page's height / width.
+    int cols = std::max(1, int(std::lround(std::sqrt(count / ratio))));
+    cols = std::min(cols, count);
+    const int rows = (count + cols - 1) / cols;
+    std::vector<int> order(static_cast<size_t>(count));
+    for (int i = 0; i < count; ++i)
+        order[size_t(i)] = i;
+    if (seed > 1) {
+        std::mt19937 rng(seed);
+        std::shuffle(order.begin(), order.end(), rng);
+    }
+    Layout layout;
+    int next = 0;
+    for (int r = 0; r < rows; ++r) {
+        const int inRow = std::min(cols, count - next);
+        for (int c = 0; c < inRow; ++c) {
+            layout.push_back(
+                Slot{QRectF(double(c) / inRow, double(r) / rows, 1.0 / inRow, 1.0 / rows),
+                     order[size_t(next++)]});
+        }
+    }
+    return layout;
+}
+
 } // namespace Collage

@@ -79,15 +79,20 @@ struct CollageStyle
     double radius{0}; // rounded photo corners, fraction of the collage's shorter side
     QColor borderColor{Qt::white};
 };
-// Draws a collage laid out by Collage::makePage (a page 1 wide) at `size`. `image(i)` returns the
-// picture for photo cell i, at any size. Ported from PhotoCollage's render.py: each photo fills
-// its cell and is cropped around its offset point, and borders run along the cell edges.
-QImage renderCollage(const Collage::Page &page,
+// Draws a collage at `size`: each photo covers its frame, cropped and zoomed by its PhotoCrop,
+// with the spacing, rounded corners and background from `style`. `image(photo, needed)` returns a
+// photo's picture; `needed` is the smallest size that keeps it sharp, and any size works.
+// `crops` is by photo index, like Slot::photo; missing ones show the middle at zoom 1.
+QImage renderCollage(const Collage::Layout &layout,
+                     const QVector<Collage::PhotoCrop> &crops,
                      const QSize &size,
                      const CollageStyle &style,
-                     const std::function<QImage(int cell, const QSize &cellSize)> &image);
-// Cell rectangles in pixels for a page drawn at `size`, matching renderCollage().
-QVector<QRect> collageCellRects(const Collage::Page &page, const QSize &size);
+                     const std::function<QImage(int photo, const QSize &needed)> &image);
+// Frame rectangles in pixels for a layout drawn at `size`, before spacing, matching
+// renderCollage(). Neighbouring frames share an edge.
+QVector<QRect> collageCellRects(const Collage::Layout &layout, const QSize &size);
+// The part of a picture `picture` shown in a frame `frame` big, for `crop`, in picture pixels.
+QRectF collageSourceRect(const QSize &picture, const QSizeF &frame, const Collage::PhotoCrop &crop);
 
 // Text and stickers on a collage. One drawing function serves the preview and the saved picture,
 // so they always match. `sticker(id)` returns a sticker's picture.

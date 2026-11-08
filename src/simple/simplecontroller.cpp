@@ -1478,26 +1478,23 @@ void SimpleController::removeSavedPicture(const QString &path)
 
 void SimpleController::finish()
 {
-    if (m_collageActive && !m_saving && m_collagePage) {
-        // Each photo is read at the size its cell needs, so many large photos fit in memory.
+    if (m_collageActive && !m_saving && !m_collageDesign.layout.empty()) {
+        // Each photo is read at the size its frame needs, so many large photos fit in memory.
         m_saving = true;
         m_saveProgress = 0;
         emit savingChanged();
         const QSize size = collageSize(2400);
-        const QVector<QRect> rects = collageCellRects(*m_collagePage, size);
         QStringList files;
-        for (const Collage::Cell *cell : m_collagePage->photoCells())
-            files << cell->photo()->path;
+        for (const Collage::Photo &photo : m_collagePhotos)
+            files << photo.path;
         if (!filesStillThere(files)) {
             m_saving = false;
             emit savingChanged();
             return;
         }
-        // The layout is copied by redrawing from the same seed on the worker, so nothing it reads
-        // can change underneath it.
-        std::vector<Collage::Photo> photos(m_collagePhotos.begin(), m_collagePhotos.end());
-        const unsigned seed = m_collageSeed;
-        const double ratio = collageRatio();
+        // Copies, so nothing the worker reads can change underneath it.
+        const Collage::Layout layout = m_collageDesign.layout;
+        const QVector<Collage::PhotoCrop> crops = m_collageDesign.crops;
         const CollageStyle style = collageStyle();
         // Text and stickers, with the sticker pictures they use, drawn by the same code as the
         // preview's.
@@ -1507,55 +1504,45 @@ void SimpleController::finish()
             if (item.kind == CollageItem::Kind::Sticker)
                 stickers.insert(item.sticker, stickerImage(item.sticker));
         }
-        // Swaps change which photo is in which cell, so the saved order is passed along.
         QPointer<SimpleController> self(this);
-        (void) QtConcurrent::run(
-            [self, photos, seed, ratio, size, style, files, items, stickers]() mutable {
-                std::vector<Collage::Photo *> pointers;
-                for (auto &photo : photos)
-                    pointers.push_back(&photo);
-                auto page = Collage::makeGaplessPage(pointers, ratio, seed);
-                const auto cells = page->photoCells();
-                for (int i = 0; i < int(cells.size()) && i < files.size(); ++i) {
-                    for (auto &photo : photos) {
-                        if (photo.path == files.at(i))
-                            cells[i]->setPhoto(&photo);
-                    }
-                }
-                QImage image = renderCollage(*page, size, style, [&](int i, const QSize &cell) {
-                    return loadPhotoToCover(cells[i]->photo()->path, cell);
+        (void) QtConcurrent::run([self, files, layout, crops, size, style, items, stickers]() {
+            QImage image
+                = renderCollage(layout, crops, size, style, [&](int photo, const QSize &needed) {
+                      return photo >= 0 && photo < files.size()
+                                 ? loadPhotoToCover(files.at(photo), needed)
+                                 : QImage();
+                  });
+            if (!image.isNull() && !items.isEmpty()) {
+                QPainter painter(&image);
+                paintCollageItems(painter, items, size, [&](const QString &id) {
+                    return stickers.value(id);
                 });
-                if (!image.isNull() && !items.isEmpty()) {
-                    QPainter painter(&image);
-                    paintCollageItems(painter, items, size, [&](const QString &id) {
-                        return stickers.value(id);
-                    });
-                }
-                const QString path = uniquePath(finishedDir(),
-                                                QStringLiteral("Collage %1")
-                                                    .arg(QDate::currentDate().toString(Qt::ISODate)),
-                                                QStringLiteral("jpg"));
-                const bool ok = !image.isNull() && image.save(path, "JPG", 92);
-                if (!self)
-                    return;
-                QMetaObject::invokeMethod(
-                    self.data(),
-                    [self, ok, path]() {
-                        if (!self)
-                            return;
-                        self->m_saving = false;
-                        emit self->savingChanged();
-                        if (ok) {
-                            self->m_collageUnsaved = false;
-                            self->afterSaved(path, QStringLiteral("Collage saved to Finished"));
-                        } else {
-                            self->showToast(
-                                QStringLiteral("Sorry, the collage didn't save. Please try again."),
-                                true);
-                        }
-                    },
-                    Qt::QueuedConnection);
-            });
+            }
+            const QString path = uniquePath(finishedDir(),
+                                            QStringLiteral("Collage %1")
+                                                .arg(QDate::currentDate().toString(Qt::ISODate)),
+                                            QStringLiteral("jpg"));
+            const bool ok = !image.isNull() && image.save(path, "JPG", 92);
+            if (!self)
+                return;
+            QMetaObject::invokeMethod(
+                self.data(),
+                [self, ok, path]() {
+                    if (!self)
+                        return;
+                    self->m_saving = false;
+                    emit self->savingChanged();
+                    if (ok) {
+                        self->m_collageUnsaved = false;
+                        self->afterSaved(path, QStringLiteral("Collage saved to Finished"));
+                    } else {
+                        self->showToast(QStringLiteral(
+                                            "Sorry, the collage didn't save. Please try again."),
+                                        true);
+                    }
+                },
+                Qt::QueuedConnection);
+        });
         return;
     }
     if (!hasFile() || m_saving)
@@ -1863,13 +1850,19 @@ void SimpleController::collagePhotosRead(const std::vector<Collage::Photo> &phot
     m_collageThumbs = thumbs;
     m_collagePicking = false;
     m_collageActive = true;
-    m_collageSeed = 1;
-    // A new collage starts without text or stickers, keeping the last spacing and colours.
+    // A new collage starts without text, stickers, zoom or a big photo, keeping the last shape,
+    // layout style, spacing and colours.
+    m_collageDesign.seed = 1;
+    m_collageDesign.hero = -1;
     m_collageDesign.items.clear();
+    m_collageDesign.crops = QVector<Collage::PhotoCrop>(int(m_collagePhotos.size()));
+    m_collageDesign.layout = buildCollageLayout(m_collageDesign);
+    m_collageSelected = -1;
     m_collageSelectedItem = -1;
     m_collageUndo.clear();
     m_collageRedo.clear();
-    layoutCollage();
+    updateCollageLayoutChoices();
+    drawCollagePreview();
     emit changed();
     emit libraryChanged();
 }
@@ -1887,7 +1880,11 @@ void SimpleController::leaveCollage()
     m_collageRedo.clear();
     m_collagePicks.clear();
     m_collageActive = false;
-    m_collagePage.reset();
+    m_collageDesign.layout.clear();
+    m_collageDesign.crops.clear();
+    m_collageDesign.hero = -1;
+    m_collageLayouts.clear();
+    m_collagePhotoGesture = false;
     m_collagePhotos.clear();
     m_collageThumbs.clear();
     m_collageSelected = -1;
@@ -1897,22 +1894,22 @@ void SimpleController::leaveCollage()
 
 QSize SimpleController::collageSize(int longSide) const
 {
-    if (m_collageShape == QLatin1String("story"))
+    if (m_collageDesign.shape == QLatin1String("story"))
         return QSize(longSide * 9 / 16, longSide);
-    if (m_collageShape == QLatin1String("wide"))
+    if (m_collageDesign.shape == QLatin1String("wide"))
         return QSize(longSide, longSide * 9 / 16);
-    if (m_collageShape == QLatin1String("portrait"))
+    if (m_collageDesign.shape == QLatin1String("portrait"))
         return QSize(longSide * 4 / 5, longSide);
     return QSize(longSide, longSide);
 }
 
 double SimpleController::collageRatio() const
 {
-    if (m_collageShape == QLatin1String("story"))
+    if (m_collageDesign.shape == QLatin1String("story"))
         return 16.0 / 9.0;
-    if (m_collageShape == QLatin1String("wide"))
+    if (m_collageDesign.shape == QLatin1String("wide"))
         return 9.0 / 16.0;
-    if (m_collageShape == QLatin1String("portrait"))
+    if (m_collageDesign.shape == QLatin1String("portrait"))
         return 5.0 / 4.0;
     return 1.0;
 }
@@ -1922,31 +1919,97 @@ double SimpleController::collageAspect() const
     return 1.0 / collageRatio();
 }
 
-void SimpleController::layoutCollage()
+Collage::Layout SimpleController::buildCollageLayout(const CollageDesign &design) const
 {
-    std::vector<Collage::Photo *> photos;
-    for (auto &photo : m_collagePhotos)
-        photos.push_back(&photo);
-    m_collagePage = Collage::makeGaplessPage(photos, collageRatio(), m_collageSeed);
-    m_collageSelected = -1;
-    drawCollagePreview();
+    const int n = int(m_collagePhotos.size());
+    if (n == 0)
+        return {};
+    double ratio = 1.0;
+    if (design.shape == QLatin1String("story"))
+        ratio = 16.0 / 9.0;
+    else if (design.shape == QLatin1String("wide"))
+        ratio = 9.0 / 16.0;
+    else if (design.shape == QLatin1String("portrait"))
+        ratio = 5.0 / 4.0;
+    if (design.layoutStyle == QLatin1String("grid"))
+        return Collage::makeGridLayout(n, ratio, design.seed);
+    if (design.layoutStyle == QLatin1String("mosaic")) {
+        std::vector<double> aspects;
+        std::vector<double> weights;
+        for (int i = 0; i < n; ++i) {
+            aspects.push_back(m_collagePhotos[size_t(i)].ratio());
+            weights.push_back(i == design.hero ? 3.0 : 1.0);
+        }
+        return Collage::makeMosaicLayout(aspects, weights, ratio, design.seed);
+    }
+    // PhotoCollage's columns. Its photos are copied so laying out never touches the real ones.
+    std::vector<Collage::Photo> copies(m_collagePhotos.begin(), m_collagePhotos.end());
+    std::vector<Collage::Photo *> pointers;
+    for (auto &photo : copies)
+        pointers.push_back(&photo);
+    const auto page = Collage::makeGaplessPage(pointers, ratio, design.seed);
+    return Collage::layoutFromPage(*page, pointers);
+}
+
+void SimpleController::updateCollageLayoutChoices()
+{
+    // Small pictures of each style for the picker, with this collage's photos and big photo.
+    static const struct
+    {
+        const char *id;
+        const char *title;
+    } styles[] = {{"columns", "Columns"}, {"mosaic", "Mosaic"}, {"grid", "Grid"}};
+    m_collageLayouts.clear();
+    for (const auto &style : styles) {
+        CollageDesign design = m_collageDesign;
+        design.layoutStyle = QString::fromLatin1(style.id);
+        const Collage::Layout layout = design.layoutStyle == m_collageDesign.layoutStyle
+                                           ? m_collageDesign.layout
+                                           : buildCollageLayout(design);
+        QVariantList cells;
+        for (const Collage::Slot &slot : layout) {
+            QVariantMap cell;
+            cell[QStringLiteral("x")] = slot.rect.x();
+            cell[QStringLiteral("y")] = slot.rect.y();
+            cell[QStringLiteral("w")] = slot.rect.width();
+            cell[QStringLiteral("h")] = slot.rect.height();
+            cell[QStringLiteral("big")] = design.layoutStyle == QLatin1String("mosaic")
+                                          && slot.photo == design.hero;
+            cells << cell;
+        }
+        QVariantMap entry;
+        entry[QStringLiteral("id")] = design.layoutStyle;
+        entry[QStringLiteral("title")] = QString::fromLatin1(style.title);
+        entry[QStringLiteral("cells")] = cells;
+        m_collageLayouts << entry;
+    }
+}
+
+void SimpleController::changeCollageDesign(const CollageDesign &design, const QString &coalesceKey)
+{
+    if (!m_collageActive || design == m_collageDesign)
+        return;
+    pushCollageUndo(m_collageDesign, coalesceKey);
+    applyCollageDesign(design);
 }
 
 void SimpleController::drawCollagePreview()
 {
-    if (!m_collagePage)
+    if (m_collageDesign.layout.empty())
         return;
     m_collageUnsaved = true;
     const QSize size = collageSize(1200);
     const CollageStyle style = collageStyle();
-    const auto cells = m_collagePage->photoCells();
-    const QImage image = renderCollage(*m_collagePage, size, style, [&](int i, const QSize &) {
-        const QString path = cells[i]->photo()->path;
-        auto it = m_collageThumbs.find(path);
-        if (it == m_collageThumbs.end())
-            it = m_collageThumbs.insert(path, loadPhotoToCover(path, QSize(1200, 1200)));
-        return it.value();
-    });
+    const QImage image = renderCollage(
+        m_collageDesign.layout, m_collageDesign.crops, size, style, [&](int photo, const QSize &) {
+            if (photo < 0 || photo >= int(m_collagePhotos.size()))
+                return QImage();
+            const QString path = m_collagePhotos[size_t(photo)].path;
+            auto it = m_collageThumbs.find(path);
+            if (it == m_collageThumbs.end())
+                it = m_collageThumbs.insert(path, loadPhotoToCover(path, QSize(1600, 1600)));
+            return it.value();
+        });
     const int generation = ++m_collageGeneration;
     const QString file
         = QDir(cacheDir()).filePath(QStringLiteral("collage-%1.jpg").arg(generation % 4));
@@ -1959,15 +2022,12 @@ void SimpleController::drawCollagePreview()
 QVariantList SimpleController::collageCells() const
 {
     QVariantList result;
-    if (!m_collagePage)
-        return result;
-    const double h = m_collagePage->h();
-    for (const Collage::Cell *cell : m_collagePage->photoCells()) {
+    for (const Collage::Slot &slot : m_collageDesign.layout) {
         QVariantMap item;
-        item[QStringLiteral("x")] = cell->x() / m_collagePage->w();
-        item[QStringLiteral("y")] = cell->y() / h;
-        item[QStringLiteral("w")] = cell->w() / m_collagePage->w();
-        item[QStringLiteral("h")] = cell->h() / h;
+        item[QStringLiteral("x")] = slot.rect.x();
+        item[QStringLiteral("y")] = slot.rect.y();
+        item[QStringLiteral("w")] = slot.rect.width();
+        item[QStringLiteral("h")] = slot.rect.height();
         result << item;
     }
     return result;
@@ -1975,10 +2035,127 @@ QVariantList SimpleController::collageCells() const
 
 void SimpleController::setCollageShape(const QString &shape)
 {
-    if (shape == m_collageShape || !m_collageActive)
+    if (shape == m_collageDesign.shape || !m_collageActive)
         return;
-    m_collageShape = shape;
-    layoutCollage();
+    CollageDesign design = m_collageDesign;
+    design.shape = shape;
+    design.layout = buildCollageLayout(design);
+    m_collageSelected = -1;
+    changeCollageDesign(design);
+}
+
+void SimpleController::setCollageLayout(const QString &style)
+{
+    if (style == m_collageDesign.layoutStyle || !m_collageActive)
+        return;
+    CollageDesign design = m_collageDesign;
+    design.layoutStyle = style;
+    // Only Mosaic has a big photo.
+    if (style != QLatin1String("mosaic"))
+        design.hero = -1;
+    design.layout = buildCollageLayout(design);
+    m_collageSelected = -1;
+    changeCollageDesign(design);
+}
+
+double SimpleController::collagePhotoZoom() const
+{
+    if (m_collageSelected < 0 || m_collageSelected >= int(m_collageDesign.layout.size()))
+        return 1.0;
+    const int photo = m_collageDesign.layout[size_t(m_collageSelected)].photo;
+    return photo >= 0 && photo < m_collageDesign.crops.size() ? m_collageDesign.crops.at(photo).zoom
+                                                              : 1.0;
+}
+
+bool SimpleController::collagePhotoIsBig() const
+{
+    return m_collageSelected >= 0 && m_collageSelected < int(m_collageDesign.layout.size())
+           && m_collageDesign.layoutStyle == QLatin1String("mosaic")
+           && m_collageDesign.layout[size_t(m_collageSelected)].photo == m_collageDesign.hero;
+}
+
+void SimpleController::setCollagePhotoBig(bool big)
+{
+    if (m_collageSelected < 0 || m_collageSelected >= int(m_collageDesign.layout.size()))
+        return;
+    const int photo = m_collageDesign.layout[size_t(m_collageSelected)].photo;
+    CollageDesign design = m_collageDesign;
+    // The big photo needs Mosaic, which can give one photo more room.
+    design.layoutStyle = QStringLiteral("mosaic");
+    design.hero = big ? photo : -1;
+    design.layout = buildCollageLayout(design);
+    changeCollageDesign(design);
+    // Keep the same photo selected in its new frame.
+    for (int i = 0; i < int(m_collageDesign.layout.size()); ++i) {
+        if (m_collageDesign.layout[size_t(i)].photo == photo)
+            m_collageSelected = i;
+    }
+    emit changed();
+}
+
+void SimpleController::setCollagePhotoZoom(double zoom)
+{
+    if (m_collageSelected < 0 || m_collageSelected >= int(m_collageDesign.layout.size()))
+        return;
+    const int photo = m_collageDesign.layout[size_t(m_collageSelected)].photo;
+    if (photo < 0 || photo >= m_collageDesign.crops.size())
+        return;
+    CollageDesign design = m_collageDesign;
+    design.crops[photo].zoom = qBound(1.0, zoom, 4.0);
+    changeCollageDesign(design, QStringLiteral("zoom%1").arg(photo));
+}
+
+void SimpleController::zoomCollagePhoto(double factor)
+{
+    setCollagePhotoZoom(collagePhotoZoom() * factor);
+}
+
+void SimpleController::panCollagePhoto(double dx, double dy)
+{
+    if (m_collageSelected < 0 || m_collageSelected >= int(m_collageDesign.layout.size()))
+        return;
+    const Collage::Slot slot = m_collageDesign.layout[size_t(m_collageSelected)];
+    const int photo = slot.photo;
+    if (photo < 0 || photo >= m_collageDesign.crops.size() || photo >= int(m_collagePhotos.size()))
+        return;
+    if (!m_collagePhotoGesture) {
+        m_collageGestureStart = m_collageDesign;
+        m_collagePhotoGesture = true;
+    }
+    // How much of the photo the frame shows, as fractions of it, so the photo follows the
+    // pointer exactly.
+    const Collage::Photo &p = m_collagePhotos[size_t(photo)];
+    const QSize page = collageSize(1200);
+    const QRectF shown = collageSourceRect(QSize(p.w, p.h),
+                                           QSizeF(slot.rect.width() * page.width(),
+                                                  slot.rect.height() * page.height()),
+                                           m_collageDesign.crops.at(photo));
+    Collage::PhotoCrop &crop = m_collageDesign.crops[photo];
+    const double sw = shown.width() / p.w;
+    const double sh = shown.height() / p.h;
+    // Dragging right shows more of the left of the photo.
+    crop.cx = qBound(sw / 2, crop.cx - dx * sw, 1.0 - sw / 2);
+    crop.cy = qBound(sh / 2, crop.cy - dy * sh, 1.0 - sh / 2);
+    drawCollagePreview();
+}
+
+void SimpleController::endCollagePhotoGesture()
+{
+    if (!m_collagePhotoGesture)
+        return;
+    m_collagePhotoGesture = false;
+    if (m_collageDesign != m_collageGestureStart)
+        pushCollageUndo(m_collageGestureStart);
+    m_collageCoalesceKey.clear();
+    emit changed();
+}
+
+void SimpleController::deselectCollagePhoto()
+{
+    if (m_collageSelected < 0)
+        return;
+    m_collageSelected = -1;
+    emit changed();
 }
 
 CollageStyle SimpleController::collageStyle() const
@@ -2018,12 +2195,17 @@ QStringList SimpleController::collagePhrases() const
 
 void SimpleController::applyCollageDesign(const CollageDesign &design)
 {
-    const bool lookChanged = design.spacing != m_collageDesign.spacing
-                             || design.corners != m_collageDesign.corners
-                             || design.background != m_collageDesign.background;
+    const bool lookChanged = !design.sameLook(m_collageDesign);
+    const bool layoutChanged = design.layout != m_collageDesign.layout
+                               || design.hero != m_collageDesign.hero;
     m_collageDesign = design;
     m_collageSelectedItem = qMin(m_collageSelectedItem, int(design.items.size()) - 1);
+    // The frames moved, so the selected one would now mark another photo.
+    if (layoutChanged || m_collageSelected >= int(design.layout.size()))
+        m_collageSelected = -1;
     m_collageUnsaved = true;
+    if (layoutChanged)
+        updateCollageLayoutChoices();
     if (lookChanged)
         drawCollagePreview();
     emit changed();
@@ -2361,13 +2543,16 @@ void SimpleController::shuffleCollage()
 {
     if (!m_collageActive)
         return;
-    ++m_collageSeed;
-    layoutCollage();
+    CollageDesign design = m_collageDesign;
+    ++design.seed;
+    design.layout = buildCollageLayout(design);
+    m_collageSelected = -1;
+    changeCollageDesign(design);
 }
 
 void SimpleController::tapCollage(double x, double y)
 {
-    if (!m_collagePage)
+    if (m_collageDesign.layout.empty())
         return;
     // With text or a sticker selected, the first tap on a photo just lets go of it.
     if (m_collageSelectedItem >= 0) {
@@ -2375,21 +2560,30 @@ void SimpleController::tapCollage(double x, double y)
         emit changed();
         return;
     }
-    // Tap one photo, then another, to swap them. Tapping the same one again lets go of it.
-    Collage::Cell *cell = m_collagePage->cellAt(x * m_collagePage->w(), y * m_collagePage->h());
-    if (!cell)
+    // Tap one photo to select it (its zoom and size show on the right), then another to swap
+    // them. Tapping the same one again lets go of it.
+    int index = -1;
+    for (int i = 0; i < int(m_collageDesign.layout.size()); ++i) {
+        if (m_collageDesign.layout[size_t(i)].rect.contains(QPointF(x, y)))
+            index = i;
+    }
+    if (index < 0)
         return;
-    const auto cells = m_collagePage->photoCells();
-    const int index = int(std::find(cells.begin(), cells.end(), cell) - cells.begin());
     if (m_collageSelected < 0) {
         m_collageSelected = index;
         emit changed();
         return;
     }
-    if (m_collageSelected != index)
-        Collage::Page::swapPhotos(cells[m_collageSelected], cell);
+    if (m_collageSelected != index) {
+        CollageDesign design = m_collageDesign;
+        std::swap(design.layout[size_t(m_collageSelected)].photo,
+                  design.layout[size_t(index)].photo);
+        m_collageSelected = -1;
+        changeCollageDesign(design);
+        return;
+    }
     m_collageSelected = -1;
-    drawCollagePreview();
+    emit changed();
 }
 
 void SimpleController::afterSaved(const QString &path, const QString &message)

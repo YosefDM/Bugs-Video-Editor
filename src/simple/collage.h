@@ -167,6 +167,51 @@ std::unique_ptr<Page> makeGaplessPage(const std::vector<Photo *> &photos,
 // How much of the page the photos cover, from 0 to 1.
 double coverage(const Page &page);
 
+// --- BUGS! additions: layouts other than PhotoCollage's columns ---
+
+// One photo's frame on the page. `rect` is a fraction of the page (0 to 1 both ways); `photo` is
+// an index into the collage's list of photos.
+struct Slot
+{
+    QRectF rect;
+    int photo{0};
+    bool operator==(const Slot &o) const { return rect == o.rect && photo == o.photo; }
+};
+// A finished layout, whichever way it was made. Every layout covers the whole page, with no gaps
+// and no overlaps, and shows every photo once.
+using Layout = std::vector<Slot>;
+
+// Which part of a photo shows in its frame. With zoom 1 the photo just covers the frame; higher
+// zooms show less of it. (cx, cy) is the middle of what shows, as a fraction of the photo.
+struct PhotoCrop
+{
+    double zoom{1.0};
+    double cx{0.5};
+    double cy{0.5};
+    bool operator==(const PhotoCrop &o) const { return zoom == o.zoom && cx == o.cx && cy == o.cy; }
+};
+
+// The column layout as slots. `photos` is the list the page was made from, in collage order.
+Layout layoutFromPage(const Page &page, const std::vector<Photo *> &photos);
+
+// A mosaic: the page is cut in two again and again, like G'MIC's montage and the BRIC layouts in
+// HP's papers, and each part gets room in proportion to the weights of the photos in it. Many
+// arrangements are tried from `seed`, and the one that crops the photos least wins.
+// `aspects` are each photo's height / width; `weights` how much room each gets (the big photo
+// more); `ratio` the page's height / width.
+Layout makeMosaicLayout(const std::vector<double> &aspects,
+                        const std::vector<double> &weights,
+                        double ratio,
+                        unsigned seed);
+
+// Even rows of frames, as square as the page allows. A short last row is stretched to the full
+// width so there are no holes. Seed 1 keeps the photos in order; others shuffle them.
+Layout makeGridLayout(int count, double ratio, unsigned seed);
+
+// How much of each photo would be cut off to fit its frame, averaged over the page area: 0 is
+// none. `ratio` is the page's height / width.
+double cropLoss(const Layout &layout, const std::vector<double> &aspects, double ratio);
+
 } // namespace Collage
 
 #endif // COLLAGE_H

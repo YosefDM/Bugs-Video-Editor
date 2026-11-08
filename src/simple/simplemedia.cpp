@@ -599,25 +599,46 @@ QImage loadPhotoToCover(const QString &readablePath, const QSize &cover)
     return reader.read();
 }
 
-QVector<QRect> collageCellRects(const Collage::Page &page, const QSize &size)
+QVector<QRect> collageCellRects(const Collage::Layout &layout, const QSize &size)
 {
     // Edges are rounded on their own, so neighbouring cells share an edge with no gap.
-    const double s = size.width() / page.w();
     QVector<QRect> rects;
-    for (const Collage::Cell *cell : page.photoCells()) {
-        const int left = qRound(cell->x() * s);
-        const int top = qRound(cell->y() * s);
-        const int right = qRound((cell->x() + cell->w()) * s);
-        const int bottom = qRound((cell->y() + cell->h()) * s);
+    for (const Collage::Slot &slot : layout) {
+        const int left = qRound(slot.rect.left() * size.width());
+        const int top = qRound(slot.rect.top() * size.height());
+        const int right = qRound(slot.rect.right() * size.width());
+        const int bottom = qRound(slot.rect.bottom() * size.height());
         rects << QRect(QPoint(left, top), QPoint(right - 1, bottom - 1));
     }
     return rects;
 }
 
-QImage renderCollage(const Collage::Page &page,
+QRectF collageSourceRect(const QSize &picture, const QSizeF &frame, const Collage::PhotoCrop &crop)
+{
+    if (picture.isEmpty() || frame.isEmpty())
+        return QRectF(QPointF(0, 0), QSizeF(picture));
+    // The largest part with the frame's shape, then smaller by the zoom.
+    const double frameRatio = frame.height() / frame.width();
+    double w = picture.width();
+    double h = w * frameRatio;
+    if (h > picture.height()) {
+        h = picture.height();
+        w = h / frameRatio;
+    }
+    const double zoom = qBound(1.0, crop.zoom, 8.0);
+    w /= zoom;
+    h /= zoom;
+    // Centred where the crop says, kept inside the picture.
+    const double x = qBound(0.0, crop.cx * picture.width() - w / 2, picture.width() - w);
+    const double y = qBound(0.0, crop.cy * picture.height() - h / 2, picture.height() - h);
+    return QRectF(x, y, w, h);
+}
+
+QImage renderCollage(const Collage::Layout &layout,
+                     const QVector<Collage::PhotoCrop> &crops,
                      const QSize &size,
                      const CollageStyle &style,
-                     const std::function<QImage(int cell, const QSize &cellSize)> &image)
+                     const std::function<QImage(int photo, const QSize &needed)> &image)
 {
     QImage canvas(size, QImage::Format_RGB32);
     canvas.fill(style.borderColor);
@@ -631,9 +652,8 @@ QImage renderCollage(const Collage::Page &page,
     const double border = style.border * shorter;
     const double half = border / 2.0;
     const double radius = style.radius * shorter;
-    const auto cells = page.photoCells();
-    const QVector<QRect> rects = collageCellRects(page, size);
-    for (int i = 0; i < int(cells.size()); ++i) {
+    const QVector<QRect> rects = collageCellRects(layout, size);
+    for (int i = 0; i < int(layout.size()); ++i) {
         const QRect cell = rects.at(i);
         QRectF target(cell.x(), cell.y(), cell.width(), cell.height());
         target.adjust(cell.left() <= 0 ? border : half,
@@ -642,23 +662,15 @@ QImage renderCollage(const Collage::Page &page,
                       cell.bottom() >= size.height() - 1 ? -border : -half);
         if (target.width() < 1 || target.height() < 1)
             continue;
-        const QImage picture = image(i, target.size().toSize());
+        const int photo = layout[size_t(i)].photo;
+        const Collage::PhotoCrop crop = photo >= 0 && photo < crops.size() ? crops.at(photo)
+                                                                           : Collage::PhotoCrop();
+        const double zoom = qBound(1.0, crop.zoom, 8.0);
+        const QImage picture
+            = image(photo, QSize(qCeil(target.width() * zoom), qCeil(target.height() * zoom)));
         if (picture.isNull())
             continue;
-        // Fill the cell, cropping the photo around its offset point.
-        const Collage::Photo *photo = cells[i]->photo();
-        const double cellRatio = target.height() / target.width();
-        const double pictureRatio = double(picture.height()) / picture.width();
-        QRectF source(0, 0, picture.width(), picture.height());
-        if (pictureRatio < cellRatio) {
-            // Too wide: crop the sides
-            const double w = picture.height() / cellRatio;
-            source = QRectF((picture.width() - w) * photo->offsetW, 0, w, picture.height());
-        } else if (pictureRatio > cellRatio) {
-            // Too tall: crop the top and bottom
-            const double h = picture.width() * cellRatio;
-            source = QRectF(0, (picture.height() - h) * photo->offsetH, picture.width(), h);
-        }
+        const QRectF source = collageSourceRect(picture.size(), target.size(), crop);
         if (radius > 0) {
             QPainterPath clip;
             const double r = qMin(radius, qMin(target.width(), target.height()) / 2);

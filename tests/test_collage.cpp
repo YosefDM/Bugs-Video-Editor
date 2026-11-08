@@ -324,6 +324,101 @@ private slots:
         QCOMPARE(p.offsetW, 1.0);
         QCOMPARE(p.offsetH, 0.0);
     }
+
+    // Mosaic and Grid cover the whole page, with no gaps or overlaps, and show every photo once.
+    void slotLayoutsCoverThePage()
+    {
+        const auto check = [](const Layout &layout, int n) {
+            QCOMPARE(int(layout.size()), n);
+            QSet<int> shown;
+            double area = 0;
+            for (size_t i = 0; i < layout.size(); ++i) {
+                const QRectF r = layout[i].rect;
+                QVERIFY(r.left() >= -1e-9 && r.top() >= -1e-9);
+                QVERIFY(r.right() <= 1 + 1e-9 && r.bottom() <= 1 + 1e-9);
+                QVERIFY(r.width() > 0.01 && r.height() > 0.01);
+                area += r.width() * r.height();
+                shown.insert(layout[i].photo);
+                for (size_t j = i + 1; j < layout.size(); ++j) {
+                    const QRectF both = r.intersected(layout[j].rect);
+                    QVERIFY2(both.width() * both.height() < 1e-9, "frames overlap");
+                }
+            }
+            QVERIFY(qAbs(area - 1.0) < 1e-6);
+            QCOMPARE(shown.size(), n);
+        };
+        const double ratios[] = {1.0, 16.0 / 9.0, 9.0 / 16.0, 5.0 / 4.0};
+        for (int n = 1; n <= 14; ++n) {
+            std::vector<double> aspects;
+            for (int i = 0; i < n; ++i)
+                aspects.push_back(i % 3 == 0 ? 0.75 : i % 3 == 1 ? 1.33 : 1.0);
+            const std::vector<double> weights(size_t(n), 1.0);
+            for (double ratio : ratios) {
+                for (unsigned seed : {1u, 2u, 7u}) {
+                    check(makeMosaicLayout(aspects, weights, ratio, seed), n);
+                    check(makeGridLayout(n, ratio, seed), n);
+                }
+            }
+        }
+    }
+
+    // The same seed always gives the same layout, so saving matches the preview.
+    void slotLayoutsRepeat()
+    {
+        const std::vector<double> aspects{0.75, 1.33, 1.0, 0.75, 1.5};
+        const std::vector<double> weights(5, 1.0);
+        QVERIFY(makeMosaicLayout(aspects, weights, 1.0, 3)
+                == makeMosaicLayout(aspects, weights, 1.0, 3));
+        QVERIFY(makeGridLayout(5, 1.0, 3) == makeGridLayout(5, 1.0, 3));
+        // Seed 1 keeps the grid in the order the photos were picked.
+        const Layout grid = makeGridLayout(4, 1.0, 1);
+        for (int i = 0; i < 4; ++i)
+            QCOMPARE(grid[size_t(i)].photo, i);
+    }
+
+    // The big photo gets more room than any other.
+    void bigPhotoIsBiggest()
+    {
+        const std::vector<double> aspects(6, 1.0);
+        for (int hero = 0; hero < 6; ++hero) {
+            std::vector<double> weights(6, 1.0);
+            weights[size_t(hero)] = 3.0;
+            const Layout layout = makeMosaicLayout(aspects, weights, 1.0, 1);
+            double heroArea = 0;
+            double otherMax = 0;
+            for (const Slot &slot : layout) {
+                const double a = slot.rect.width() * slot.rect.height();
+                if (slot.photo == hero)
+                    heroArea = a;
+                else
+                    otherMax = std::max(otherMax, a);
+            }
+            QVERIFY2(heroArea > otherMax * 1.5, qPrintable(QString::number(heroArea / otherMax)));
+        }
+    }
+
+    // Mosaic picks frames that fit the photos: tall photos get tall frames, wide get wide.
+    void mosaicCropsLessThanAGrid()
+    {
+        const std::vector<double> aspects{1.5, 0.66, 1.5, 0.66, 1.5};
+        const std::vector<double> weights(5, 1.0);
+        const double mosaic = cropLoss(makeMosaicLayout(aspects, weights, 1.0, 1), aspects, 1.0);
+        const double grid = cropLoss(makeGridLayout(5, 1.0, 1), aspects, 1.0);
+        QVERIFY2(mosaic < grid, qPrintable(QStringLiteral("%1 %2").arg(mosaic).arg(grid)));
+    }
+
+    // The column layout keeps its frames when read as slots.
+    void columnsAsSlots()
+    {
+        std::vector<Photo *> photos{photo(400, 300), photo(300, 400), photo(500, 500)};
+        auto page = makeGaplessPage(photos, 1.0, 1);
+        const Layout layout = layoutFromPage(*page, photos);
+        QCOMPARE(int(layout.size()), 3);
+        double area = 0;
+        for (const Slot &slot : layout)
+            area += slot.rect.width() * slot.rect.height();
+        QVERIFY(qAbs(area - 1.0) < 1e-6);
+    }
 };
 
 QTEST_GUILESS_MAIN(TestCollage)

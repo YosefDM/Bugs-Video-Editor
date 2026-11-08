@@ -2,7 +2,8 @@ import QtQuick
 import BugsSimple
 import "Theme.js" as Theme
 
-// The collage, shown where the video preview usually is. Tap a photo, then another, to swap them.
+// The collage, shown where the video preview usually is. Tap a photo to select it, then drag it
+// to move it in its frame or tap another to swap them.
 // Text and stickers sit on top: drag to move, the corner to resize, the knob above to turn.
 Rectangle {
     id: root
@@ -33,18 +34,64 @@ Rectangle {
             y: cell ? collage.shownY + cell.y * collage.paintedHeight : 0
             width: cell ? cell.w * collage.paintedWidth : 0
             height: cell ? cell.h * collage.paintedHeight : 0
-            color: "#33FFFFFF"
+            // Only an outline, so the photo can be seen clearly while it is moved or zoomed.
+            color: "transparent"
             border.width: 4
             border.color: root.t.accent
         }
 
+        // Tap to select or swap. Drag the selected photo to move it in its frame; the wheel zooms it.
         MouseArea {
+            id: photoArea
+
+            readonly property var cell: simple.collageSelected >= 0 ? simple.collageCells[simple.collageSelected] : null
+            property point last
+            property bool panning: false
+            property bool onSelected: false
+
+            function inCell(x, y) {
+                return cell !== null && x >= cell.x * width && x <= (cell.x + cell.w) * width
+                       && y >= cell.y * height && y <= (cell.y + cell.h) * height;
+            }
+
             x: collage.shownX
             y: collage.shownY
             width: collage.paintedWidth
             height: collage.paintedHeight
-            cursorShape: Qt.PointingHandCursor
-            onClicked: (mouse) => simple.tapCollage(mouse.x / width, mouse.y / height)
+            cursorShape: panning ? Qt.ClosedHandCursor
+                                 : containsMouse && inCell(mouseX, mouseY) ? Qt.OpenHandCursor
+                                                                           : Qt.PointingHandCursor
+            hoverEnabled: true
+            onPressed: (mouse) => {
+                last = Qt.point(mouse.x, mouse.y);
+                panning = false;
+                onSelected = inCell(mouse.x, mouse.y);
+            }
+            onPositionChanged: (mouse) => {
+                if (!pressed || !onSelected)
+                    return;
+                const dx = mouse.x - last.x;
+                const dy = mouse.y - last.y;
+                if (!panning && Math.abs(dx) + Math.abs(dy) < 4)
+                    return;
+                panning = true;
+                simple.panCollagePhoto(dx / (cell.w * width), dy / (cell.h * height));
+                last = Qt.point(mouse.x, mouse.y);
+            }
+            onReleased: (mouse) => {
+                if (panning)
+                    simple.endCollagePhotoGesture();
+                else
+                    simple.tapCollage(mouse.x / width, mouse.y / height);
+                panning = false;
+            }
+            onWheel: (wheel) => {
+                if (!inCell(wheel.x, wheel.y)) {
+                    wheel.accepted = false;
+                    return;
+                }
+                simple.zoomCollagePhoto(wheel.angleDelta.y > 0 ? 1.1 : 1 / 1.1);
+            }
         }
 
         // Text and stickers, over the photos and the same size as the picture.
