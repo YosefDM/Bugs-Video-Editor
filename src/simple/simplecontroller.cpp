@@ -1602,15 +1602,11 @@ void SimpleController::finish()
                 emit self->savingChanged();
                 if (ok) {
                     self->m_savedEdits.insert(edit.sourcePath, edit);
-                    self->afterSaved(path,
-                                     QStringLiteral(
-                                         "Saved to Finished. Your original is untouched."));
+                    self->afterSaved(path, QStringLiteral("Saved to Finished."));
                     self->showFinishedFor(edit.sourcePath);
                 } else {
-                    self->showToast(
-                        QStringLiteral(
-                            "Sorry, that didn't save. Your original is safe. Please try again."),
-                        true);
+                    self->showToast(QStringLiteral("Sorry, that didn't save. Please try again."),
+                                    true);
                 }
             },
             Qt::QueuedConnection);
@@ -1753,7 +1749,7 @@ void SimpleController::exportSaved(const QString &finalPath)
     emit savingChanged();
     m_savedEdits.insert(m_exportEdit.sourcePath, m_exportEdit);
     if (m_exportEdit.sourcePath == m_edit.sourcePath)
-        afterSaved(finalPath, QStringLiteral("Saved to Finished. Your original is untouched."));
+        afterSaved(finalPath, QStringLiteral("Saved to Finished."));
     else
         afterSaved(finalPath,
                    QStringLiteral("%1 is saved to Finished.")
@@ -1773,8 +1769,7 @@ void SimpleController::finishExportFailed()
 {
     m_saving = false;
     emit savingChanged();
-    showToast(QStringLiteral("Sorry, that didn't save. Your original is safe. Please try again."),
-              true);
+    showToast(QStringLiteral("Sorry, that didn't save. Please try again."), true);
 }
 
 void SimpleController::cancelFinish()

@@ -93,7 +93,7 @@ Rectangle {
                    : names.length > 1 ? "Your changes to " + names.length + " files haven't been saved: <b>"
                                         + names.slice(0, 3).join(", ") + (names.length > 3 ? "…" : "") + "</b>."
                    : "Your changes haven't been saved.")
-                  + " To keep them, go back and press <b>Finish</b>.<br><br>Your original stays untouched either way."
+                  + " To keep them, go back and press <b>Finish</b>."
         }
 
         RowLayout {
