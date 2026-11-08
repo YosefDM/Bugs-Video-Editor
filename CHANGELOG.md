@@ -28,6 +28,8 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 - Words typed near the edge of the picture grew off it. They now stay on the picture, in the preview and the saved file.
 - After typing a time in **Trim** and pressing Enter, Space typed into the box instead of playing, and the box stopped following the strip.
 - Space, the arrow keys and Ctrl+Z work after clicking any button or the strip, not only the video.
+- In the Text tool, the words box could show the text from before, and typing then replaced the wrong words.
+- The full editor's Elements panel no longer has animated emoji that aren't tznius, such as the bikini, kissing couples, same-sex families and the middle finger.
 
 ## 1.0.3
 

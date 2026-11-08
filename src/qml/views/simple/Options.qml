@@ -297,22 +297,44 @@ Rectangle {
                     }
                 }
 
-                Grid {
-                    id: stickerGrid
-
+                // A window onto the group, about four rows tall, that scrolls on its own: with
+                // hundreds of stickers in a group, the options below would otherwise be a long
+                // way down. Only the rows on screen are made.
+                Rectangle {
                     Layout.fillWidth: true
-                    columns: 5
-                    spacing: 6
+                    Layout.preferredHeight: stickerGrid.cellHeight * 4 + 12
+                    radius: 10
+                    color: root.t.drop
+                    border.width: 1
+                    border.color: root.t.softBorder
+                    clip: true
 
-                    Repeater {
+                    GridView {
+                        id: stickerGrid
+
+                        anchors.fill: parent
+                        anchors.margins: 6
+                        anchors.rightMargin: 14
+                        cellWidth: Math.floor(width / 5)
+                        cellHeight: cellWidth
+                        boundsBehavior: Flickable.StopAtBounds
                         model: simple.stickerCategories.length > 0
                                ? simple.stickerCategories[collagePanel.stickerCategory].stickers : []
+
+                        ScrollBar.vertical: ScrollBar {
+                            parent: stickerGrid.parent
+                            anchors.top: parent.top
+                            anchors.bottom: parent.bottom
+                            anchors.right: parent.right
+                            anchors.margins: 2
+                            policy: ScrollBar.AlwaysOn
+                        }
 
                         delegate: Rectangle {
                             required property var modelData
 
-                            width: (collagePanel.width - 24) / 5
-                            height: width
+                            width: stickerGrid.cellWidth
+                            height: stickerGrid.cellHeight
                             radius: 10
                             color: stickerArea.containsMouse ? root.t.accentSoft : "transparent"
                             Accessible.role: Accessible.Button
@@ -1107,6 +1129,10 @@ Rectangle {
                 readonly property var label: selected >= 0 && selected < simple.labels.length
                                              ? simple.labels[selected] : null
 
+                // The words box may still have the keyboard from the text selected before, so it
+                // is filled in by hand when the selection changes.
+                onSelectedChanged: wordsInput.text = label ? label.text : ""
+
                 visible: simple.hasFile && !simple.collageActive && simple.tool === "text"
                 Layout.fillWidth: true
                 Layout.leftMargin: 18
@@ -1126,6 +1152,7 @@ Rectangle {
                     primary: true
                     onClicked: {
                         simple.addLabel();
+                        wordsInput.text = textPanel.label ? textPanel.label.text : "";
                         wordsInput.forceActiveFocus();
                         wordsInput.selectAll();
                     }
@@ -1186,6 +1213,9 @@ Rectangle {
                             Binding on text {
                                 value: textPanel.label ? textPanel.label.text : ""
                                 when: !wordsInput.activeFocus
+                                // Keep the words when the box takes the keyboard, instead
+                                // of going back to an older value and saving that.
+                                restoreMode: Binding.RestoreNone
                             }
                         }
                     }

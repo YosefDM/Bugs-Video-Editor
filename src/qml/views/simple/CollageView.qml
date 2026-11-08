@@ -66,7 +66,6 @@ Rectangle {
 
                     required property int index
                     readonly property var d: simple.collageItems[index] || null
-                    readonly property bool selected: index === simple.collageSelectedItem
                     readonly property real centerX: d ? d.x * itemLayer.width : 0
                     readonly property real centerY: d ? d.y * itemLayer.height : 0
 
@@ -106,108 +105,123 @@ Rectangle {
                         }
                         onReleased: simple.endCollageItemGesture()
                     }
+                }
+            }
 
-                    // Shows which one the options on the right change.
+            // The selection frame and handles, above every item, so an item sent to the back can
+            // still be turned and resized where something covers it.
+            Item {
+                id: sel
+
+                readonly property int index: simple.collageSelectedItem
+                readonly property var d: index >= 0 ? simple.collageItems[index] || null : null
+                readonly property real centerX: d ? d.x * itemLayer.width : 0
+                readonly property real centerY: d ? d.y * itemLayer.height : 0
+
+                visible: d !== null
+                z: 100000
+                width: d ? d.w * itemLayer.width : 0
+                height: d ? d.h * itemLayer.height : 0
+                x: centerX - width / 2
+                y: centerY - height / 2
+                rotation: d ? d.rotation : 0
+
+                // Shows which one the options on the right change.
+                Rectangle {
+                    anchors.fill: parent
+                    anchors.margins: -4
+                    color: "transparent"
+                    border.width: 2
+                    border.color: "#FFFFFF"
+                    radius: 4
+
                     Rectangle {
-                        visible: box.selected
                         anchors.fill: parent
-                        anchors.margins: -4
+                        anchors.margins: -1
                         color: "transparent"
-                        border.width: 2
-                        border.color: "#FFFFFF"
-                        radius: 4
-
-                        Rectangle {
-                            anchors.fill: parent
-                            anchors.margins: -1
-                            color: "transparent"
-                            border.width: 1
-                            border.color: "#80000000"
-                            radius: 5
-                        }
+                        border.width: 1
+                        border.color: "#80000000"
+                        radius: 5
                     }
+                }
 
-                    // Turn knob, on a short stem above the top edge.
-                    Rectangle {
-                        visible: box.selected
-                        x: box.width / 2 - 1
-                        y: -26
-                        width: 2
-                        height: 22
+                // Turn knob, on a short stem above the top edge.
+                Rectangle {
+                    x: sel.width / 2 - 1
+                    y: -26
+                    width: 2
+                    height: 22
+                    color: "#FFFFFF"
+                }
+
+                Rectangle {
+                    x: sel.width / 2 - 11
+                    y: -44
+                    width: 22
+                    height: 22
+                    radius: 11
+                    color: root.t.accent
+                    border.width: 2
+                    border.color: "#FFFFFF"
+                    Accessible.role: Accessible.Button
+                    Accessible.name: "Turn"
+
+                    Icon {
+                        anchors.centerIn: parent
+                        size: 14
+                        name: "rotate"
                         color: "#FFFFFF"
+                        strokeWidth: 2.2
                     }
 
-                    Rectangle {
-                        visible: box.selected
-                        x: box.width / 2 - 11
-                        y: -44
-                        width: 22
-                        height: 22
-                        radius: 11
-                        color: root.t.accent
-                        border.width: 2
-                        border.color: "#FFFFFF"
-                        Accessible.role: Accessible.Button
-                        Accessible.name: "Turn"
-
-                        Icon {
-                            anchors.centerIn: parent
-                            size: 14
-                            name: "rotate"
-                            color: "#FFFFFF"
-                            strokeWidth: 2.2
+                    MouseArea {
+                        anchors.fill: parent
+                        anchors.margins: -8
+                        cursorShape: Qt.PointingHandCursor
+                        onPositionChanged: (mouse) => {
+                            if (!pressed)
+                                return;
+                            const at = mapToItem(itemLayer, mouse.x, mouse.y);
+                            const angle = Math.atan2(at.y - sel.centerY, at.x - sel.centerX) * 180 / Math.PI + 90;
+                            simple.rotateCollageItem(sel.index, angle);
                         }
-
-                        MouseArea {
-                            anchors.fill: parent
-                            anchors.margins: -8
-                            cursorShape: Qt.PointingHandCursor
-                            onPositionChanged: (mouse) => {
-                                if (!pressed)
-                                    return;
-                                const at = mapToItem(itemLayer, mouse.x, mouse.y);
-                                const angle = Math.atan2(at.y - box.centerY, at.x - box.centerX) * 180 / Math.PI + 90;
-                                simple.rotateCollageItem(box.index, angle);
-                            }
-                            onReleased: simple.endCollageItemGesture()
-                        }
+                        onReleased: simple.endCollageItemGesture()
                     }
+                }
 
-                    // Size handle at the bottom-right corner: further from the middle is bigger.
-                    Rectangle {
-                        visible: box.selected
-                        x: box.width - 9
-                        y: box.height - 9
-                        width: 18
-                        height: 18
-                        radius: 9
-                        color: "#FFFFFF"
-                        border.width: 2
-                        border.color: root.t.accent
-                        Accessible.role: Accessible.Button
-                        Accessible.name: "Resize"
+                // Size handle at the bottom-right corner: further from the middle is bigger.
+                Rectangle {
+                    x: sel.width - 9
+                    y: sel.height - 9
+                    width: 18
+                    height: 18
+                    radius: 9
+                    color: "#FFFFFF"
+                    border.width: 2
+                    border.color: root.t.accent
+                    Accessible.role: Accessible.Button
+                    Accessible.name: "Resize"
 
-                        MouseArea {
-                            property real startSize
-                            property real startDistance
+                    MouseArea {
+                        property real startSize
+                        property real startDistance
 
-                            anchors.fill: parent
-                            anchors.margins: -8
-                            cursorShape: Qt.SizeFDiagCursor
-                            onPressed: (mouse) => {
-                                const at = mapToItem(itemLayer, mouse.x, mouse.y);
-                                startSize = box.d.size;
-                                startDistance = Math.max(4, Math.hypot(at.x - box.centerX, at.y - box.centerY));
-                            }
-                            onPositionChanged: (mouse) => {
-                                if (!pressed)
-                                    return;
-                                const at = mapToItem(itemLayer, mouse.x, mouse.y);
-                                const distance = Math.hypot(at.x - box.centerX, at.y - box.centerY);
-                                simple.resizeCollageItem(box.index, startSize * distance / startDistance);
-                            }
-                            onReleased: simple.endCollageItemGesture()
+                        anchors.fill: parent
+                        anchors.margins: -8
+                        cursorShape: Qt.SizeFDiagCursor
+                        onPressed: (mouse) => {
+                            const at = mapToItem(itemLayer, mouse.x, mouse.y);
+                            startSize = sel.d.size;
+                            startDistance = Math.max(4, Math.hypot(at.x - sel.centerX, at.y - sel.centerY));
                         }
+                        onPositionChanged: (mouse) => {
+                            if (!pressed)
+                                return;
+                            const at = mapToItem(itemLayer, mouse.x, mouse.y);
+                            const distance = Math.hypot(at.x - sel.centerX, at.y - sel.centerY);
+                            simple.resizeCollageItem(sel.index, startSize * distance / startDistance);
+                        }
+                        onReleased: simple.endCollageItemGesture()
                     }
                 }
             }
