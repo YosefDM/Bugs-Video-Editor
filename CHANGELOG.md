@@ -15,8 +15,11 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 - Saving a video is faster: frames are prepared on several cores at once, as Shotcut's own export does.
 - Saving a picture while another was still saving could replace it, even though both said "Picture saved". Each picture now gets its own name, with tenths of a second in it.
 - When a video finished saving while another file was open, the list jumped to Finished and hid the file being worked on. It now stays put.
-- A save could fail at the very end if another program, such as OneDrive or a virus scanner, was looking at the new file. BUGS! now waits a few seconds for it.
+- A save could fail at the very end if another program, such as a virus scanner, was looking at the new file. BUGS! now waits a few seconds for it.
 - Checking a long video after saving no longer holds up the screen.
+- Adding or moving text froze BUGS! for a moment on long videos while it picked a colour. The words now show straight away and take their colour a moment later.
+- Typing a caption no longer holds up the screen each time you pause.
+- Making a collage reads the photos in the background, and the button says "Making…" meanwhile.
 - The yellow trim frame and handles only show while **Trim** is picked.
 - Words typed near the edge of the picture grew off it. They now stay on the picture, in the preview and the saved file.
 - After typing a time in **Trim** and pressing Enter, Space typed into the box instead of playing, and the box stopped following the strip.

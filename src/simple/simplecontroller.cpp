@@ -76,7 +76,26 @@ SimpleController::SimpleController(QObject *parent)
     // Typing a caption redraws the picture only after a short pause.
     m_captionTimer.setSingleShot(true);
     m_captionTimer.setInterval(300);
-    connect(&m_captionTimer, &QTimer::timeout, this, [this]() { rebuildPreview(m_playhead); });
+    connect(&m_captionTimer, &QTimer::timeout, this, [this]() {
+        // Saving the full-size caption picture takes about 70 ms for 1080p on a fast PC, and
+        // longer on a slow laptop, so it is made off the screen's thread. The preview then finds
+        // it ready.
+        const Edit edit = m_edit;
+        const int generation = ++m_captionGeneration;
+        QPointer<SimpleController> self(this);
+        (void) QtConcurrent::run([self, edit, generation]() {
+            writeCaptionImage(edit);
+            if (!self)
+                return;
+            QMetaObject::invokeMethod(
+                self.data(),
+                [self, generation]() {
+                    if (self && generation == self->m_captionGeneration)
+                        self->rebuildPreview(self->m_playhead);
+                },
+                Qt::QueuedConnection);
+        });
+    });
 
     m_frameThumbTimer.setSingleShot(true);
     m_frameThumbTimer.setInterval(150);
@@ -608,11 +627,13 @@ QVariantList SimpleController::labelFonts() const
     return result;
 }
 
-QImage SimpleController::labelBackdrop()
+void SimpleController::refreshLabelColors()
 {
+    if (!hasFile())
+        return;
     // The picture behind the labels: the edited frame at the playhead, without the labels.
-    Edit plain = m_edit;
-    plain.labels.clear();
+    // Decoding it from the middle of a long video takes a while, so it is done off the screen's
+    // thread, and labels Levi has not coloured himself change colour when it is ready.
     const int frame = m_edit.isPhoto ? 0 : m_edit.editedFromSource(m_playhead);
     const QString key = QStringLiteral("%1|%2|%3,%4,%5,%6|%7%8|%9")
                             .arg(m_edit.sourcePath)
@@ -624,12 +645,55 @@ QImage SimpleController::labelBackdrop()
                             .arg(m_edit.rotation)
                             .arg(m_edit.flipped)
                             .arg(m_edit.captionName);
-    if (key != m_labelBackdropKey) {
-        const QImage image = renderFrame(plain, frame);
-        m_labelBackdrop = image.isNull() ? QImage() : image.scaled(480, 480, Qt::KeepAspectRatio);
-        m_labelBackdropKey = key;
+    if (key == m_labelBackdropKey) {
+        applyAutoLabelColors();
+        return;
     }
-    return m_labelBackdrop;
+    Edit plain = m_edit;
+    plain.labels.clear();
+    const int generation = ++m_labelBackdropGeneration;
+    QPointer<SimpleController> self(this);
+    (void) QtConcurrent::run([self, plain, frame, key, generation]() {
+        const QImage image = renderFrame(plain, frame);
+        const QImage small = image.isNull() ? QImage()
+                                            : image.scaled(480, 480, Qt::KeepAspectRatio);
+        if (!self)
+            return;
+        QMetaObject::invokeMethod(
+            self.data(),
+            [self, small, key, generation, source = plain.sourcePath]() {
+                if (!self || generation != self->m_labelBackdropGeneration
+                    || source != self->m_edit.sourcePath)
+                    return;
+                self->m_labelBackdrop = small;
+                self->m_labelBackdropKey = key;
+                self->applyAutoLabelColors();
+            },
+            Qt::QueuedConnection);
+    });
+}
+
+void SimpleController::applyAutoLabelColors()
+{
+    if (m_labelBackdrop.isNull())
+        return;
+    bool changedAny = false;
+    for (auto &label : m_edit.labels) {
+        if (!label.autoColor)
+            continue;
+        const QString color = contrastingLabelColor(m_labelBackdrop, label.center);
+        if (color != label.color) {
+            label.color = color;
+            changedAny = true;
+        }
+    }
+    if (!changedAny)
+        return;
+    // The Text tool draws labels live. Other tools show them baked into the picture, which must
+    // be redrawn so the preview still matches the saved file.
+    if (m_tool != QLatin1String("text"))
+        rebuildPreview(m_playhead);
+    emit changed();
 }
 
 void SimpleController::addLabel()
@@ -646,11 +710,11 @@ void SimpleController::addLabel()
         label.size = m_edit.labels.at(m_selectedLabel).size;
         label.font = m_edit.labels.at(m_selectedLabel).font;
     }
-    label.color = contrastingLabelColor(labelBackdrop(), label.center);
     m_edit.labels << label;
     m_selectedLabel = n;
     pushUndo(before);
     afterEdit(false);
+    refreshLabelColors();
 }
 
 void SimpleController::selectLabel(int index)
@@ -720,15 +784,12 @@ void SimpleController::endLabelDrag()
     if (!m_labelDragging)
         return;
     m_labelDragging = false;
-    // A label Levi has not coloured himself takes the colour that suits its new spot.
-    for (auto &label : m_edit.labels) {
-        if (label.autoColor)
-            label.color = contrastingLabelColor(labelBackdrop(), label.center);
-    }
     if (m_edit != m_dragStart)
         pushUndo(m_dragStart);
     m_lastCoalesceKey.clear();
     emit changed();
+    // A label Levi has not coloured himself takes the colour that suits its new spot.
+    refreshLabelColors();
 }
 
 void SimpleController::removeLabel(int index)
@@ -1694,21 +1755,56 @@ void SimpleController::toggleCollagePick(const QString &path)
 
 void SimpleController::makeCollage()
 {
-    if (m_collagePicks.size() < 2)
+    if (m_collagePicks.size() < 2 || m_collageMaking)
         return;
-    m_collagePhotos.clear();
-    QStringList unreadable;
-    for (const auto &path : std::as_const(m_collagePicks)) {
-        QSize size;
-        const QString readable = uprightPhotoPath(path, &size);
-        if (readable.isEmpty() || size.isEmpty()) {
-            unreadable << QFileInfo(path).fileName();
-            continue;
+    // Reading big phone photos, and turning iPhone photos into ones BUGS! can read, takes a
+    // while, so it happens off the screen's thread.
+    m_collageMaking = true;
+    emit changed();
+    const QStringList picks = m_collagePicks;
+    const int generation = ++m_collageMakeGeneration;
+    QPointer<SimpleController> self(this);
+    (void) QtConcurrent::run([self, picks, generation]() {
+        std::vector<Collage::Photo> photos;
+        QHash<QString, QImage> thumbs;
+        QStringList unreadable;
+        for (const auto &path : picks) {
+            QSize size;
+            const QString readable = uprightPhotoPath(path, &size);
+            if (readable.isEmpty() || size.isEmpty()) {
+                unreadable << QFileInfo(path).fileName();
+                continue;
+            }
+            photos.push_back(Collage::Photo{readable, size.width(), size.height()});
+            // The preview reads them at this size; see drawCollagePreview().
+            thumbs.insert(readable, loadPhotoToCover(readable, QSize(1200, 1200)));
         }
-        m_collagePhotos.push_back(Collage::Photo{readable, size.width(), size.height()});
+        if (!self)
+            return;
+        QMetaObject::invokeMethod(
+            self.data(),
+            [self, photos, thumbs, unreadable, generation]() {
+                if (!self || generation != self->m_collageMakeGeneration)
+                    return;
+                self->collagePhotosRead(photos, thumbs, unreadable);
+            },
+            Qt::QueuedConnection);
+    });
+}
+
+void SimpleController::collagePhotosRead(const std::vector<Collage::Photo> &photos,
+                                         const QHash<QString, QImage> &thumbs,
+                                         const QStringList &unreadable)
+{
+    m_collageMaking = false;
+    // Levi cancelled, or went to another file, while they were read.
+    if (!m_collagePicking) {
+        emit changed();
+        return;
     }
-    if (m_collagePhotos.size() < 2) {
+    if (photos.size() < 2) {
         showToast(QStringLiteral("BUGS! couldn't open enough of those photos."), true);
+        emit changed();
         return;
     }
     if (!unreadable.isEmpty())
@@ -1716,6 +1812,8 @@ void SimpleController::makeCollage()
                       .arg(unreadable.join(QStringLiteral(", ")),
                            unreadable.size() == 1 ? QStringLiteral("it") : QStringLiteral("them")),
                   true);
+    m_collagePhotos.assign(photos.begin(), photos.end());
+    m_collageThumbs = thumbs;
     m_collagePicking = false;
     m_collageActive = true;
     m_collageSeed = 1;
@@ -1727,6 +1825,9 @@ void SimpleController::makeCollage()
 void SimpleController::leaveCollage()
 {
     m_collagePicking = false;
+    // Photos still being read for a collage are no longer wanted.
+    m_collageMaking = false;
+    ++m_collageMakeGeneration;
     m_collagePicks.clear();
     m_collageActive = false;
     m_collagePage.reset();

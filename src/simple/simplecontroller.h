@@ -65,6 +65,8 @@ class SimpleController : public QObject
     // Collage: picking photos, then the collage screen
     Q_PROPERTY(bool collagePicking READ collagePicking NOTIFY changed)
     Q_PROPERTY(int collagePickCount READ collagePickCount NOTIFY changed)
+    // True while the picked photos are being read for a new collage.
+    Q_PROPERTY(bool collageMaking READ collageMaking NOTIFY changed)
     Q_PROPERTY(bool collageActive READ collageActive NOTIFY changed)
     Q_PROPERTY(QString collageShape READ collageShape NOTIFY changed)
     Q_PROPERTY(int collageBorder READ collageBorder NOTIFY changed)
@@ -149,6 +151,7 @@ public:
 
     bool collagePicking() const { return m_collagePicking; }
     int collagePickCount() const { return m_collagePicks.size(); }
+    bool collageMaking() const { return m_collageMaking; }
     bool collageActive() const { return m_collageActive; }
     QString collageShape() const { return m_collageShape; }
     int collageBorder() const { return m_collageBorder; }
@@ -371,10 +374,14 @@ private:
     bool m_playing{false};
     double m_speed{1.0};
     QTimer m_captionTimer;
+    int m_captionGeneration{0};
     int m_selectedLabel{-1};
-    QImage labelBackdrop();
+    // Picks the colour that stands out for each label Levi has not coloured himself.
+    void refreshLabelColors();
+    void applyAutoLabelColors();
     QImage m_labelBackdrop;
     QString m_labelBackdropKey;
+    int m_labelBackdropGeneration{0};
     bool m_labelDragging{false};
     QTimer m_frameThumbTimer;
     QString m_frameThumb;
@@ -385,6 +392,8 @@ private:
 
     bool m_collagePicking{false};
     QStringList m_collagePicks;
+    bool m_collageMaking{false};
+    int m_collageMakeGeneration{0};
     bool m_collageActive{false};
     bool m_collageUnsaved{false};               // changed since it was last saved
     std::deque<Collage::Photo> m_collagePhotos; // .path is the readable file, upright
@@ -398,6 +407,9 @@ private:
     int m_collageGeneration{0};
     QHash<QString, QImage> m_collageThumbs; // preview-size pictures by readable path
     void layoutCollage();
+    void collagePhotosRead(const std::vector<Collage::Photo> &photos,
+                           const QHash<QString, QImage> &thumbs,
+                           const QStringList &unreadable);
     void drawCollagePreview();
     QSize collageSize(int longSide) const;
     // Height / width of the chosen shape. Preview and save must use exactly the same value, or

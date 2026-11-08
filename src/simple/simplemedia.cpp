@@ -29,6 +29,7 @@
 #include <QLinearGradient>
 #include <QPainter>
 #include <QProcess>
+#include <QSaveFile>
 #include <QStandardPaths>
 #include <QTextOption>
 #include <QTransform>
@@ -500,8 +501,15 @@ QString writeCaptionImage(const Edit &edit)
         QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex().left(24));
     const QString target
         = QDir(cacheDir()).filePath(QStringLiteral("caption-") + name + QStringLiteral(".png"));
-    if (!QFileInfo::exists(target))
-        renderCaption(edit, frame).save(target, "PNG");
+    if (!QFileInfo::exists(target)) {
+        // Light compression: this is a working file, redrawn each time the words change, and
+        // full compression of a full-size picture is slow. Written under another
+        // name first, because it may be made off the screen's thread while the preview asks
+        // for it, and a half-written picture must never be read.
+        QSaveFile file(target);
+        if (file.open(QIODevice::WriteOnly) && renderCaption(edit, frame).save(&file, "PNG", 90))
+            file.commit();
+    }
     return target;
 }
 
