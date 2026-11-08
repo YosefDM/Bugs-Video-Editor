@@ -85,6 +85,8 @@ Rectangle {
             }
             onTextEdited: field.edited()
             onEditingFinished: field.committed()
+            // Enter lets go of the box, so Space plays again and the box follows the strip.
+            onAccepted: root.forceActiveFocus()
         }
     }
 
@@ -97,6 +99,8 @@ Rectangle {
 
         anchors.fill: parent
         anchors.bottomMargin: root.roomForNote ? note.height + 28 : 0
+        // A long list, such as saved pictures, scrolls under the note instead of over it.
+        clip: true
         contentWidth: availableWidth
         ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
         ScrollBar.vertical.policy: options.implicitHeight > scroll.height ? ScrollBar.AlwaysOn
@@ -333,7 +337,8 @@ Rectangle {
                         id: startField
                         title: "Starts at"
                         onCommitted: {
-                            simple.setTrimStartText(text);
+                            if (text !== simple.trimStartText)
+                                simple.setTrimStartText(text);
                             text = Qt.binding(() => simple.trimStartText);
                         }
                         Binding on text {
@@ -346,7 +351,8 @@ Rectangle {
                         id: endField
                         title: "Ends at"
                         onCommitted: {
-                            simple.setTrimEndText(text);
+                            if (text !== simple.trimEndText)
+                                simple.setTrimEndText(text);
                             text = Qt.binding(() => simple.trimEndText);
                         }
                         Binding on text {
@@ -382,7 +388,40 @@ Rectangle {
 
                 Heading {
                     title: "Cut out a part"
-                    body: "Drag the red box over the part you don't want. Everything else stays and joins up."
+                    body: "Drag the red box over the part you don't want, or type the times. Everything else stays and joins up."
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
+
+                    Field {
+                        id: cutStartField
+                        title: "From"
+                        onCommitted: {
+                            if (text !== simple.selectionStartText)
+                                simple.setSelectionStartText(text);
+                            text = Qt.binding(() => simple.selectionStartText);
+                        }
+                        Binding on text {
+                            value: simple.selectionStartText
+                            when: !cutStartField.input.activeFocus
+                        }
+                    }
+
+                    Field {
+                        id: cutEndField
+                        title: "To"
+                        onCommitted: {
+                            if (text !== simple.selectionEndText)
+                                simple.setSelectionEndText(text);
+                            text = Qt.binding(() => simple.selectionEndText);
+                        }
+                        Binding on text {
+                            value: simple.selectionEndText
+                            when: !cutEndField.input.activeFocus
+                        }
+                    }
                 }
 
                 Rectangle {
@@ -982,10 +1021,87 @@ Rectangle {
                 }
 
                 Text {
-                    text: "It goes into Finished, ready to share."
+                    Layout.fillWidth: true
+                    text: "It goes into Finished straight away. Save as many as you like."
+                    wrapMode: Text.WordWrap
                     color: root.t.muted
                     font.family: "Inter"
                     font.pixelSize: 12
+                }
+
+                // Pictures saved from this video, so one he doesn't like can be taken back.
+                ColumnLayout {
+                    visible: simple.savedPictures.length > 0
+                    Layout.fillWidth: true
+                    Layout.topMargin: 4
+                    spacing: 8
+
+                    Text {
+                        text: simple.savedPictures.length === 1 ? "1 picture saved from this video"
+                                                                : simple.savedPictures.length + " pictures saved from this video"
+                        color: root.t.text2
+                        font.family: "Inter"
+                        font.pixelSize: 13
+                        font.weight: Font.DemiBold
+                    }
+
+                    Repeater {
+                        model: simple.savedPictures
+
+                        delegate: Rectangle {
+                            required property var modelData
+
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 56
+                            radius: 10
+                            color: root.t.drop
+                            border.width: 1
+                            border.color: root.t.softBorder
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.margins: 6
+                                anchors.rightMargin: 12
+                                spacing: 10
+
+                                Image {
+                                    Layout.preferredWidth: 76
+                                    Layout.preferredHeight: 44
+                                    source: modelData.url
+                                    sourceSize.width: 152
+                                    fillMode: Image.PreserveAspectCrop
+                                    asynchronous: true
+                                    clip: true
+                                }
+
+                                Text {
+                                    Layout.fillWidth: true
+                                    text: "At " + modelData.time
+                                    elide: Text.ElideRight
+                                    color: root.t.text
+                                    font.family: "Inter"
+                                    font.pixelSize: 13
+                                }
+
+                                Text {
+                                    text: "Don't keep"
+                                    color: root.t.danger
+                                    font.family: "Inter"
+                                    font.pixelSize: 12
+                                    font.underline: true
+                                    Accessible.role: Accessible.Button
+                                    Accessible.name: "Don't keep the picture at " + modelData.time
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        anchors.margins: -8
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: simple.removeSavedPicture(modelData.path)
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }

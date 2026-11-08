@@ -10,6 +10,9 @@ Item {
     readonly property int handleWidth: 14
     readonly property int frames: Math.max(1, simple.frames)
     readonly property bool cutTool: simple.tool === "cut"
+    // The yellow frame and handles only show while trimming. Elsewhere the trimmed-off ends just
+    // stay dimmed.
+    readonly property bool trimTool: simple.tool === "trim"
 
     function xForFrame(frame) {
         return frame / frames * width;
@@ -222,6 +225,7 @@ Item {
 
     // Yellow frame around what is kept
     Rectangle {
+        visible: strip.trimTool
         x: strip.xForFrame(simple.trimStart)
         width: strip.xForFrame(simple.trimEnd) - x
         height: parent.height
@@ -234,7 +238,7 @@ Item {
     // Trim handles. They sit inside the kept area so they stay on the strip at the ends.
     Rectangle {
         id: startHandle
-        opacity: strip.cutTool ? 0.5 : 1
+        visible: strip.trimTool
 
         x: strip.xForFrame(simple.trimStart)
         width: strip.handleWidth
@@ -255,8 +259,7 @@ Item {
         MouseArea {
             anchors.fill: parent
             anchors.margins: -4
-            // In Cut out the red box's edges can sit on these; dragging them must not trim.
-            enabled: !strip.cutTool
+            enabled: strip.trimTool
             cursorShape: Qt.SizeHorCursor
             onPressed: simple.beginTrimDrag()
             onPositionChanged: (mouse) => {
@@ -269,7 +272,7 @@ Item {
 
     Rectangle {
         id: endHandle
-        opacity: strip.cutTool ? 0.5 : 1
+        visible: strip.trimTool
 
         x: strip.xForFrame(simple.trimEnd) - width
         width: strip.handleWidth
@@ -290,8 +293,7 @@ Item {
         MouseArea {
             anchors.fill: parent
             anchors.margins: -4
-            // In Cut out the red box's edges can sit on these; dragging them must not trim.
-            enabled: !strip.cutTool
+            enabled: strip.trimTool
             cursorShape: Qt.SizeHorCursor
             onPressed: simple.beginTrimDrag()
             onPositionChanged: (mouse) => {

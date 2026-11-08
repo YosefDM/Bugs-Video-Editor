@@ -86,6 +86,8 @@ class SimpleController : public QObject
     Q_PROPERTY(bool canRemoveSelection READ canRemoveSelection NOTIFY changed)
     Q_PROPERTY(QString selectionText READ selectionText NOTIFY changed)
     Q_PROPERTY(QString selectionInfo READ selectionInfo NOTIFY changed)
+    Q_PROPERTY(QString selectionStartText READ selectionStartText NOTIFY changed)
+    Q_PROPERTY(QString selectionEndText READ selectionEndText NOTIFY changed)
     Q_PROPERTY(QString trimStartText READ trimStartText NOTIFY changed)
     Q_PROPERTY(QString trimEndText READ trimEndText NOTIFY changed)
     Q_PROPERTY(QString lengthText READ lengthText NOTIFY changed)
@@ -93,6 +95,8 @@ class SimpleController : public QObject
     Q_PROPERTY(int playhead READ playhead NOTIFY positionChanged)
     Q_PROPERTY(QString positionText READ positionText NOTIFY positionChanged)
     Q_PROPERTY(bool playing READ playing NOTIFY playingChanged)
+    // How fast the preview plays: 1, 1.5 or 2. The saved video is always normal speed.
+    Q_PROPERTY(double speed READ speed NOTIFY playingChanged)
     // Crop, in fractions of the rotated picture
     Q_PROPERTY(QRectF cropRect READ cropRect NOTIFY changed)
     Q_PROPERTY(QString cropShape READ cropShape NOTIFY changed)
@@ -109,6 +113,8 @@ class SimpleController : public QObject
     Q_PROPERTY(QVariantList labelFonts READ labelFonts CONSTANT)
     // Save picture
     Q_PROPERTY(QString frameThumb READ frameThumb NOTIFY frameThumbChanged)
+    // Pictures saved from the open video, newest first, so one can be taken back.
+    Q_PROPERTY(QVariantList savedPictures READ savedPictures NOTIFY changed)
     // The dialog showing over Simple mode: "close", "about" or empty for none
     Q_PROPERTY(QString dialog READ dialog NOTIFY dialogChanged)
 
@@ -162,6 +168,8 @@ public:
     bool canRemoveSelection() const;
     QString selectionText() const;
     QString selectionInfo() const;
+    QString selectionStartText() const;
+    QString selectionEndText() const;
     QString trimStartText() const;
     QString trimEndText() const;
     QString lengthText() const;
@@ -169,6 +177,7 @@ public:
     int playhead() const { return m_playhead; }
     QString positionText() const;
     bool playing() const { return m_playing; }
+    double speed() const { return m_speed; }
 
     QRectF cropRect() const { return m_edit.crop; }
     QString cropShape() const { return m_edit.cropShape; }
@@ -189,6 +198,7 @@ public:
     Q_INVOKABLE double labelFontFraction(int size) const { return Simple::labelFontFraction(size); }
 
     QString frameThumb() const { return m_frameThumb; }
+    QVariantList savedPictures() const;
     QString dialog() const { return m_dialog; }
 
     // Called by the Simple mode widget when the screen takes over or gives way.
@@ -215,6 +225,10 @@ public slots:
     void pausePreview();
     void seekSource(int sourceFrame);
     void stepFrames(int count);
+    // Jumps back or forward, such as -10 or 30 seconds.
+    void skipSeconds(double seconds);
+    // 1x, then 1.5x, then 2x, then back to 1x.
+    void cycleSpeed();
 
     void beginTrimDrag();
     void dragTrim(int start, int end);
@@ -225,6 +239,8 @@ public slots:
 
     void setSelection(int start, int end);
     void endSelectionDrag();
+    bool setSelectionStartText(const QString &text);
+    bool setSelectionEndText(const QString &text);
     void selectAnotherPart();
     void removeSelection();
     void restoreCut(int index);
@@ -249,6 +265,8 @@ public slots:
     void redo();
 
     void savePicture();
+    // Takes back a picture saved from this video. It goes to the Recycle Bin.
+    void removeSavedPicture(const QString &path);
     void finish();
 
     void startCollage();
@@ -309,6 +327,13 @@ private:
     void storeSession();
     void startVideoExport(bool allowHardware);
     void onExportFinished(AbstractJob *job, bool success);
+    void onExportChecked(bool valid);
+    // Another program, such as OneDrive or a virus scanner, can hold the new file for a moment,
+    // so the rename is tried again for a few seconds before giving up.
+    void moveExportIntoPlace(const QString &finalPath, int attempt);
+    void exportSaved(const QString &finalPath);
+    // Whether the library should jump to Finished: only when Levi is still on the saved file.
+    void showFinishedFor(const QString &sourcePath);
     void finishExportFailed();
     void afterSaved(const QString &path, const QString &message);
     void detectHardwareEncoder();
@@ -344,6 +369,7 @@ private:
     bool m_previewFullTime{false};
     int m_playhead{0};
     bool m_playing{false};
+    double m_speed{1.0};
     QTimer m_captionTimer;
     int m_selectedLabel{-1};
     QImage labelBackdrop();
@@ -352,6 +378,8 @@ private:
     bool m_labelDragging{false};
     QTimer m_frameThumbTimer;
     QString m_frameThumb;
+    QHash<QString, QStringList> m_savedPictures; // by source video, newest first
+    QStringList m_picturesBeingSaved;            // paths taken, so two saves never share one
     QString m_dialog;
     QString m_openAfterCollage;
 

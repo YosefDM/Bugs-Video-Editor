@@ -50,6 +50,8 @@ private:
     void applyTheme();
     void updateWelcome();
     void updateCollageView();
+    // True when a key pressed in this Simple mode panel should play, step or undo.
+    bool isPlayerKeyFor(QObject *watched) const;
 
     SimpleController *m_controller;
     QVBoxLayout *m_centerLayout;

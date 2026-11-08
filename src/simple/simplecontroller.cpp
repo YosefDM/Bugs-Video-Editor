@@ -35,6 +35,7 @@
 #include <QFileInfo>
 #include <QProcess>
 #include <QStandardPaths>
+#include <QThread>
 #include <QUrl>
 #include <QtConcurrent/QtConcurrentRun>
 
@@ -487,6 +488,16 @@ QString SimpleController::selectionInfo() const
     return QStringLiteral("%1 will be removed").arg(formatDuration(seconds));
 }
 
+QString SimpleController::selectionStartText() const
+{
+    return m_selection.isEmpty() ? QString() : formatTime(m_selection.start / m_edit.fps(), true);
+}
+
+QString SimpleController::selectionEndText() const
+{
+    return m_selection.isEmpty() ? QString() : formatTime(m_selection.end / m_edit.fps(), true);
+}
+
 QString SimpleController::trimStartText() const
 {
     return formatTime(m_edit.trim.start / m_edit.fps(), true);
@@ -851,7 +862,23 @@ void SimpleController::togglePlay()
     if (m_playing)
         MAIN.player()->pause();
     else
-        MAIN.player()->play();
+        MAIN.player()->play(m_speed);
+}
+
+void SimpleController::cycleSpeed()
+{
+    m_speed = m_speed < 1.25 ? 1.5 : m_speed < 1.75 ? 2.0 : 1.0;
+    if (m_playing && hasFile() && !m_edit.isPhoto)
+        MAIN.player()->play(m_speed);
+    emit playingChanged();
+}
+
+void SimpleController::skipSeconds(double seconds)
+{
+    if (!hasFile() || m_edit.isPhoto || !MLT.producer())
+        return;
+    const int target = m_playhead + qRound(seconds * m_edit.fps());
+    seekSource(qBound(m_edit.trim.start, target, m_edit.trim.end - 1));
 }
 
 void SimpleController::pausePreview()
@@ -982,6 +1009,43 @@ void SimpleController::setSelection(int start, int end)
 void SimpleController::endSelectionDrag()
 {
     emit changed();
+}
+
+bool SimpleController::setSelectionStartText(const QString &text)
+{
+    double seconds = 0;
+    const int frame = parseTime(text, &seconds) ? qRound(seconds * m_edit.fps()) : -1;
+    if (frame < m_edit.trim.start || frame >= m_edit.trim.end) {
+        showToast(QStringLiteral("That time isn't in this video."), true);
+        emit changed();
+        return false;
+    }
+    if (m_selection.isEmpty())
+        selectAnotherPart();
+    int end = m_selection.end;
+    // Starting after the old end keeps the part the same length, so the box stays visible.
+    if (end <= frame)
+        end = qMin(m_edit.trim.end, frame + qMax(1, m_selection.length()));
+    setSelection(frame, end);
+    return true;
+}
+
+bool SimpleController::setSelectionEndText(const QString &text)
+{
+    double seconds = 0;
+    const int frame = parseTime(text, &seconds) ? qRound(seconds * m_edit.fps()) : -1;
+    if (frame <= m_edit.trim.start || frame > m_edit.trim.end) {
+        showToast(QStringLiteral("That time isn't in this video."), true);
+        emit changed();
+        return false;
+    }
+    if (m_selection.isEmpty())
+        selectAnotherPart();
+    int start = m_selection.start;
+    if (start >= frame)
+        start = qMax(m_edit.trim.start, frame - qMax(1, m_selection.length()));
+    setSelection(start, frame);
+    return true;
 }
 
 void SimpleController::selectAnotherPart()
@@ -1171,7 +1235,7 @@ void SimpleController::rebuildPreview(int sourceFrame)
     MAIN.player()->seek(m_edit.isPhoto ? 0 : position);
     m_playing = false;
     if (wasPlaying && !m_edit.isPhoto)
-        MAIN.player()->play();
+        MAIN.player()->play(m_speed);
     emit positionChanged();
     emit playingChanged();
     emit changed();
@@ -1237,35 +1301,79 @@ void SimpleController::savePicture()
     pausePreview();
     const Edit edit = m_edit;
     const int position = m_edit.editedFromSource(m_playhead);
+    // Tenths of a second, so two pictures from the same second get their own names.
     const QString stamp
-        = formatTime(m_playhead / m_edit.fps()).replace(QLatin1Char(':'), QLatin1Char('-'));
+        = formatTime(m_playhead / m_edit.fps(), true).replace(QLatin1Char(':'), QLatin1Char('-'));
     const QString base = QStringLiteral("%1 - picture at %2")
                              .arg(QFileInfo(edit.sourcePath).completeBaseName(), stamp);
+    // The name is picked here, not on the worker: two pictures saving at once used to both pick
+    // the same free name, and the second replaced the first.
+    QString path = uniquePath(finishedDir(), base, QStringLiteral("jpg"));
+    for (int i = 2; m_picturesBeingSaved.contains(path); ++i)
+        path = uniquePath(finishedDir(),
+                          QStringLiteral("%1 (%2)").arg(base).arg(i),
+                          QStringLiteral("jpg"));
+    m_picturesBeingSaved << path;
+    const QString source = edit.sourcePath;
     QPointer<SimpleController> self(this);
-    (void) QtConcurrent::run([self, edit, position, base]() {
+    (void) QtConcurrent::run([self, edit, position, path, source]() {
         const QImage image = renderFrame(edit, position);
-        QString path;
-        bool ok = false;
-        if (!image.isNull()) {
-            path = uniquePath(finishedDir(), base, QStringLiteral("jpg"));
-            ok = image.convertToFormat(QImage::Format_RGB32).save(path, "JPG", 95);
-        }
+        const bool ok = !image.isNull()
+                        && image.convertToFormat(QImage::Format_RGB32).save(path, "JPG", 95);
         if (!self)
             return;
         QMetaObject::invokeMethod(
             self.data(),
-            [self, ok, path]() {
+            [self, ok, path, source]() {
                 if (!self)
                     return;
-                if (ok)
+                self->m_picturesBeingSaved.removeAll(path);
+                if (ok) {
+                    self->m_savedPictures[source].prepend(path);
+                    emit self->changed();
                     self->afterSaved(path, QStringLiteral("Picture saved to Finished"));
-                else
+                } else {
                     self->showToast(QStringLiteral(
                                         "Sorry, that picture didn't save. Please try again."),
                                     true);
+                }
             },
             Qt::QueuedConnection);
     });
+}
+
+QVariantList SimpleController::savedPictures() const
+{
+    QVariantList result;
+    for (const QString &path : m_savedPictures.value(m_edit.sourcePath)) {
+        if (!QFileInfo::exists(path))
+            continue;
+        QVariantMap item;
+        item[QStringLiteral("path")] = path;
+        item[QStringLiteral("url")] = QUrl::fromLocalFile(path).toString();
+        // "IMG_0057 - picture at 1-02.5" shows as "1:02.5".
+        QString time = QFileInfo(path).completeBaseName().section(QStringLiteral(" - picture at "),
+                                                                  1);
+        item[QStringLiteral("time")] = time.replace(QLatin1Char('-'), QLatin1Char(':'));
+        result << item;
+    }
+    return result;
+}
+
+void SimpleController::removeSavedPicture(const QString &path)
+{
+    // Only pictures BUGS! saved in this session, never anything else in Finished.
+    QStringList &pictures = m_savedPictures[m_edit.sourcePath];
+    if (!pictures.contains(path))
+        return;
+    if (QFileInfo::exists(path) && !QFile::moveToTrash(path) && !QFile::remove(path)) {
+        showToast(QStringLiteral("Sorry, BUGS! couldn't remove that picture."), true);
+        return;
+    }
+    pictures.removeAll(path);
+    emit changed();
+    refreshFinished();
+    showToast(QStringLiteral("Picture removed"));
 }
 
 void SimpleController::finish()
@@ -1384,7 +1492,7 @@ void SimpleController::finish()
                     self->afterSaved(path,
                                      QStringLiteral(
                                          "Saved to Finished. Your original is untouched."));
-                    self->setTab(QStringLiteral("finished"));
+                    self->showFinishedFor(edit.sourcePath);
                 } else {
                     self->showToast(
                         QStringLiteral(
@@ -1413,6 +1521,10 @@ void SimpleController::startVideoExport(bool allowHardware)
     options.target = QDir::toNativeSeparators(m_exportPartial);
     if (allowHardware)
         options.videoCodec = QStringLiteral("h264_qsv");
+    // Like Shotcut's "Parallel processing": a few threads prepare frames at once, which is most
+    // of the time a save takes. One core is left for the rest of the laptop.
+    const int cores = QThread::idealThreadCount();
+    options.realTime = cores > 2 ? -qMin(cores - 1, 4) : -1;
 
     auto *job = new MeltJob(QFileInfo(m_exportTarget).fileName(),
                             compileXml(edit, options),
@@ -1450,10 +1562,28 @@ void SimpleController::onExportFinished(AbstractJob *job, bool success)
         return;
     }
 
-    // Trust the file rather than the exit code: Finished must only ever hold good videos.
-    Edit check;
-    const bool valid = success && QFileInfo(m_exportPartial).size() > 0
-                       && openMedia(m_exportPartial, &check) && check.frames > 0;
+    // Trust the file rather than the exit code: Finished must only ever hold good videos. Opening
+    // a long video to check it takes a moment, so that happens off the screen's thread.
+    const QString partial = m_exportPartial;
+    QPointer<SimpleController> self(this);
+    (void) QtConcurrent::run([self, partial, success]() {
+        Edit check;
+        const bool valid = success && QFileInfo(partial).size() > 0 && openMedia(partial, &check)
+                           && check.frames > 0;
+        if (!self)
+            return;
+        QMetaObject::invokeMethod(
+            self.data(),
+            [self, valid]() {
+                if (self)
+                    self->onExportChecked(valid);
+            },
+            Qt::QueuedConnection);
+    });
+}
+
+void SimpleController::onExportChecked(bool valid)
+{
     if (!valid) {
         QFile::remove(m_exportPartial);
         if (m_exportUsedHardware) {
@@ -1468,19 +1598,62 @@ void SimpleController::onExportFinished(AbstractJob *job, bool success)
     }
     // Picks a fresh name in case one appeared while this was saving. Never overwrites.
     const QFileInfo target(m_exportTarget);
-    const QString finalPath = uniquePath(target.absolutePath(),
-                                         target.completeBaseName(),
-                                         target.suffix());
-    if (!QFile::rename(m_exportPartial, finalPath)) {
-        QFile::remove(m_exportPartial);
-        finishExportFailed();
+    moveExportIntoPlace(uniquePath(target.absolutePath(),
+                                   target.completeBaseName(),
+                                   target.suffix()),
+                        0);
+}
+
+void SimpleController::moveExportIntoPlace(const QString &finalPath, int attempt)
+{
+    QFile partial(m_exportPartial);
+    if (partial.rename(finalPath)) {
+        exportSaved(finalPath);
         return;
     }
+    LOG_WARNING() << "could not rename" << m_exportPartial << "to" << finalPath << "attempt"
+                  << attempt << partial.errorString();
+    if (attempt < 10 && !QFileInfo::exists(finalPath)) {
+        QTimer::singleShot(500, this, [this, finalPath, attempt]() {
+            moveExportIntoPlace(finalPath, attempt + 1);
+        });
+        return;
+    }
+    // Copying works even when something keeps the file open for reading.
+    const QFileInfo target(finalPath);
+    const QString copyPath = uniquePath(target.absolutePath(),
+                                        target.completeBaseName(),
+                                        target.suffix());
+    if (QFile::copy(m_exportPartial, copyPath)) {
+        QFile::remove(m_exportPartial);
+        exportSaved(copyPath);
+        return;
+    }
+    QFile::remove(copyPath);
+    QFile::remove(m_exportPartial);
+    finishExportFailed();
+}
+
+void SimpleController::exportSaved(const QString &finalPath)
+{
     m_saving = false;
     emit savingChanged();
     m_savedEdits.insert(m_exportEdit.sourcePath, m_exportEdit);
-    afterSaved(finalPath, QStringLiteral("Saved to Finished. Your original is untouched."));
-    setTab(QStringLiteral("finished"));
+    if (m_exportEdit.sourcePath == m_edit.sourcePath)
+        afterSaved(finalPath, QStringLiteral("Saved to Finished. Your original is untouched."));
+    else
+        afterSaved(finalPath,
+                   QStringLiteral("%1 is saved to Finished.")
+                       .arg(QFileInfo(m_exportEdit.sourcePath).fileName()));
+    showFinishedFor(m_exportEdit.sourcePath);
+}
+
+void SimpleController::showFinishedFor(const QString &sourcePath)
+{
+    // Levi may have opened another file while this one saved. Switching the list then would
+    // hide the file he is working on.
+    if (sourcePath == m_edit.sourcePath)
+        setTab(QStringLiteral("finished"));
 }
 
 void SimpleController::finishExportFailed()

@@ -33,6 +33,7 @@
 #include <QMimeData>
 #include <QQmlContext>
 #include <QQmlEngine>
+#include <QQuickItem>
 #include <QQuickWidget>
 #include <QResizeEvent>
 #include <QVBoxLayout>
@@ -262,6 +263,16 @@ bool SimpleModeWidget::eventFilter(QObject *watched, QEvent *event)
                 keyPressEvent(static_cast<QKeyEvent *>(event));
                 return event->isAccepted();
             }
+            // After clicking a button or the strip, the panel that was clicked has the keyboard.
+            // Space and the arrows still play and step, unless Levi is typing in a box.
+            if (isPlayerKeyFor(watched)) {
+                auto *key = static_cast<QKeyEvent *>(event);
+                key->setAccepted(true);
+                keyPressEvent(key);
+                if (key->isAccepted())
+                    return true;
+                key->setAccepted(true);
+            }
             break;
         case QEvent::Wheel:
             // Advanced uses the wheel to zoom the video.
@@ -273,6 +284,15 @@ bool SimpleModeWidget::eventFilter(QObject *watched, QEvent *event)
         }
     }
     return QWidget::eventFilter(watched, event);
+}
+
+bool SimpleModeWidget::isPlayerKeyFor(QObject *watched) const
+{
+    auto *view = qobject_cast<QQuickWidget *>(watched);
+    if (!view || !m_views.contains(view) || view == m_dialogs || view == m_welcome)
+        return false;
+    const QQuickItem *item = view->quickWindow()->activeFocusItem();
+    return !item || !(item->inherits("QQuickTextInput") || item->inherits("QQuickTextEdit"));
 }
 
 void SimpleModeWidget::resizeEvent(QResizeEvent *event)

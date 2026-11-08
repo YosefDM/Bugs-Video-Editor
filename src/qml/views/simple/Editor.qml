@@ -11,6 +11,46 @@ Rectangle {
 
     color: t.bg
 
+    // Jumps back or forward by a number of seconds, shown inside a round arrow.
+    component SkipButton: Rectangle {
+        id: skip
+
+        property int seconds
+
+        Layout.preferredWidth: 40
+        Layout.preferredHeight: 40
+        radius: 20
+        color: skipArea.containsMouse ? root.t.chip : "transparent"
+        Accessible.role: Accessible.Button
+        Accessible.name: seconds < 0 ? "Back " + -seconds + " seconds" : "Forward " + seconds + " seconds"
+
+        Icon {
+            anchors.centerIn: parent
+            size: 32
+            name: skip.seconds < 0 ? "back" : "forward"
+            color: root.t.text2
+            strokeWidth: 1.6
+        }
+
+        Text {
+            anchors.centerIn: parent
+            anchors.verticalCenterOffset: 2
+            text: Math.abs(skip.seconds)
+            color: root.t.text
+            font.family: "Inter"
+            font.pixelSize: 10
+            font.weight: Font.Bold
+        }
+
+        MouseArea {
+            id: skipArea
+            anchors.fill: parent
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+            onClicked: simple.skipSeconds(skip.seconds)
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.leftMargin: 24
@@ -27,8 +67,12 @@ Rectangle {
             Layout.fillWidth: true
             Layout.maximumWidth: 820
             Layout.alignment: Qt.AlignHCenter
-            spacing: 14
+            spacing: 8
             visible: root.showTimeline
+
+            SkipButton {
+                seconds: -10
+            }
 
             Rectangle {
                 Layout.preferredWidth: 48
@@ -50,6 +94,14 @@ Rectangle {
                     cursorShape: Qt.PointingHandCursor
                     onClicked: simple.togglePlay()
                 }
+            }
+
+            SkipButton {
+                seconds: 30
+            }
+
+            Item {
+                Layout.preferredWidth: 4
             }
 
             ColumnLayout {
@@ -94,6 +146,35 @@ Rectangle {
                         font.family: "Inter"
                         font.pixelSize: 12
                     }
+                }
+            }
+
+            // Watch faster to find a moment. The saved video stays normal speed.
+            Rectangle {
+                Layout.preferredWidth: 52
+                Layout.preferredHeight: 32
+                Layout.alignment: Qt.AlignTop
+                Layout.topMargin: 6
+                radius: 16
+                color: simple.speed > 1 ? root.t.accentSoft : root.t.chip
+                border.width: 1.5
+                border.color: simple.speed > 1 ? root.t.accent : root.t.softBorder
+                Accessible.role: Accessible.Button
+                Accessible.name: "Speed " + simple.speed + " times"
+
+                Text {
+                    anchors.centerIn: parent
+                    text: simple.speed + "×"
+                    color: simple.speed > 1 ? root.t.accent : root.t.text
+                    font.family: "Inter"
+                    font.pixelSize: 13
+                    font.weight: Font.Bold
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: simple.cycleSpeed()
                 }
             }
         }

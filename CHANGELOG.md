@@ -5,6 +5,23 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 
 ## Unreleased
 
+### Added
+- Buttons by Play to go back 10 seconds and forward 30 seconds.
+- A speed button by the strip: watch at 1×, 1.5× or 2× to find a moment faster. The saved video stays normal speed.
+- **Cut out** has **From** and **To** boxes, so a part can be cut by typing its times, such as 11:13 to 12:33.
+- **Save picture** lists the pictures saved from the video, with **Don't keep** to take one back. It goes to the Recycle Bin.
+
+### Fixed
+- Saving a video is faster: frames are prepared on several cores at once, as Shotcut's own export does.
+- Saving a picture while another was still saving could replace it, even though both said "Picture saved". Each picture now gets its own name, with tenths of a second in it.
+- When a video finished saving while another file was open, the list jumped to Finished and hid the file being worked on. It now stays put.
+- A save could fail at the very end if another program, such as OneDrive or a virus scanner, was looking at the new file. BUGS! now waits a few seconds for it.
+- Checking a long video after saving no longer holds up the screen.
+- The yellow trim frame and handles only show while **Trim** is picked.
+- Words typed near the edge of the picture grew off it. They now stay on the picture, in the preview and the saved file.
+- After typing a time in **Trim** and pressing Enter, Space typed into the box instead of playing, and the box stopped following the strip.
+- Space, the arrow keys and Ctrl+Z work after clicking any button or the strip, not only the video.
+
 ## 1.0.3
 
 ### Fixed

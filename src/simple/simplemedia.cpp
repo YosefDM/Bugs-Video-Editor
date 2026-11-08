@@ -461,6 +461,12 @@ void drawLabels(QPainter &painter, const Edit &edit, const QSize &frame)
                                          text);
         box.moveCenter(QPoint(qRound(label.center.x() * frame.width()),
                               qRound(label.center.y() * frame.height())));
+        // Longer words grow both ways from the centre, so they could run off the side. Keep them on
+        // the picture; Vui.qml does the same, so the preview matches.
+        if (box.width() <= frame.width())
+            box.moveLeft(qBound(0, box.left(), frame.width() - box.width()));
+        if (box.height() <= frame.height())
+            box.moveTop(qBound(0, box.top(), frame.height() - box.height()));
         const int shadow = qMax(1, font.pixelSize() / 16);
         painter.setPen(QColor(0, 0, 0, 150));
         painter.drawText(box.translated(shadow, shadow), flags, text);

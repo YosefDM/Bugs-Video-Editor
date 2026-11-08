@@ -548,7 +548,7 @@ QString compileXml(const Edit &edit, const CompileOptions &options)
         xml.writeAttribute(QStringLiteral("deinterlacer"), QStringLiteral("yadif"));
         xml.writeAttribute(QStringLiteral("rescale"), QStringLiteral("bicubic"));
         xml.writeAttribute(QStringLiteral("threads"), QString::number(options.threads));
-        xml.writeAttribute(QStringLiteral("real_time"), QStringLiteral("-1"));
+        xml.writeAttribute(QStringLiteral("real_time"), QString::number(options.realTime));
     }
 
     const int lastFrame = qMax(0, edit.frames - 1);
