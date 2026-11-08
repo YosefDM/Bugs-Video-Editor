@@ -33,6 +33,9 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 - In the Text tool, the words box could show the text from before, and typing then replaced the wrong words.
 - The full editor's Elements panel no longer has animated emoji that aren't tznius, such as the bikini, kissing couples, same-sex families and the middle finger.
 
+### Changed
+- BUGS! says once, in the note under the tools, that your original is never changed, instead of in the title bar, the file list and every message.
+
 ## 1.0.3
 
 ### Fixed

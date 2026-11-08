@@ -61,25 +61,6 @@ Rectangle {
                 font.weight: Font.DemiBold
                 elide: Text.ElideMiddle
             }
-
-            Row {
-                spacing: 5
-
-                Icon {
-                    size: 13
-                    name: "shield"
-                    color: root.t.muted
-                    strokeWidth: 2
-                    anchors.verticalCenter: parent.verticalCenter
-                }
-
-                Text {
-                    text: "Original stays untouched"
-                    color: root.t.muted
-                    font.family: "Inter"
-                    font.pixelSize: 12
-                }
-            }
         }
 
         IconButton {

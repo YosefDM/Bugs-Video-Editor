@@ -101,7 +101,7 @@ Rectangle {
 
         Text {
             Layout.fillWidth: true
-            text: root.onOriginals ? "Your untouched files. Pick one to start editing."
+            text: root.onOriginals ? "Pick one to start editing."
                                    : "Everything you finished. Ready to share or send."
             wrapMode: Text.WordWrap
             lineHeight: 1.2
