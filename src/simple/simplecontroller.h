@@ -408,7 +408,7 @@ private:
     QSettings m_settings;
     QString m_lastPicture; // file and frame, so a double-click saves one picture, not two
     QElapsedTimer m_lastPictureTime;
-    bool m_dark{true};
+    bool m_dark{false};
     bool m_active{false};
     QString m_tab{QStringLiteral("originals")};
     QString m_filter{QStringLiteral("all")};

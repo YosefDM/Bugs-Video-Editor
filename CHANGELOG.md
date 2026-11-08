@@ -45,6 +45,8 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 - The full editor's Elements panel no longer has animated emoji that aren't tznius, such as the bikini, kissing couples, same-sex families and the middle finger.
 
 ### Changed
+- The About box says BUGS! was made for Levi by Yosef.
+- BUGS! starts in light mode. Dark mode is still one click away in the header, and a choice made there is remembered.
 - BUGS! says once, in the note under the tools, that your original is never changed, instead of in the title bar, the file list and every message.
 
 ## 1.0.3

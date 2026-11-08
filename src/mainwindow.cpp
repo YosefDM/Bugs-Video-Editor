@@ -3280,7 +3280,7 @@ void MainWindow::on_actionAbout_Shotcut_triggered()
         QStringLiteral(
             "<h1>%1 version %2</h1>"
             "<p>A simple, free, open source video editor that works offline.</p>"
-            "<p>Created by Yosef.</p>"
+            "<p>Made for Levi by Yosef.</p>"
             "<p>BUGS! Video Editor is based on <a href=\"https://www.shotcut.org/\">Shotcut</a> by "
             "Meltytech, LLC, and includes the full Shotcut editor under Advanced. "
             "Thank you to everyone who makes Shotcut.</p>"

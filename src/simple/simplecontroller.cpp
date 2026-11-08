@@ -126,7 +126,8 @@ SimpleController::SimpleController(QObject *parent)
 
 void SimpleController::loadSettings()
 {
-    m_dark = m_settings.value(kDarkKey, true).toBool();
+    // Light until Levi picks dark with the button in the header; his choice is remembered.
+    m_dark = m_settings.value(kDarkKey, false).toBool();
     m_originals = m_settings.value(kLibraryKey).toStringList();
 }
 
