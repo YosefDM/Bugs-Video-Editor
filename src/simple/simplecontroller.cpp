@@ -2097,6 +2097,9 @@ QImage SimpleController::stickerImage(const QString &id) const
 
 QVariantList SimpleController::stickerCategories() const
 {
+    // Read once: the list is long, and QML asks for it often.
+    if (!m_stickerCategories.isEmpty())
+        return m_stickerCategories;
     // Only the stickers on the approved list, never whatever else is in the folder.
     QDir dir = QmlUtilities::qmlDir();
     dir.cd(QStringLiteral("views/simple/stickers"));
@@ -2127,6 +2130,7 @@ QVariantList SimpleController::stickerCategories() const
         entry[QStringLiteral("stickers")] = stickers;
         result << entry;
     }
+    m_stickerCategories = result;
     return result;
 }
 

@@ -466,6 +466,7 @@ private:
     // Sticker pictures, read once from the bundled folder.
     QImage stickerImage(const QString &id) const;
     mutable QHash<QString, QImage> m_stickerImages;
+    mutable QVariantList m_stickerCategories;
     unsigned m_collageSeed{1};
     int m_collageSelected{-1};
     QString m_collagePreview;
