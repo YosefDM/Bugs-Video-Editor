@@ -370,6 +370,7 @@ private:
     bool m_loading{false};
     bool m_timeDragging{false};
     bool m_previewFullTime{false};
+    QString m_previewXml; // what the preview shows now, so an unchanged one is not reloaded
     int m_playhead{0};
     bool m_playing{false};
     double m_speed{1.0};

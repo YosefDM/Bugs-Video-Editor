@@ -20,6 +20,7 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 - Adding or moving text froze BUGS! for a moment on long videos while it picked a colour. The words now show straight away and take their colour a moment later.
 - Typing a caption no longer holds up the screen each time you pause.
 - Making a collage reads the photos in the background, and the button says "Making…" meanwhile.
+- Switching tools, and undoing changes that don't show in the picture, no longer reload the video when nothing on screen changes.
 - The yellow trim frame and handles only show while **Trim** is picked.
 - Words typed near the edge of the picture grew off it. They now stay on the picture, in the preview and the saved file.
 - After typing a time in **Trim** and pressing Enter, Space typed into the box instead of playing, and the box stopped following the strip.

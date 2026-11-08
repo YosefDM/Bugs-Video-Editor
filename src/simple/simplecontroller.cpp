@@ -312,6 +312,7 @@ void SimpleController::removeFromLibrary(const QString &path)
         m_selection = Range();
         m_selectedLabel = -1;
         m_filmstrip.clear();
+        m_previewXml.clear();
         MLT.close();
         emit filmstripChanged();
         emit changed();
@@ -831,6 +832,8 @@ void SimpleController::deactivate()
     m_active = false;
     pausePreview();
     disconnect(previewWidget(), nullptr, this, nullptr);
+    // Advanced puts its own video in the player.
+    m_previewXml.clear();
 }
 
 QString SimpleController::combineProject() const
@@ -1258,8 +1261,28 @@ void SimpleController::rebuildPreview(int sourceFrame)
         shown.labels.clear();
     if (!cropTool)
         options.captionImage = writeCaptionImage(shown);
+    options.photoPath = photoForEdit(m_edit);
+    const QString xml = compileXml(m_edit, options);
 
+    const int position = (m_edit.isPhoto || m_previewFullTime)
+                             ? qMax(0, sourceFrame)
+                             : m_edit.editedFromSource(sourceFrame);
+    // Nothing visible changed, such as switching to Text with no text yet, or undoing a change
+    // to words the Text tool draws itself. Reloading would only cost time, more so from a USB
+    // stick, so the preview just moves to the frame.
     const QSize frame = options.applyCrop ? m_edit.outputSize() : m_edit.rotatedSize();
+    const QString previewKey = QStringLiteral("%1x%2|").arg(frame.width()).arg(frame.height())
+                               + xml;
+    if (previewKey == m_previewXml && MLT.producer() && MLT.producer()->is_valid()) {
+        if (!m_edit.isPhoto && sourceFrame != m_playhead)
+            MAIN.player()->seek(position);
+        m_playhead = m_edit.isPhoto ? 0 : sourceFrame;
+        emit positionChanged();
+        emit changed();
+        return;
+    }
+    m_previewXml.clear();
+
     auto &profile = MLT.profile();
     profile.set_width(frame.width());
     profile.set_height(frame.height());
@@ -1274,8 +1297,6 @@ void SimpleController::rebuildPreview(int sourceFrame)
     // is always full size.
     MLT.setPreviewScale(qMax(frame.width(), frame.height()) > 2000 ? 720 : 0);
 
-    options.photoPath = photoForEdit(m_edit);
-    const QString xml = compileXml(m_edit, options);
     auto *producer = new Mlt::Producer(profile, "xml-string", xml.toUtf8().constData());
     if (!producer->is_valid()) {
         delete producer;
@@ -1287,10 +1308,8 @@ void SimpleController::rebuildPreview(int sourceFrame)
         return;
     }
     MAIN.player()->onProducerOpened(false);
+    m_previewXml = previewKey;
 
-    const int position = (m_edit.isPhoto || m_previewFullTime)
-                             ? qMax(0, sourceFrame)
-                             : m_edit.editedFromSource(sourceFrame);
     m_playhead = m_edit.isPhoto ? 0 : sourceFrame;
     MLT.pause();
     MAIN.player()->seek(m_edit.isPhoto ? 0 : position);
