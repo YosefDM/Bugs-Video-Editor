@@ -61,6 +61,28 @@ struct TextLabel
     bool isEmpty() const { return text.trimmed().isEmpty(); }
 };
 
+// Words or a sticker placed on a collage. Positions and sizes are fractions of the page, so the
+// preview and the saved picture, which differ only in size, put them in the same place.
+struct CollageItem
+{
+    enum class Kind { Text, Sticker };
+    Kind kind{Kind::Text};
+    QString text;                          // Text: can have several lines
+    QString font{QStringLiteral("clean")}; // Text: an id from labelFonts()
+    QString color{QStringLiteral("#FFFFFF")};
+    QString sticker;          // Sticker: an id from the sticker list
+    QPointF center{0.5, 0.5}; // fraction of the page
+    double size{0.1};         // Text: letter height; Sticker: width. Fraction of the shorter side
+    double rotation{0};       // degrees clockwise
+
+    bool operator==(const CollageItem &o) const
+    {
+        return kind == o.kind && text == o.text && font == o.font && color == o.color
+               && sticker == o.sticker && center == o.center && size == o.size
+               && rotation == o.rotation;
+    }
+};
+
 // Label text height as a fraction of the picture's shorter side.
 double labelFontFraction(int size);
 

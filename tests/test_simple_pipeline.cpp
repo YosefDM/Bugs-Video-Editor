@@ -718,6 +718,93 @@ private slots:
         QCOMPARE(collage.pixelColor(size.width() - 3, size.height() - 3), QColor(Qt::white));
     }
 
+    // Text and stickers land where they were put, turned, in front of the photos, and look the
+    // same drawn small (the preview) and full size (the saved picture).
+    void collageItemsAreDrawnInPlace()
+    {
+        QImage red(100, 100, QImage::Format_ARGB32_Premultiplied);
+        red.fill(Qt::red);
+        const StickerImage sticker = [&](const QString &id) {
+            return id == QLatin1String("red") ? red : QImage();
+        };
+        CollageItem square;
+        square.kind = CollageItem::Kind::Sticker;
+        square.sticker = QStringLiteral("red");
+        square.center = QPointF(0.25, 0.75);
+        square.size = 0.2;
+        CollageItem turned = square;
+        turned.center = QPointF(0.75, 0.25);
+        turned.rotation = 45;
+        CollageItem words;
+        words.text = QStringLiteral("מזל טוב");
+        words.center = QPointF(0.5, 0.5);
+        words.size = 0.1;
+        const QVector<CollageItem> items{square, turned, words};
+
+        const auto draw = [&](int side) {
+            QImage page(side, side, QImage::Format_RGB32);
+            page.fill(Qt::black);
+            QPainter painter(&page);
+            paintCollageItems(painter, items, page.size(), sticker);
+            painter.end();
+            return page;
+        };
+        const QImage big = draw(2400);
+        // The square fills its spot and stops at its edge: 0.2 of 2400 is 480 px, 240 each way.
+        QCOMPARE(big.pixelColor(600, 1800), QColor(Qt::red));
+        QCOMPARE(big.pixelColor(600 + 260, 1800), QColor(Qt::black));
+        // Turned 45°, its corners point up, down and sideways: straight above the middle is red
+        // further out than a plain square reaches, and its old corner is empty.
+        QCOMPARE(big.pixelColor(1800, 600 - 300), QColor(Qt::red));
+        QCOMPARE(big.pixelColor(1800 + 230, 600 - 230), QColor(Qt::black));
+        // The words are drawn in white at the middle.
+        int white = 0;
+        for (int y = 1100; y < 1300; y += 2) {
+            for (int x = 900; x < 1500; x += 2) {
+                if (qRed(big.pixel(x, y)) > 240 && qGreen(big.pixel(x, y)) > 240)
+                    ++white;
+            }
+        }
+        QVERIFY2(white > 200, qPrintable(QString::number(white)));
+        // The preview draws the same picture, only smaller.
+        const QImage small = draw(600);
+        const QImage shrunk = big.scaled(600, 600, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+        QVERIFY2(difference(small, shrunk) < 6.0,
+                 qPrintable(QString::number(difference(small, shrunk))));
+    }
+
+    // Space between photos shows the background, and rounded corners show it at each corner.
+    void collageSpacingAndCornersShowTheBackground()
+    {
+        std::deque<Collage::Photo> photos;
+        std::vector<Collage::Photo *> pointers;
+        for (int i = 0; i < 2; ++i) {
+            QImage image(QSize(1000, 1000), QImage::Format_RGB32);
+            image.fill(Qt::blue);
+            const QString file = path(QStringLiteral("blue%1.png").arg(i));
+            QVERIFY(image.save(file));
+            photos.push_back(Collage::Photo{file, 1000, 1000});
+            pointers.push_back(&photos.back());
+        }
+        auto page = Collage::makeGaplessPage(pointers, 1.0, 1);
+        CollageStyle style;
+        style.border = 0.05;
+        style.radius = 0.06;
+        style.borderColor = Qt::yellow;
+        const QSize size(1000, 1000);
+        const auto cells = page->photoCells();
+        const QImage collage = renderCollage(*page, size, style, [&](int i, const QSize &cover) {
+            return loadPhotoToCover(cells[i]->photo()->path, cover);
+        });
+        const QVector<QRect> rects = collageCellRects(*page, size);
+        for (const QRect &rect : rects) {
+            QCOMPARE(collage.pixelColor(rect.center()), QColor(Qt::blue));
+            // Just inside the frame, at the corner, the rounding leaves background.
+            QCOMPARE(collage.pixelColor(rect.left() + 52, rect.top() + 52), QColor(Qt::yellow));
+        }
+        QCOMPARE(collage.pixelColor(20, 500), QColor(Qt::yellow));
+    }
+
     void captionPictureHasText()
     {
         Edit edit;

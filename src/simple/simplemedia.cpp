@@ -25,9 +25,11 @@
 #include <QDateTime>
 #include <QDir>
 #include <QFileInfo>
+#include <QFontMetricsF>
 #include <QImageReader>
 #include <QLinearGradient>
 #include <QPainter>
+#include <QPainterPath>
 #include <QProcess>
 #include <QSaveFile>
 #include <QStandardPaths>
@@ -621,17 +623,31 @@ QImage renderCollage(const Collage::Page &page,
     canvas.fill(style.borderColor);
     QPainter painter(&canvas);
     painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    painter.setRenderHint(QPainter::Antialiasing);
 
+    // The spacing shows the background between photos and round the edge, the same width
+    // everywhere, as PhotoCollage's draw_borders() did with lines.
+    const double shorter = qMin(size.width(), size.height());
+    const double border = style.border * shorter;
+    const double half = border / 2.0;
+    const double radius = style.radius * shorter;
     const auto cells = page.photoCells();
     const QVector<QRect> rects = collageCellRects(page, size);
     for (int i = 0; i < int(cells.size()); ++i) {
-        const QRect target = rects.at(i);
-        const QImage picture = image(i, target.size());
-        if (picture.isNull() || target.isEmpty())
+        const QRect cell = rects.at(i);
+        QRectF target(cell.x(), cell.y(), cell.width(), cell.height());
+        target.adjust(cell.left() <= 0 ? border : half,
+                      cell.top() <= 0 ? border : half,
+                      cell.right() >= size.width() - 1 ? -border : -half,
+                      cell.bottom() >= size.height() - 1 ? -border : -half);
+        if (target.width() < 1 || target.height() < 1)
+            continue;
+        const QImage picture = image(i, target.size().toSize());
+        if (picture.isNull())
             continue;
         // Fill the cell, cropping the photo around its offset point.
         const Collage::Photo *photo = cells[i]->photo();
-        const double cellRatio = double(target.height()) / target.width();
+        const double cellRatio = target.height() / target.width();
         const double pictureRatio = double(picture.height()) / picture.width();
         QRectF source(0, 0, picture.width(), picture.height());
         if (pictureRatio < cellRatio) {
@@ -643,38 +659,114 @@ QImage renderCollage(const Collage::Page &page,
             const double h = picture.width() * cellRatio;
             source = QRectF(0, (picture.height() - h) * photo->offsetH, picture.width(), h);
         }
-        painter.drawImage(QRectF(target), picture, source);
-    }
-
-    // Borders: a frame round the edge and a line along every edge between cells, as in
-    // PhotoCollage's draw_borders().
-    const double border = style.border * qMin(size.width(), size.height());
-    if (border > 0) {
-        painter.setPen(Qt::NoPen);
-        painter.setBrush(style.borderColor);
-        const double s = size.width() / page.w();
-        const double half = border / 2.0;
-        painter.drawRect(QRectF(0, 0, border, size.height()));
-        painter.drawRect(QRectF(size.width() - border, 0, border, size.height()));
-        painter.drawRect(QRectF(0, 0, size.width(), border));
-        painter.drawRect(QRectF(0, size.height() - border, size.width(), border));
-        for (const auto &col : page.cols) {
-            const double x = col->x() * s;
-            const double w = col->w * s;
-            for (size_t j = 1; j < col->cells.size(); ++j) {
-                const double y = col->cells[j]->y() * s;
-                painter.drawRect(QRectF(x, y - half, w, border));
-            }
-            if (col->x() > 0) {
-                for (const Collage::Cell *cell : col->cells) {
-                    if (!cell->isExtension())
-                        painter.drawRect(QRectF(x - half, cell->y() * s, border, cell->h() * s));
-                }
-            }
+        if (radius > 0) {
+            QPainterPath clip;
+            const double r = qMin(radius, qMin(target.width(), target.height()) / 2);
+            clip.addRoundedRect(target, r, r);
+            painter.save();
+            painter.setClipPath(clip);
+            painter.drawImage(target, picture, source);
+            painter.restore();
+        } else {
+            painter.drawImage(target, picture, source);
         }
     }
     painter.end();
     return canvas;
+}
+
+namespace {
+
+QFont collageTextFont(const CollageItem &item, const QSize &page)
+{
+    QFont font(labelFontFamily(item.font));
+    font.setWeight(QFont::Bold);
+    font.setPixelSize(qMax(4, qRound(item.size * qMin(page.width(), page.height()))));
+    return font;
+}
+
+const int kTextFlags = Qt::AlignHCenter | Qt::AlignVCenter;
+
+} // namespace
+
+QSizeF collageItemSize(const CollageItem &item, const QSize &page, const StickerImage &sticker)
+{
+    const double shorter = qMin(page.width(), page.height());
+    if (item.kind == CollageItem::Kind::Sticker) {
+        const QImage image = sticker ? sticker(item.sticker) : QImage();
+        const double w = item.size * shorter;
+        const double ratio = image.isNull() || image.width() == 0
+                                 ? 1.0
+                                 : double(image.height()) / image.width();
+        return QSizeF(w, w * ratio);
+    }
+    const QFontMetricsF metrics(collageTextFont(item, page));
+    const QString text = item.text.trimmed().isEmpty() ? QStringLiteral(" ") : item.text.trimmed();
+    const QRectF box = metrics.boundingRect(QRectF(0, 0, page.width() * 8, page.height() * 8),
+                                            kTextFlags,
+                                            text);
+    // A little room for the shadow.
+    const double pad = metrics.height() * 0.12;
+    return QSizeF(box.width() + 2 * pad, box.height() + 2 * pad);
+}
+
+void paintCollageItemInBox(QPainter &painter,
+                           const CollageItem &item,
+                           const QSize &page,
+                           const QRectF &box,
+                           const StickerImage &sticker)
+{
+    painter.save();
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::TextAntialiasing);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    if (item.kind == CollageItem::Kind::Sticker) {
+        const QImage image = sticker ? sticker(item.sticker) : QImage();
+        if (!image.isNull())
+            painter.drawImage(box, image);
+    } else {
+        // Same look as text on photos and videos (drawLabels): bold, with a soft shadow.
+        const QSizeF natural = collageItemSize(item, page, sticker);
+        painter.translate(box.center());
+        // The box may be a few pixels off its natural size on screen; scale to fill it exactly.
+        if (natural.width() > 0 && natural.height() > 0)
+            painter.scale(box.width() / natural.width(), box.height() / natural.height());
+        const QFont font = collageTextFont(item, page);
+        painter.setFont(font);
+        const QRectF rect(-natural.width() / 2,
+                          -natural.height() / 2,
+                          natural.width(),
+                          natural.height());
+        const QString text = item.text.trimmed();
+        const double shadow = qMax(1.0, font.pixelSize() / 16.0);
+        painter.setPen(QColor(0, 0, 0, 150));
+        painter.drawText(rect.translated(shadow, shadow), kTextFlags, text);
+        painter.setPen(QColor(item.color));
+        painter.drawText(rect, kTextFlags, text);
+    }
+    painter.restore();
+}
+
+void paintCollageItems(QPainter &painter,
+                       const QVector<CollageItem> &items,
+                       const QSize &page,
+                       const StickerImage &sticker)
+{
+    for (const CollageItem &item : items) {
+        const QSizeF size = collageItemSize(item, page, sticker);
+        painter.save();
+        painter.translate(item.center.x() * page.width(), item.center.y() * page.height());
+        painter.rotate(item.rotation);
+        paintCollageItemInBox(painter,
+                              item,
+                              page,
+                              QRectF(-size.width() / 2,
+                                     -size.height() / 2,
+                                     size.width(),
+                                     size.height()),
+                              sticker);
+        painter.restore();
+    }
 }
 
 } // namespace Simple

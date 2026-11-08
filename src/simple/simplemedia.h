@@ -24,6 +24,8 @@
 #include <QColor>
 
 #include <QImage>
+#include <QPainter>
+#include <QSizeF>
 #include <QString>
 #include <QStringList>
 
@@ -74,6 +76,7 @@ QImage loadPhotoToCover(const QString &readablePath, const QSize &cover);
 struct CollageStyle
 {
     double border{0}; // fraction of the collage's shorter side
+    double radius{0}; // rounded photo corners, fraction of the collage's shorter side
     QColor borderColor{Qt::white};
 };
 // Draws a collage laid out by Collage::makePage (a page 1 wide) at `size`. `image(i)` returns the
@@ -85,6 +88,23 @@ QImage renderCollage(const Collage::Page &page,
                      const std::function<QImage(int cell, const QSize &cellSize)> &image);
 // Cell rectangles in pixels for a page drawn at `size`, matching renderCollage().
 QVector<QRect> collageCellRects(const Collage::Page &page, const QSize &size);
+
+// Text and stickers on a collage. One drawing function serves the preview and the saved picture,
+// so they always match. `sticker(id)` returns a sticker's picture.
+using StickerImage = std::function<QImage(const QString &id)>;
+// The item's box before rotation, in pixels, on a page of `page` pixels.
+QSizeF collageItemSize(const CollageItem &item, const QSize &page, const StickerImage &sticker);
+// Draws the item, unrotated, filling `box`.
+void paintCollageItemInBox(QPainter &painter,
+                           const CollageItem &item,
+                           const QSize &page,
+                           const QRectF &box,
+                           const StickerImage &sticker);
+// Draws every item in order, each at its place and rotation, on a page of `page` pixels.
+void paintCollageItems(QPainter &painter,
+                       const QVector<CollageItem> &items,
+                       const QSize &page,
+                       const StickerImage &sticker);
 
 } // namespace Simple
 

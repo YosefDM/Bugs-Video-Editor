@@ -1,0 +1,1208 @@
+{
+ "categories": [
+  {
+   "id": "jewish",
+   "title": "Jewish"
+  },
+  {
+   "id": "celebrate",
+   "title": "Celebrate"
+  },
+  {
+   "id": "hearts",
+   "title": "Hearts"
+  },
+  {
+   "id": "faces",
+   "title": "Faces & hands"
+  },
+  {
+   "id": "nature",
+   "title": "Nature"
+  },
+  {
+   "id": "food",
+   "title": "Food"
+  },
+  {
+   "id": "things",
+   "title": "Things"
+  },
+  {
+   "id": "people",
+   "title": "People"
+  }
+ ],
+ "stickers": [
+  {
+   "id": "2721",
+   "category": "jewish",
+   "name": "Magen David"
+  },
+  {
+   "id": "1f54e",
+   "category": "jewish",
+   "name": "Menorah"
+  },
+  {
+   "id": "1f54d",
+   "category": "jewish",
+   "name": "Synagogue"
+  },
+  {
+   "id": "1f4dc",
+   "category": "jewish",
+   "name": "Scroll"
+  },
+  {
+   "id": "1f377",
+   "category": "jewish",
+   "name": "Kiddush cup"
+  },
+  {
+   "id": "1f56f",
+   "category": "jewish",
+   "name": "Candle"
+  },
+  {
+   "id": "1faac",
+   "category": "jewish",
+   "name": "Hamsa"
+  },
+  {
+   "id": "1f35e",
+   "category": "jewish",
+   "name": "Challah"
+  },
+  {
+   "id": "1f36f",
+   "category": "jewish",
+   "name": "Honey pot"
+  },
+  {
+   "id": "1f34e",
+   "category": "jewish",
+   "name": "Red apple"
+  },
+  {
+   "id": "1f4d6",
+   "category": "jewish",
+   "name": "Open book"
+  },
+  {
+   "id": "1f64f",
+   "category": "jewish",
+   "name": "Person with folded hands"
+  },
+  {
+   "id": "1f596",
+   "category": "jewish",
+   "name": "Kohanim hands"
+  },
+  {
+   "id": "1f54a",
+   "category": "jewish",
+   "name": "Dove of peace"
+  },
+  {
+   "id": "1f981",
+   "category": "jewish",
+   "name": "Lion face"
+  },
+  {
+   "id": "1f334",
+   "category": "jewish",
+   "name": "Palm branch"
+  },
+  {
+   "id": "1f34b",
+   "category": "jewish",
+   "name": "Esrog"
+  },
+  {
+   "id": "1f95b",
+   "category": "jewish",
+   "name": "Glass of milk"
+  },
+  {
+   "id": "1f3e0",
+   "category": "jewish",
+   "name": "House building"
+  },
+  {
+   "id": "1f4af",
+   "category": "things",
+   "name": "Hundred points symbol"
+  },
+  {
+   "id": "1f389",
+   "category": "celebrate",
+   "name": "Party popper"
+  },
+  {
+   "id": "1f38a",
+   "category": "celebrate",
+   "name": "Confetti ball"
+  },
+  {
+   "id": "1f388",
+   "category": "celebrate",
+   "name": "Balloon"
+  },
+  {
+   "id": "1f381",
+   "category": "celebrate",
+   "name": "Wrapped present"
+  },
+  {
+   "id": "1f382",
+   "category": "celebrate",
+   "name": "Birthday cake"
+  },
+  {
+   "id": "1f380",
+   "category": "celebrate",
+   "name": "Ribbon"
+  },
+  {
+   "id": "1f386",
+   "category": "celebrate",
+   "name": "Fireworks"
+  },
+  {
+   "id": "1f387",
+   "category": "celebrate",
+   "name": "Firework sparkler"
+  },
+  {
+   "id": "2728",
+   "category": "celebrate",
+   "name": "Sparkles"
+  },
+  {
+   "id": "1f31f",
+   "category": "celebrate",
+   "name": "Glowing star"
+  },
+  {
+   "id": "2b50",
+   "category": "celebrate",
+   "name": "White medium star"
+  },
+  {
+   "id": "1f4ab",
+   "category": "celebrate",
+   "name": "Dizzy symbol"
+  },
+  {
+   "id": "1f3b5",
+   "category": "celebrate",
+   "name": "Musical note"
+  },
+  {
+   "id": "1f3b6",
+   "category": "celebrate",
+   "name": "Multiple musical notes"
+  },
+  {
+   "id": "1f3c6",
+   "category": "celebrate",
+   "name": "Trophy"
+  },
+  {
+   "id": "1f947",
+   "category": "celebrate",
+   "name": "First place medal"
+  },
+  {
+   "id": "1f451",
+   "category": "celebrate",
+   "name": "Crown"
+  },
+  {
+   "id": "1f48d",
+   "category": "celebrate",
+   "name": "Ring"
+  },
+  {
+   "id": "1f490",
+   "category": "celebrate",
+   "name": "Bouquet"
+  },
+  {
+   "id": "1f4f8",
+   "category": "celebrate",
+   "name": "Camera with flash"
+  },
+  {
+   "id": "1f44f",
+   "category": "celebrate",
+   "name": "Clapping hands sign"
+  },
+  {
+   "id": "1f64c",
+   "category": "celebrate",
+   "name": "Person raising both hands in celebration"
+  },
+  {
+   "id": "1f973",
+   "category": "celebrate",
+   "name": "Face with party horn and party hat"
+  },
+  {
+   "id": "1f9c1",
+   "category": "celebrate",
+   "name": "Cupcake"
+  },
+  {
+   "id": "1f36c",
+   "category": "celebrate",
+   "name": "Candy"
+  },
+  {
+   "id": "1f36d",
+   "category": "celebrate",
+   "name": "Lollipop"
+  },
+  {
+   "id": "1f3c5",
+   "category": "celebrate",
+   "name": "Sports medal"
+  },
+  {
+   "id": "1f3ae",
+   "category": "celebrate",
+   "name": "Video game"
+  },
+  {
+   "id": "2764",
+   "category": "hearts",
+   "name": "Heavy black heart"
+  },
+  {
+   "id": "1f9e1",
+   "category": "hearts",
+   "name": "Orange heart"
+  },
+  {
+   "id": "1f49b",
+   "category": "hearts",
+   "name": "Yellow heart"
+  },
+  {
+   "id": "1f49a",
+   "category": "hearts",
+   "name": "Green heart"
+  },
+  {
+   "id": "1f499",
+   "category": "hearts",
+   "name": "Blue heart"
+  },
+  {
+   "id": "1f49c",
+   "category": "hearts",
+   "name": "Purple heart"
+  },
+  {
+   "id": "1f90d",
+   "category": "hearts",
+   "name": "White heart"
+  },
+  {
+   "id": "1f90e",
+   "category": "hearts",
+   "name": "Brown heart"
+  },
+  {
+   "id": "1f5a4",
+   "category": "hearts",
+   "name": "Black heart"
+  },
+  {
+   "id": "1f496",
+   "category": "hearts",
+   "name": "Sparkling heart"
+  },
+  {
+   "id": "1f497",
+   "category": "hearts",
+   "name": "Growing heart"
+  },
+  {
+   "id": "1f49d",
+   "category": "hearts",
+   "name": "Heart with ribbon"
+  },
+  {
+   "id": "1f49e",
+   "category": "hearts",
+   "name": "Revolving hearts"
+  },
+  {
+   "id": "1f493",
+   "category": "hearts",
+   "name": "Beating heart"
+  },
+  {
+   "id": "1f600",
+   "category": "faces",
+   "name": "Grinning face"
+  },
+  {
+   "id": "1f603",
+   "category": "faces",
+   "name": "Smiling face with open mouth"
+  },
+  {
+   "id": "1f604",
+   "category": "faces",
+   "name": "Smiling face with open mouth and smiling eyes"
+  },
+  {
+   "id": "1f601",
+   "category": "faces",
+   "name": "Grinning face with smiling eyes"
+  },
+  {
+   "id": "1f606",
+   "category": "faces",
+   "name": "Smiling face with open mouth and tightly-closed eyes"
+  },
+  {
+   "id": "1f602",
+   "category": "faces",
+   "name": "Face with tears of joy"
+  },
+  {
+   "id": "1f923",
+   "category": "faces",
+   "name": "Rolling on the floor laughing"
+  },
+  {
+   "id": "1f60a",
+   "category": "faces",
+   "name": "Smiling face with smiling eyes"
+  },
+  {
+   "id": "1f642",
+   "category": "faces",
+   "name": "Slightly smiling face"
+  },
+  {
+   "id": "1f609",
+   "category": "faces",
+   "name": "Winking face"
+  },
+  {
+   "id": "1f60e",
+   "category": "faces",
+   "name": "Smiling face with sunglasses"
+  },
+  {
+   "id": "1f929",
+   "category": "faces",
+   "name": "Grinning face with star eyes"
+  },
+  {
+   "id": "1f917",
+   "category": "faces",
+   "name": "Hugging face"
+  },
+  {
+   "id": "1f914",
+   "category": "faces",
+   "name": "Thinking face"
+  },
+  {
+   "id": "1f62e",
+   "category": "faces",
+   "name": "Face with open mouth"
+  },
+  {
+   "id": "1f622",
+   "category": "faces",
+   "name": "Crying face"
+  },
+  {
+   "id": "1f62d",
+   "category": "faces",
+   "name": "Loudly crying face"
+  },
+  {
+   "id": "1f633",
+   "category": "faces",
+   "name": "Flushed face"
+  },
+  {
+   "id": "1f60b",
+   "category": "faces",
+   "name": "Face savouring delicious food"
+  },
+  {
+   "id": "1f970",
+   "category": "faces",
+   "name": "Smiling face with smiling eyes and three hearts"
+  },
+  {
+   "id": "1f60d",
+   "category": "faces",
+   "name": "Smiling face with heart-shaped eyes"
+  },
+  {
+   "id": "1f63a",
+   "category": "faces",
+   "name": "Smiling cat face with open mouth"
+  },
+  {
+   "id": "1f638",
+   "category": "faces",
+   "name": "Grinning cat face with smiling eyes"
+  },
+  {
+   "id": "1f44d",
+   "category": "faces",
+   "name": "Thumbs up sign"
+  },
+  {
+   "id": "1f44b",
+   "category": "faces",
+   "name": "Waving hand sign"
+  },
+  {
+   "id": "1f91d",
+   "category": "faces",
+   "name": "Handshake"
+  },
+  {
+   "id": "1f44c",
+   "category": "faces",
+   "name": "Ok hand sign"
+  },
+  {
+   "id": "270c",
+   "category": "faces",
+   "name": "Victory hand"
+  },
+  {
+   "id": "1f4aa",
+   "category": "faces",
+   "name": "Flexed biceps"
+  },
+  {
+   "id": "1f91e",
+   "category": "faces",
+   "name": "Hand with index and middle fingers crossed"
+  },
+  {
+   "id": "1f33b",
+   "category": "nature",
+   "name": "Sunflower"
+  },
+  {
+   "id": "1f337",
+   "category": "nature",
+   "name": "Tulip"
+  },
+  {
+   "id": "1f339",
+   "category": "nature",
+   "name": "Rose"
+  },
+  {
+   "id": "1f338",
+   "category": "nature",
+   "name": "Cherry blossom"
+  },
+  {
+   "id": "1f33c",
+   "category": "nature",
+   "name": "Blossom"
+  },
+  {
+   "id": "1f33a",
+   "category": "nature",
+   "name": "Hibiscus"
+  },
+  {
+   "id": "1f340",
+   "category": "nature",
+   "name": "Four leaf clover"
+  },
+  {
+   "id": "1f341",
+   "category": "nature",
+   "name": "Maple leaf"
+  },
+  {
+   "id": "1f342",
+   "category": "nature",
+   "name": "Fallen leaf"
+  },
+  {
+   "id": "1f333",
+   "category": "nature",
+   "name": "Deciduous tree"
+  },
+  {
+   "id": "1f335",
+   "category": "nature",
+   "name": "Cactus"
+  },
+  {
+   "id": "1f308",
+   "category": "nature",
+   "name": "Rainbow"
+  },
+  {
+   "id": "2600",
+   "category": "nature",
+   "name": "Black sun with rays"
+  },
+  {
+   "id": "1f319",
+   "category": "nature",
+   "name": "Crescent moon"
+  },
+  {
+   "id": "2601",
+   "category": "nature",
+   "name": "Cloud"
+  },
+  {
+   "id": "26c5",
+   "category": "nature",
+   "name": "Sun behind cloud"
+  },
+  {
+   "id": "2744",
+   "category": "nature",
+   "name": "Snowflake"
+  },
+  {
+   "id": "1f30a",
+   "category": "nature",
+   "name": "Water wave"
+  },
+  {
+   "id": "1f98b",
+   "category": "nature",
+   "name": "Butterfly"
+  },
+  {
+   "id": "1f41d",
+   "category": "nature",
+   "name": "Honeybee"
+  },
+  {
+   "id": "1f41e",
+   "category": "nature",
+   "name": "Lady beetle"
+  },
+  {
+   "id": "1f426",
+   "category": "nature",
+   "name": "Bird"
+  },
+  {
+   "id": "1f98c",
+   "category": "nature",
+   "name": "Deer"
+  },
+  {
+   "id": "1f411",
+   "category": "nature",
+   "name": "Sheep"
+  },
+  {
+   "id": "1f42a",
+   "category": "nature",
+   "name": "Dromedary camel"
+  },
+  {
+   "id": "1f418",
+   "category": "nature",
+   "name": "Elephant"
+  },
+  {
+   "id": "1f43b",
+   "category": "nature",
+   "name": "Bear face"
+  },
+  {
+   "id": "1f430",
+   "category": "nature",
+   "name": "Rabbit face"
+  },
+  {
+   "id": "1f436",
+   "category": "nature",
+   "name": "Dog face"
+  },
+  {
+   "id": "1f431",
+   "category": "nature",
+   "name": "Cat face"
+  },
+  {
+   "id": "1f420",
+   "category": "nature",
+   "name": "Tropical fish"
+  },
+  {
+   "id": "1f42c",
+   "category": "nature",
+   "name": "Dolphin"
+  },
+  {
+   "id": "1f422",
+   "category": "nature",
+   "name": "Turtle"
+  },
+  {
+   "id": "1f985",
+   "category": "nature",
+   "name": "Eagle"
+  },
+  {
+   "id": "1f984",
+   "category": "nature",
+   "name": "Unicorn face"
+  },
+  {
+   "id": "1f427",
+   "category": "nature",
+   "name": "Penguin"
+  },
+  {
+   "id": "1f99c",
+   "category": "nature",
+   "name": "Parrot"
+  },
+  {
+   "id": "1f40e",
+   "category": "nature",
+   "name": "Horse"
+  },
+  {
+   "id": "1f34a",
+   "category": "food",
+   "name": "Tangerine"
+  },
+  {
+   "id": "1f34c",
+   "category": "food",
+   "name": "Banana"
+  },
+  {
+   "id": "1f347",
+   "category": "food",
+   "name": "Grapes"
+  },
+  {
+   "id": "1f353",
+   "category": "food",
+   "name": "Strawberry"
+  },
+  {
+   "id": "1f352",
+   "category": "food",
+   "name": "Cherries"
+  },
+  {
+   "id": "1f349",
+   "category": "food",
+   "name": "Watermelon"
+  },
+  {
+   "id": "1f34d",
+   "category": "food",
+   "name": "Pineapple"
+  },
+  {
+   "id": "1f951",
+   "category": "food",
+   "name": "Avocado"
+  },
+  {
+   "id": "1f955",
+   "category": "food",
+   "name": "Carrot"
+  },
+  {
+   "id": "1f33d",
+   "category": "food",
+   "name": "Ear of maize"
+  },
+  {
+   "id": "1f950",
+   "category": "food",
+   "name": "Croissant"
+  },
+  {
+   "id": "1f968",
+   "category": "food",
+   "name": "Pretzel"
+  },
+  {
+   "id": "1f96f",
+   "category": "food",
+   "name": "Bagel"
+  },
+  {
+   "id": "1f95e",
+   "category": "food",
+   "name": "Pancakes"
+  },
+  {
+   "id": "1f9c7",
+   "category": "food",
+   "name": "Waffle"
+  },
+  {
+   "id": "1f35f",
+   "category": "food",
+   "name": "French fries"
+  },
+  {
+   "id": "1f37f",
+   "category": "food",
+   "name": "Popcorn"
+  },
+  {
+   "id": "1f369",
+   "category": "food",
+   "name": "Doughnut"
+  },
+  {
+   "id": "1f36a",
+   "category": "food",
+   "name": "Cookie"
+  },
+  {
+   "id": "1f370",
+   "category": "food",
+   "name": "Shortcake"
+  },
+  {
+   "id": "1f36b",
+   "category": "food",
+   "name": "Chocolate bar"
+  },
+  {
+   "id": "1f366",
+   "category": "food",
+   "name": "Soft ice cream"
+  },
+  {
+   "id": "1f368",
+   "category": "food",
+   "name": "Ice cream"
+  },
+  {
+   "id": "1f375",
+   "category": "food",
+   "name": "Teacup without handle"
+  },
+  {
+   "id": "2615",
+   "category": "food",
+   "name": "Hot beverage"
+  },
+  {
+   "id": "1f9c3",
+   "category": "food",
+   "name": "Beverage box"
+  },
+  {
+   "id": "1f95a",
+   "category": "food",
+   "name": "Egg"
+  },
+  {
+   "id": "1f9c0",
+   "category": "food",
+   "name": "Cheese wedge"
+  },
+  {
+   "id": "1f9c6",
+   "category": "food",
+   "name": "Falafel"
+  },
+  {
+   "id": "1f4f7",
+   "category": "things",
+   "name": "Camera"
+  },
+  {
+   "id": "1f4da",
+   "category": "things",
+   "name": "Books"
+  },
+  {
+   "id": "270f",
+   "category": "things",
+   "name": "Pencil"
+  },
+  {
+   "id": "1f4dd",
+   "category": "things",
+   "name": "Memo"
+  },
+  {
+   "id": "1f3e1",
+   "category": "things",
+   "name": "House with garden"
+  },
+  {
+   "id": "1f697",
+   "category": "things",
+   "name": "Automobile"
+  },
+  {
+   "id": "1f68c",
+   "category": "things",
+   "name": "Bus"
+  },
+  {
+   "id": "2708",
+   "category": "things",
+   "name": "Airplane"
+  },
+  {
+   "id": "1f680",
+   "category": "things",
+   "name": "Rocket"
+  },
+  {
+   "id": "26f5",
+   "category": "things",
+   "name": "Sailboat"
+  },
+  {
+   "id": "1f6b2",
+   "category": "things",
+   "name": "Bicycle"
+  },
+  {
+   "id": "26bd",
+   "category": "things",
+   "name": "Soccer ball"
+  },
+  {
+   "id": "1f3c0",
+   "category": "things",
+   "name": "Basketball and hoop"
+  },
+  {
+   "id": "26be",
+   "category": "things",
+   "name": "Baseball"
+  },
+  {
+   "id": "1f3be",
+   "category": "things",
+   "name": "Tennis racquet and ball"
+  },
+  {
+   "id": "1f9e9",
+   "category": "things",
+   "name": "Jigsaw puzzle piece"
+  },
+  {
+   "id": "1f9f8",
+   "category": "things",
+   "name": "Teddy bear"
+  },
+  {
+   "id": "1fa81",
+   "category": "things",
+   "name": "Kite"
+  },
+  {
+   "id": "1f3a8",
+   "category": "things",
+   "name": "Artist palette"
+  },
+  {
+   "id": "1f3b9",
+   "category": "things",
+   "name": "Musical keyboard"
+  },
+  {
+   "id": "1f3bb",
+   "category": "things",
+   "name": "Violin"
+  },
+  {
+   "id": "1f3b7",
+   "category": "things",
+   "name": "Saxophone"
+  },
+  {
+   "id": "1f941",
+   "category": "things",
+   "name": "Drum with drumsticks"
+  },
+  {
+   "id": "1f4a1",
+   "category": "things",
+   "name": "Electric light bulb"
+  },
+  {
+   "id": "23f0",
+   "category": "things",
+   "name": "Alarm clock"
+  },
+  {
+   "id": "1f4cd",
+   "category": "things",
+   "name": "Round pushpin"
+  },
+  {
+   "id": "2705",
+   "category": "things",
+   "name": "White heavy check mark"
+  },
+  {
+   "id": "2757",
+   "category": "things",
+   "name": "Heavy exclamation mark symbol"
+  },
+  {
+   "id": "2753",
+   "category": "things",
+   "name": "Black question mark ornament"
+  },
+  {
+   "id": "27a1",
+   "category": "things",
+   "name": "Black rightwards arrow"
+  },
+  {
+   "id": "2b05",
+   "category": "things",
+   "name": "Leftwards black arrow"
+  },
+  {
+   "id": "2b06",
+   "category": "things",
+   "name": "Upwards black arrow"
+  },
+  {
+   "id": "2b07",
+   "category": "things",
+   "name": "Downwards black arrow"
+  },
+  {
+   "id": "1f4a5",
+   "category": "things",
+   "name": "Collision symbol"
+  },
+  {
+   "id": "1f4ac",
+   "category": "things",
+   "name": "Speech balloon"
+  },
+  {
+   "id": "1f4ad",
+   "category": "things",
+   "name": "Thought balloon"
+  },
+  {
+   "id": "1f195",
+   "category": "things",
+   "name": "Squared new"
+  },
+  {
+   "id": "1f197",
+   "category": "things",
+   "name": "Squared ok"
+  },
+  {
+   "id": "1f192",
+   "category": "things",
+   "name": "Squared cool"
+  },
+  {
+   "id": "1f514",
+   "category": "things",
+   "name": "Bell"
+  },
+  {
+   "id": "1f476",
+   "category": "people",
+   "name": "Baby"
+  },
+  {
+   "id": "1f466",
+   "category": "people",
+   "name": "Boy"
+  },
+  {
+   "id": "1f467",
+   "category": "people",
+   "name": "Girl"
+  },
+  {
+   "id": "1f468",
+   "category": "people",
+   "name": "Man"
+  },
+  {
+   "id": "1f469",
+   "category": "people",
+   "name": "Woman"
+  },
+  {
+   "id": "1f474",
+   "category": "people",
+   "name": "Older man"
+  },
+  {
+   "id": "1f475",
+   "category": "people",
+   "name": "Older woman"
+  },
+  {
+   "id": "1f9d2",
+   "category": "people",
+   "name": "Child"
+  },
+  {
+   "id": "1f9d1",
+   "category": "people",
+   "name": "Adult"
+  },
+  {
+   "id": "1f9d4",
+   "category": "people",
+   "name": "Bearded person"
+  },
+  {
+   "id": "1f46a",
+   "category": "people",
+   "name": "Family"
+  },
+  {
+   "id": "1f468_200d_1f373",
+   "category": "people",
+   "name": "Cook"
+  },
+  {
+   "id": "1f469_200d_1f373",
+   "category": "people",
+   "name": "Cook"
+  },
+  {
+   "id": "1f468_200d_1f3eb",
+   "category": "people",
+   "name": "Teacher"
+  },
+  {
+   "id": "1f469_200d_1f3eb",
+   "category": "people",
+   "name": "Teacher"
+  },
+  {
+   "id": "1f468_200d_1f393",
+   "category": "people",
+   "name": "Graduate"
+  },
+  {
+   "id": "1f469_200d_1f393",
+   "category": "people",
+   "name": "Graduate"
+  },
+  {
+   "id": "1f468_200d_2695",
+   "category": "people",
+   "name": "Doctor"
+  },
+  {
+   "id": "1f469_200d_2695",
+   "category": "people",
+   "name": "Doctor"
+  },
+  {
+   "id": "1f468_200d_1f33e",
+   "category": "people",
+   "name": "Farmer"
+  },
+  {
+   "id": "1f469_200d_1f33e",
+   "category": "people",
+   "name": "Farmer"
+  },
+  {
+   "id": "1f477",
+   "category": "people",
+   "name": "Construction worker"
+  },
+  {
+   "id": "1f935",
+   "category": "people",
+   "name": "Man in tuxedo"
+  },
+  {
+   "id": "1f470",
+   "category": "people",
+   "name": "Bride with veil"
+  },
+  {
+   "id": "1f64b",
+   "category": "people",
+   "name": "Happy person raising one hand"
+  },
+  {
+   "id": "1f937",
+   "category": "people",
+   "name": "Shrug"
+  },
+  {
+   "id": "1f9d3",
+   "category": "people",
+   "name": "Older adult"
+  },
+  {
+   "id": "1f46e",
+   "category": "people",
+   "name": "Police officer"
+  },
+  {
+   "id": "1f468_200d_1f692",
+   "category": "people",
+   "name": "Firefighter"
+  },
+  {
+   "id": "1f469_200d_1f692",
+   "category": "people",
+   "name": "Firefighter"
+  },
+  {
+   "id": "1f468_200d_1f3a8",
+   "category": "people",
+   "name": "Artist"
+  },
+  {
+   "id": "1f469_200d_1f3a8",
+   "category": "people",
+   "name": "Artist"
+  },
+  {
+   "id": "1f468_200d_1f4bb",
+   "category": "people",
+   "name": "At the computer"
+  },
+  {
+   "id": "1f469_200d_1f4bb",
+   "category": "people",
+   "name": "At the computer"
+  },
+  {
+   "id": "1f9d1_200d_1f37c",
+   "category": "people",
+   "name": "Feeding a baby"
+  }
+ ]
+}

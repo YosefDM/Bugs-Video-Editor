@@ -90,6 +90,42 @@ Rectangle {
         }
     }
 
+    // A slider with its name above, for the collage's look.
+    component LookSlider: ColumnLayout {
+        id: lookSlider
+
+        property string title
+        property real from: 0
+        property real to: 1
+        property real value: 0
+        signal moved(real value)
+
+        Layout.fillWidth: true
+        spacing: 2
+
+        Text {
+            text: lookSlider.title
+            color: root.t.text2
+            font.family: "Inter"
+            font.pixelSize: 13
+        }
+
+        Slider {
+            id: slider
+
+            Layout.fillWidth: true
+            from: lookSlider.from
+            to: lookSlider.to
+            value: lookSlider.value
+            // Applies on release: each change redraws the whole collage.
+            live: false
+            onValueChanged: {
+                if (value !== lookSlider.value)
+                    lookSlider.moved(value);
+            }
+        }
+    }
+
     // On a small screen a tool's options need all the height: the note gives way, and the
     // scroll bar stays visible so it is clear there is more below.
     readonly property bool roomForNote: options.implicitHeight + note.implicitHeight + 28 <= height
@@ -131,6 +167,19 @@ Rectangle {
 
             // Collage
             ColumnLayout {
+                id: collagePanel
+
+                // Grid cells are sized from the panel, not from their own grid, whose width comes
+                // from its cells: that loop never settled and froze the app.
+                readonly property int selected: simple.collageSelectedItem
+                readonly property var item: selected >= 0 && selected < simple.collageItems.length
+                                            ? simple.collageItems[selected] : null
+                property int stickerCategory: 0
+
+                // The words box may still have the keyboard from the text selected before, so it
+                // is filled in by hand when the selection changes.
+                onSelectedChanged: collageWords.text = item && item.kind === "text" ? item.text : ""
+
                 visible: simple.collageActive
                 Layout.fillWidth: true
                 Layout.leftMargin: 18
@@ -139,9 +188,351 @@ Rectangle {
 
                 Heading {
                     title: "Collage"
-                    body: "Pick a shape and a border. Shuffle tries a new arrangement, and tapping two photos swaps them."
+                    body: "Add words and stickers, then drag them into place. Tap two photos to swap them."
                 }
 
+                // Text and stickers
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+
+                    ActionButton {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 44
+                        icon: "text"
+                        text: "Add text"
+                        primary: true
+                        onClicked: {
+                            simple.addCollageText("");
+                            collageWords.text = collagePanel.item ? collagePanel.item.text : "";
+                            collageWords.forceActiveFocus();
+                            collageWords.selectAll();
+                        }
+                    }
+                }
+
+                Flow {
+                    Layout.fillWidth: true
+                    spacing: 6
+
+                    Repeater {
+                        model: simple.collagePhrases
+
+                        delegate: Rectangle {
+                            required property string modelData
+
+                            width: phrase.implicitWidth + 20
+                            height: 30
+                            radius: 15
+                            color: phraseArea.containsMouse ? root.t.accentSoft : root.t.chip
+                            border.width: 1
+                            border.color: root.t.softBorder
+                            Accessible.role: Accessible.Button
+                            Accessible.name: "Add " + modelData
+
+                            Text {
+                                id: phrase
+                                anchors.centerIn: parent
+                                text: modelData
+                                color: root.t.text
+                                font.family: "Inter"
+                                font.pixelSize: 12
+                                font.weight: Font.DemiBold
+                            }
+
+                            MouseArea {
+                                id: phraseArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: simple.addCollageText(modelData)
+                            }
+                        }
+                    }
+                }
+
+                // Stickers, only the approved ones
+                Text {
+                    text: "Stickers"
+                    color: root.t.text2
+                    font.family: "Inter"
+                    font.pixelSize: 13
+                }
+
+                Flow {
+                    Layout.fillWidth: true
+                    spacing: 6
+
+                    Repeater {
+                        model: simple.stickerCategories
+
+                        delegate: Rectangle {
+                            required property var modelData
+                            required property int index
+                            readonly property bool selected: collagePanel.stickerCategory === index
+
+                            width: categoryName.implicitWidth + 20
+                            height: 28
+                            radius: 14
+                            color: selected ? root.t.strong : root.t.chip
+                            Accessible.role: Accessible.Button
+                            Accessible.name: modelData.title
+
+                            Text {
+                                id: categoryName
+                                anchors.centerIn: parent
+                                text: modelData.title
+                                color: parent.selected ? root.t.onStrong : root.t.text
+                                font.family: "Inter"
+                                font.pixelSize: 12
+                                font.weight: Font.DemiBold
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: collagePanel.stickerCategory = index
+                            }
+                        }
+                    }
+                }
+
+                Grid {
+                    id: stickerGrid
+
+                    Layout.fillWidth: true
+                    columns: 5
+                    spacing: 6
+
+                    Repeater {
+                        model: simple.stickerCategories.length > 0
+                               ? simple.stickerCategories[collagePanel.stickerCategory].stickers : []
+
+                        delegate: Rectangle {
+                            required property var modelData
+
+                            width: (collagePanel.width - 24) / 5
+                            height: width
+                            radius: 10
+                            color: stickerArea.containsMouse ? root.t.accentSoft : "transparent"
+                            Accessible.role: Accessible.Button
+                            Accessible.name: "Add sticker: " + modelData.name
+
+                            Image {
+                                anchors.fill: parent
+                                anchors.margins: 5
+                                source: modelData.url
+                                sourceSize.width: 96
+                                sourceSize.height: 96
+                                fillMode: Image.PreserveAspectFit
+                                asynchronous: true
+                            }
+
+                            MouseArea {
+                                id: stickerArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: simple.addSticker(modelData.id)
+                            }
+                        }
+                    }
+                }
+
+                // The selected text or sticker, under the stickers so picking a sticker
+                // never moves the grid under the pointer.
+                Rectangle {
+                    visible: collagePanel.item !== null
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: selectedColumn.implicitHeight + 24
+                    radius: 12
+                    color: root.t.drop
+                    border.width: 1
+                    border.color: root.t.accent
+
+                    ColumnLayout {
+                        id: selectedColumn
+
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.margins: 12
+                        spacing: 10
+
+                        Text {
+                            text: collagePanel.item && collagePanel.item.kind === "text" ? "Selected text" : "Selected sticker"
+                            color: root.t.text2
+                            font.family: "Inter"
+                            font.pixelSize: 13
+                            font.weight: Font.DemiBold
+                        }
+
+                        TextArea {
+                            id: collageWords
+
+                            visible: collagePanel.item !== null && collagePanel.item.kind === "text"
+                            Layout.fillWidth: true
+                            Layout.minimumHeight: 56
+                            wrapMode: TextEdit.Wrap
+                            color: root.t.text
+                            selectByMouse: true
+                            selectedTextColor: root.t.onAccent
+                            selectionColor: root.t.accent
+                            leftPadding: 10
+                            rightPadding: 10
+                            topPadding: 8
+                            bottomPadding: 8
+                            font.family: "Inter"
+                            font.pixelSize: 15
+                            placeholderText: "Type here. Enter starts a new line."
+                            background: Rectangle {
+                                radius: 8
+                                color: root.t.panel
+                                border.width: collageWords.activeFocus ? 1.5 : 1
+                                border.color: collageWords.activeFocus ? root.t.accent : root.t.softBorder
+                            }
+                            onTextChanged: {
+                                if (activeFocus && collagePanel.item)
+                                    simple.setCollageItemText(collagePanel.selected, text);
+                            }
+                            Binding on text {
+                                value: collagePanel.item ? collagePanel.item.text : ""
+                                when: !collageWords.activeFocus
+                                // Keep the words when the box takes the keyboard, instead of
+                                // going back to an older value and saving that.
+                                restoreMode: Binding.RestoreNone
+                            }
+                        }
+
+                        Grid {
+                            id: collageFonts
+
+                            visible: collagePanel.item !== null && collagePanel.item.kind === "text"
+                            Layout.fillWidth: true
+                            columns: 3
+                            spacing: 6
+
+                            Repeater {
+                                model: simple.labelFonts
+
+                                delegate: Rectangle {
+                                    required property var modelData
+                                    readonly property bool selected: collagePanel.item && collagePanel.item.font === modelData.id
+
+                                    width: (collagePanel.width - 24 - 12) / 3
+                                    height: 36
+                                    radius: 8
+                                    color: selected ? root.t.accentSoft : "transparent"
+                                    border.width: 1.5
+                                    border.color: selected ? root.t.accent : root.t.softBorder
+                                    Accessible.role: Accessible.Button
+                                    Accessible.name: modelData.name
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        width: parent.width - 6
+                                        horizontalAlignment: Text.AlignHCenter
+                                        elide: Text.ElideRight
+                                        text: modelData.name
+                                        color: root.t.text
+                                        font.family: modelData.family
+                                        font.bold: true
+                                        font.pixelSize: 14
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: simple.setCollageItemFont(collagePanel.selected, modelData.id)
+                                    }
+                                }
+                            }
+                        }
+
+                        Grid {
+                            id: collageColors
+
+                            visible: collagePanel.item !== null && collagePanel.item.kind === "text"
+                            Layout.fillWidth: true
+                            columns: 5
+                            spacing: 6
+
+                            Repeater {
+                                model: simple.labelColors
+
+                                delegate: Rectangle {
+                                    required property string modelData
+                                    readonly property bool selected: collagePanel.item && collagePanel.item.color.toLowerCase() === modelData.toLowerCase()
+
+                                    width: (collagePanel.width - 24 - 24) / 5
+                                    height: 30
+                                    radius: 15
+                                    color: "transparent"
+                                    border.width: selected ? 2.5 : 0
+                                    border.color: root.t.accent
+                                    Accessible.role: Accessible.Button
+                                    Accessible.name: "Colour " + modelData
+
+                                    Rectangle {
+                                        anchors.centerIn: parent
+                                        width: 22
+                                        height: 22
+                                        radius: 11
+                                        color: parent.modelData
+                                        border.width: 1
+                                        border.color: root.t.softBorder
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: simple.setCollageItemColor(collagePanel.selected, modelData)
+                                    }
+                                }
+                            }
+                        }
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: "Drag the corner dot to resize, and the blue knob to turn."
+                            wrapMode: Text.WordWrap
+                            color: root.t.muted
+                            font.family: "Inter"
+                            font.pixelSize: 12
+                        }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 6
+
+                            ActionButton {
+                                Layout.fillWidth: true
+                                icon: "up"
+                                text: "Front"
+                                fontSize: 12
+                                onClicked: simple.bringCollageItemToFront(collagePanel.selected)
+                            }
+
+                            ActionButton {
+                                Layout.fillWidth: true
+                                icon: "down"
+                                text: "Back"
+                                fontSize: 12
+                                onClicked: simple.sendCollageItemToBack(collagePanel.selected)
+                            }
+
+                            ActionButton {
+                                Layout.fillWidth: true
+                                icon: "trash"
+                                text: "Remove"
+                                fontSize: 12
+                                onClicked: simple.removeCollageItem(collagePanel.selected)
+                            }
+                        }
+                    }
+                }
+
+                // The photos
                 Text {
                     text: "Shape"
                     color: root.t.text2
@@ -169,7 +560,7 @@ Rectangle {
                             readonly property bool selected: simple.collageShape === modelData.id
 
                             width: (collageShapes.width - 8) / 2
-                            height: 56
+                            height: 48
                             radius: 10
                             color: selected ? root.t.accentSoft : "transparent"
                             border.width: 1.5
@@ -214,78 +605,60 @@ Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 44
                     icon: "shuffle"
-                    text: "Shuffle"
+                    text: "Shuffle the photos"
                     onClicked: simple.shuffleCollage()
                 }
 
+                // Look
+                LookSlider {
+                    title: "Space between photos"
+                    to: 0.06
+                    value: simple.collageSpacing
+                    onMoved: (value) => simple.setCollageSpacing(value)
+                }
+
+                LookSlider {
+                    title: "Rounded corners"
+                    to: 0.08
+                    value: simple.collageCorners
+                    onMoved: (value) => simple.setCollageCorners(value)
+                }
+
                 Text {
-                    text: "Border"
+                    text: "Background"
                     color: root.t.text2
                     font.family: "Inter"
                     font.pixelSize: 13
                 }
 
-                Row {
-                    id: borderRow
+                Grid {
+                    id: backgrounds
 
                     Layout.fillWidth: true
-                    spacing: 8
+                    columns: 5
+                    spacing: 6
 
                     Repeater {
-                        model: ["None", "Thin", "Thick"]
+                        model: simple.collageBackgrounds
 
                         delegate: Rectangle {
                             required property string modelData
-                            required property int index
-                            readonly property bool selected: simple.collageBorder === index
+                            readonly property bool selected: simple.collageBackground.toLowerCase() === modelData.toLowerCase()
 
-                            width: (borderRow.width - 16) / 3
-                            height: 40
-                            radius: 10
-                            color: selected ? root.t.accentSoft : "transparent"
-                            border.width: 1.5
-                            border.color: selected ? root.t.accent : root.t.softBorder
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: modelData
-                                color: root.t.text
-                                font.family: "Inter"
-                                font.pixelSize: 13
-                                font.weight: Font.DemiBold
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: simple.setCollageBorder(index)
-                            }
-                        }
-                    }
-                }
-
-                Row {
-                    visible: simple.collageBorder > 0
-                    spacing: 10
-
-                    Repeater {
-                        model: ["#FFFFFF", "#111111", "#E5392B"]
-
-                        delegate: Rectangle {
-                            required property string modelData
-                            readonly property bool selected: simple.collageBorderColor.toLowerCase() === modelData.toLowerCase()
-
-                            width: 40
-                            height: 40
-                            radius: 20
+                            width: (collagePanel.width - 24) / 5
+                            height: 34
+                            radius: 17
                             color: "transparent"
                             border.width: selected ? 2.5 : 0
                             border.color: root.t.accent
+                            Accessible.role: Accessible.Button
+                            Accessible.name: "Background " + modelData
 
                             Rectangle {
-                                anchors.fill: parent
-                                anchors.margins: 5
-                                radius: width / 2
+                                anchors.centerIn: parent
+                                width: 26
+                                height: 26
+                                radius: 13
                                 color: parent.modelData
                                 border.width: 1
                                 border.color: root.t.softBorder
@@ -294,7 +667,7 @@ Rectangle {
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: simple.setCollageBorderColor(modelData)
+                                onClicked: simple.setCollageBackground(modelData)
                             }
                         }
                     }

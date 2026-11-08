@@ -140,6 +140,7 @@ add_executable(shotcut WIN32 MACOSX_BUNDLE
   settings.cpp settings.h
   sharedframe.cpp sharedframe.h
   simple/collage.cpp simple/collage.h
+  simple/collageitemview.cpp simple/collageitemview.h
   simple/simplecontroller.cpp simple/simplecontroller.h
   simple/simpleedit.cpp simple/simpleedit.h
   simple/simplemedia.cpp simple/simplemedia.h
