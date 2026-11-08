@@ -8,6 +8,7 @@ Rectangle {
 
     readonly property var t: Theme.colors(simple.dark)
     readonly property bool showTimeline: simple.hasFile && !simple.isPhoto && !simple.collageActive
+                                          && !simple.collagePicking
 
     color: t.bg
 
@@ -197,7 +198,7 @@ Rectangle {
         Row {
             id: toolRow
 
-            visible: !simple.collageActive
+            visible: !simple.collageActive && !simple.collagePicking
 
             readonly property var tools: simple.isPhoto
                 ? [{ id: "crop", label: "Crop", icon: "crop" },

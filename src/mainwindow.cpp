@@ -373,6 +373,10 @@ void MainWindow::enterSimpleMode()
         dock->hide();
     ui->mainToolBar->hide();
     menuBar()->hide();
+    if (!m_simpleGeometry.isEmpty()) {
+        restoreGeometry(m_simpleGeometry);
+        m_simpleGeometry.clear();
+    }
     m_simpleMode->setGeometry(rect());
     m_simpleMode->enter(m_player->videoWidget());
     updateWindowTitle();
@@ -383,6 +387,8 @@ void MainWindow::enterAdvancedMode()
     if (!isSimpleMode())
         return;
     SimpleController *simple = m_simpleMode->controller();
+    // Advanced's panels make the window wider; Simple mode gets its own size back afterwards.
+    m_simpleGeometry = saveGeometry();
     m_combineProject = simple->combineProject();
     m_combineName = QFileInfo(simple->currentPath()).fileName();
     // Work Levi kept here last time reopens as it was; otherwise start from his Simple edits.

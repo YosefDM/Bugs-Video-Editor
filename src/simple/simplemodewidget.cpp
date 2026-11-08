@@ -189,7 +189,10 @@ void SimpleModeWidget::applyTheme()
 
 void SimpleModeWidget::updateCollageView()
 {
-    const bool collage = m_active && m_controller->collageActive();
+    // While photos are picked, the collage view's empty state replaces the open file, so it is
+    // clear the picture shown is not what Finish would save.
+    const bool collage = m_active
+                         && (m_controller->collageActive() || m_controller->collagePicking());
     m_collageView->setVisible(collage);
     if (m_videoWidget)
         m_videoWidget->setVisible(!collage);

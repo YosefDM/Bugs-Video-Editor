@@ -33,6 +33,15 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 - After typing a time in **Trim** and pressing Enter, Space typed into the box instead of playing, and the box stopped following the strip.
 - Space, the arrow keys and Ctrl+Z work after clicking any button or the strip, not only the video.
 - In the Text tool, the words box could show the text from before, and typing then replaced the wrong words.
+- Adding a file BUGS! can't open, such as an empty or damaged one, no longer puts a blank tile in Originals. BUGS! says which files it couldn't add.
+- While picking photos for a collage, the open file no longer stays on screen, and **Finish** waits until the collage is made. Going to the Finished tab stops picking.
+- **Finish** on a photo with no changes saves a copy under its own name instead of a re-compressed "edited" one. iPhone photos still become a JPG.
+- A free crop can no longer be made so small that its corners overlap; the smallest is a fifth of the picture.
+- **Cut out** shows tenths of a second, so a short part no longer reads "0:00 → 0:01" next to "less than a second".
+- The filmstrip no longer ends in a dark gap for some videos BUGS! saved.
+- Tiny pictures, such as icons, are not opened; they showed as random colours.
+- After removing the open file, or coming back from Combine clips, the preview no longer shows the old picture or a black box.
+- The window no longer stays wider after Combine clips.
 - The full editor's Elements panel no longer has animated emoji that aren't tznius, such as the bikini, kissing couples, same-sex families and the middle finger.
 
 ### Changed

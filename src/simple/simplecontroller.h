@@ -29,6 +29,7 @@
 #include <QObject>
 #include <QPointer>
 #include <QRectF>
+#include <QSet>
 #include <QSettings>
 #include <QTimer>
 #include <QUrl>
@@ -374,6 +375,13 @@ private:
     void saveLibrary();
     void refreshFinished();
     void ensureThumbnail(const QString &path);
+    // A file just added that can't be opened leaves the library again, with one message for all
+    // of them.
+    void rejectAddedFile(const QString &path);
+    void showRejectedFiles();
+    QSet<QString> m_justAdded;
+    QStringList m_rejectedNames;
+    QTimer m_rejectTimer;
     void showToast(const QString &text, bool isError = false);
     // False, with a message, when a file the save needs has been moved or deleted since it was opened.
     bool filesStillThere(const QStringList &paths);

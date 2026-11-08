@@ -94,7 +94,7 @@ Rectangle {
             icon: "combine"
             text: "Combine clips"
             // Starts from the open file; with none, the full editor would open on an empty project.
-            enabled: simple.hasFile && !simple.saving
+            enabled: simple.hasFile && !simple.saving && !simple.collagePicking
             onClicked: simple.requestAdvanced()
         }
 
@@ -104,7 +104,8 @@ Rectangle {
             icon: "check"
             text: "Finish"
             primary: true
-            enabled: (simple.hasFile || simple.collageActive) && !simple.loading
+            // While photos are picked for a collage there is nothing to save yet.
+            enabled: (simple.hasFile || simple.collageActive) && !simple.loading && !simple.collagePicking
             onClicked: simple.finish()
         }
 
