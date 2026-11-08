@@ -20,6 +20,7 @@
 
 #include "collage.h"
 #include "simpleedit.h"
+#include "simplemedia.h"
 
 #include <QElapsedTimer>
 #include <QFileSystemWatcher>
@@ -69,8 +70,18 @@ class SimpleController : public QObject
     Q_PROPERTY(bool collageMaking READ collageMaking NOTIFY changed)
     Q_PROPERTY(bool collageActive READ collageActive NOTIFY changed)
     Q_PROPERTY(QString collageShape READ collageShape NOTIFY changed)
-    Q_PROPERTY(int collageBorder READ collageBorder NOTIFY changed)
-    Q_PROPERTY(QString collageBorderColor READ collageBorderColor NOTIFY changed)
+    // Space between photos and round the edge, and photo corner rounding: fractions of the
+    // shorter side. The background shows in the space.
+    Q_PROPERTY(double collageSpacing READ collageSpacing NOTIFY changed)
+    Q_PROPERTY(double collageCorners READ collageCorners NOTIFY changed)
+    Q_PROPERTY(QString collageBackground READ collageBackground NOTIFY changed)
+    Q_PROPERTY(QStringList collageBackgrounds READ collageBackgrounds CONSTANT)
+    // Text and stickers on the collage, and the one whose options show
+    Q_PROPERTY(QVariantList collageItems READ collageItems NOTIFY changed)
+    Q_PROPERTY(int collageSelectedItem READ collageSelectedItem NOTIFY changed)
+    // The approved stickers by category: [{id, title, stickers: [{id, name, url}]}]
+    Q_PROPERTY(QVariantList stickerCategories READ stickerCategories CONSTANT)
+    Q_PROPERTY(QStringList collagePhrases READ collagePhrases CONSTANT)
     Q_PROPERTY(QString collagePreview READ collagePreview NOTIFY changed)
     Q_PROPERTY(double collageAspect READ collageAspect NOTIFY changed)
     Q_PROPERTY(QVariantList collageCells READ collageCells NOTIFY changed)
@@ -145,17 +156,27 @@ public:
     QString currentPath() const { return m_edit.sourcePath; }
     QString tool() const { return m_tool; }
     void setTool(const QString &tool);
-    // Undo is for the open file; the collage screen has Shuffle instead.
-    bool canUndo() const { return !m_collageActive && !m_undo.isEmpty(); }
-    bool canRedo() const { return !m_collageActive && !m_redo.isEmpty(); }
+    // On the collage screen, undo covers its text, stickers and look; Shuffle and swaps are
+    // not undone.
+    bool canUndo() const { return m_collageActive ? !m_collageUndo.isEmpty() : !m_undo.isEmpty(); }
+    bool canRedo() const { return m_collageActive ? !m_collageRedo.isEmpty() : !m_redo.isEmpty(); }
 
     bool collagePicking() const { return m_collagePicking; }
     int collagePickCount() const { return m_collagePicks.size(); }
     bool collageMaking() const { return m_collageMaking; }
     bool collageActive() const { return m_collageActive; }
     QString collageShape() const { return m_collageShape; }
-    int collageBorder() const { return m_collageBorder; }
-    QString collageBorderColor() const { return m_collageBorderColor; }
+    double collageSpacing() const { return m_collageDesign.spacing; }
+    double collageCorners() const { return m_collageDesign.corners; }
+    QString collageBackground() const { return m_collageDesign.background; }
+    QStringList collageBackgrounds() const;
+    QVariantList collageItems() const;
+    int collageSelectedItem() const { return m_collageSelectedItem; }
+    QVariantList stickerCategories() const;
+    // Draws text or a sticker for the preview, with the same code that draws it in the saved
+    // picture. `page` is the size the collage is shown at.
+    void paintCollageItem(QPainter *painter, int index, const QRectF &box, const QSizeF &page) const;
+    QStringList collagePhrases() const;
     QString collagePreview() const { return m_collagePreview; }
     double collageAspect() const;
     QVariantList collageCells() const;
@@ -277,8 +298,24 @@ public slots:
     void makeCollage();
     void leaveCollage();
     void setCollageShape(const QString &shape);
-    void setCollageBorder(int border);
-    void setCollageBorderColor(const QString &color);
+    void setCollageSpacing(double spacing);
+    void setCollageCorners(double corners);
+    void setCollageBackground(const QString &color);
+    // Text and stickers. Gestures (move, resize, rotate) make one undo step, ended by
+    // endCollageItemGesture().
+    void addCollageText(const QString &text);
+    void addSticker(const QString &id);
+    void selectCollageItem(int index);
+    void moveCollageItem(int index, double x, double y);
+    void resizeCollageItem(int index, double size);
+    void rotateCollageItem(int index, double degrees);
+    void endCollageItemGesture();
+    void setCollageItemText(int index, const QString &text);
+    void setCollageItemColor(int index, const QString &color);
+    void setCollageItemFont(int index, const QString &font);
+    void removeCollageItem(int index);
+    void bringCollageItemToFront(int index);
+    void sendCollageItemToBack(int index);
     void shuffleCollage();
     void tapCollage(double x, double y);
     void cancelFinish();
@@ -400,8 +437,36 @@ private:
     std::deque<Collage::Photo> m_collagePhotos; // .path is the readable file, upright
     std::unique_ptr<Collage::Page> m_collagePage;
     QString m_collageShape{QStringLiteral("square")};
-    int m_collageBorder{1};
-    QString m_collageBorderColor{QStringLiteral("#FFFFFF")};
+    // Everything on the collage that undo covers.
+    struct CollageDesign
+    {
+        QVector<Simple::CollageItem> items;
+        double spacing{0.012};
+        double corners{0};
+        QString background{QStringLiteral("#FFFFFF")};
+        bool operator==(const CollageDesign &o) const
+        {
+            return items == o.items && spacing == o.spacing && corners == o.corners
+                   && background == o.background;
+        }
+        bool operator!=(const CollageDesign &o) const { return !(*this == o); }
+    };
+    CollageDesign m_collageDesign;
+    CollageDesign m_collageGestureStart;
+    bool m_collageGesture{false};
+    QVector<CollageDesign> m_collageUndo;
+    QVector<CollageDesign> m_collageRedo;
+    QString m_collageCoalesceKey;
+    int m_collageSelectedItem{-1};
+    void pushCollageUndo(const CollageDesign &before, const QString &coalesceKey = QString());
+    // After a change to the text or stickers, which QML draws over the preview picture.
+    void collageItemsChanged();
+    void applyCollageDesign(const CollageDesign &design);
+    Simple::CollageStyle collageStyle() const;
+    // Sticker pictures, read once from the bundled folder.
+    QImage stickerImage(const QString &id) const;
+    mutable QHash<QString, QImage> m_stickerImages;
+    mutable QVariantList m_stickerCategories;
     unsigned m_collageSeed{1};
     int m_collageSelected{-1};
     QString m_collagePreview;

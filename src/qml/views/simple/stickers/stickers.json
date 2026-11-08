@@ -1,0 +1,8046 @@
+{
+ "categories": [
+  {
+   "id": "jewish",
+   "title": "Jewish"
+  },
+  {
+   "id": "smileys",
+   "title": "Faces & hearts"
+  },
+  {
+   "id": "people",
+   "title": "People & hands"
+  },
+  {
+   "id": "nature",
+   "title": "Animals & nature"
+  },
+  {
+   "id": "food",
+   "title": "Food & drink"
+  },
+  {
+   "id": "activities",
+   "title": "Celebrate & play"
+  },
+  {
+   "id": "travel",
+   "title": "Places & travel"
+  },
+  {
+   "id": "objects",
+   "title": "Things"
+  },
+  {
+   "id": "symbols",
+   "title": "Symbols"
+  },
+  {
+   "id": "flags",
+   "title": "Flags"
+  }
+ ],
+ "stickers": [
+  {
+   "id": "2721",
+   "category": "jewish",
+   "name": "Magen David"
+  },
+  {
+   "id": "1f54e",
+   "category": "jewish",
+   "name": "Menorah"
+  },
+  {
+   "id": "1f56f",
+   "category": "jewish",
+   "name": "Candle"
+  },
+  {
+   "id": "1f377",
+   "category": "jewish",
+   "name": "Kiddush cup"
+  },
+  {
+   "id": "1f35e",
+   "category": "jewish",
+   "name": "Challah"
+  },
+  {
+   "id": "1f4dc",
+   "category": "jewish",
+   "name": "Scroll"
+  },
+  {
+   "id": "1f54d",
+   "category": "jewish",
+   "name": "Synagogue"
+  },
+  {
+   "id": "1f4d6",
+   "category": "jewish",
+   "name": "Sefer"
+  },
+  {
+   "id": "1faac",
+   "category": "jewish",
+   "name": "Hamsa"
+  },
+  {
+   "id": "1f596",
+   "category": "jewish",
+   "name": "Kohanim hands"
+  },
+  {
+   "id": "1f64f",
+   "category": "jewish",
+   "name": "Folded hands"
+  },
+  {
+   "id": "1f54a",
+   "category": "jewish",
+   "name": "Dove"
+  },
+  {
+   "id": "1f981",
+   "category": "jewish",
+   "name": "Lion"
+  },
+  {
+   "id": "1f34b",
+   "category": "jewish",
+   "name": "Esrog"
+  },
+  {
+   "id": "1f334",
+   "category": "jewish",
+   "name": "Palm branch"
+  },
+  {
+   "id": "1f36f",
+   "category": "jewish",
+   "name": "Honey"
+  },
+  {
+   "id": "1f34e",
+   "category": "jewish",
+   "name": "Apple"
+  },
+  {
+   "id": "1f95b",
+   "category": "jewish",
+   "name": "Milk"
+  },
+  {
+   "id": "1f1ee_1f1f1",
+   "category": "jewish",
+   "name": "Israel"
+  },
+  {
+   "id": "1f600",
+   "category": "smileys",
+   "name": "Grinning face"
+  },
+  {
+   "id": "1f603",
+   "category": "smileys",
+   "name": "Grinning face with big eyes"
+  },
+  {
+   "id": "1f604",
+   "category": "smileys",
+   "name": "Grinning face with smiling eyes"
+  },
+  {
+   "id": "1f601",
+   "category": "smileys",
+   "name": "Beaming face with smiling eyes"
+  },
+  {
+   "id": "1f606",
+   "category": "smileys",
+   "name": "Grinning squinting face"
+  },
+  {
+   "id": "1f605",
+   "category": "smileys",
+   "name": "Grinning face with sweat"
+  },
+  {
+   "id": "1f923",
+   "category": "smileys",
+   "name": "Rolling on the floor laughing"
+  },
+  {
+   "id": "1f602",
+   "category": "smileys",
+   "name": "Face with tears of joy"
+  },
+  {
+   "id": "1f642",
+   "category": "smileys",
+   "name": "Slightly smiling face"
+  },
+  {
+   "id": "1f643",
+   "category": "smileys",
+   "name": "Upside-down face"
+  },
+  {
+   "id": "1fae0",
+   "category": "smileys",
+   "name": "Melting face"
+  },
+  {
+   "id": "1faeb",
+   "category": "smileys",
+   "name": "Cracking face"
+  },
+  {
+   "id": "1f609",
+   "category": "smileys",
+   "name": "Winking face"
+  },
+  {
+   "id": "1f60a",
+   "category": "smileys",
+   "name": "Smiling face with smiling eyes"
+  },
+  {
+   "id": "1f607",
+   "category": "smileys",
+   "name": "Smiling face with halo"
+  },
+  {
+   "id": "1f970",
+   "category": "smileys",
+   "name": "Smiling face with hearts"
+  },
+  {
+   "id": "1f60d",
+   "category": "smileys",
+   "name": "Smiling face with heart-eyes"
+  },
+  {
+   "id": "1f929",
+   "category": "smileys",
+   "name": "Star-struck"
+  },
+  {
+   "id": "1f618",
+   "category": "smileys",
+   "name": "Face blowing a kiss"
+  },
+  {
+   "id": "1f617",
+   "category": "smileys",
+   "name": "Kissing face"
+  },
+  {
+   "id": "263a",
+   "category": "smileys",
+   "name": "Smiling face"
+  },
+  {
+   "id": "1f61a",
+   "category": "smileys",
+   "name": "Kissing face with closed eyes"
+  },
+  {
+   "id": "1f619",
+   "category": "smileys",
+   "name": "Kissing face with smiling eyes"
+  },
+  {
+   "id": "1f972",
+   "category": "smileys",
+   "name": "Smiling face with tear"
+  },
+  {
+   "id": "1f60b",
+   "category": "smileys",
+   "name": "Face savoring food"
+  },
+  {
+   "id": "1f61b",
+   "category": "smileys",
+   "name": "Face with tongue"
+  },
+  {
+   "id": "1f61c",
+   "category": "smileys",
+   "name": "Winking face with tongue"
+  },
+  {
+   "id": "1f92a",
+   "category": "smileys",
+   "name": "Zany face"
+  },
+  {
+   "id": "1f61d",
+   "category": "smileys",
+   "name": "Squinting face with tongue"
+  },
+  {
+   "id": "1f911",
+   "category": "smileys",
+   "name": "Money-mouth face"
+  },
+  {
+   "id": "1f917",
+   "category": "smileys",
+   "name": "Smiling face with open hands"
+  },
+  {
+   "id": "1f92d",
+   "category": "smileys",
+   "name": "Face with hand over mouth"
+  },
+  {
+   "id": "1fae2",
+   "category": "smileys",
+   "name": "Face with open eyes and hand over mouth"
+  },
+  {
+   "id": "1fae3",
+   "category": "smileys",
+   "name": "Face with peeking eye"
+  },
+  {
+   "id": "1f92b",
+   "category": "smileys",
+   "name": "Shushing face"
+  },
+  {
+   "id": "1f914",
+   "category": "smileys",
+   "name": "Thinking face"
+  },
+  {
+   "id": "1fae1",
+   "category": "smileys",
+   "name": "Saluting face"
+  },
+  {
+   "id": "1f910",
+   "category": "smileys",
+   "name": "Zipper-mouth face"
+  },
+  {
+   "id": "1f928",
+   "category": "smileys",
+   "name": "Face with raised eyebrow"
+  },
+  {
+   "id": "1f610",
+   "category": "smileys",
+   "name": "Neutral face"
+  },
+  {
+   "id": "1f611",
+   "category": "smileys",
+   "name": "Expressionless face"
+  },
+  {
+   "id": "1f636",
+   "category": "smileys",
+   "name": "Face without mouth"
+  },
+  {
+   "id": "1fae5",
+   "category": "smileys",
+   "name": "Dotted line face"
+  },
+  {
+   "id": "1f636_200d_1f32b",
+   "category": "smileys",
+   "name": "Face in clouds"
+  },
+  {
+   "id": "1f60f",
+   "category": "smileys",
+   "name": "Smirking face"
+  },
+  {
+   "id": "1f612",
+   "category": "smileys",
+   "name": "Unamused face"
+  },
+  {
+   "id": "1f644",
+   "category": "smileys",
+   "name": "Face with rolling eyes"
+  },
+  {
+   "id": "1f62c",
+   "category": "smileys",
+   "name": "Grimacing face"
+  },
+  {
+   "id": "1f62e_200d_1f4a8",
+   "category": "smileys",
+   "name": "Face exhaling"
+  },
+  {
+   "id": "1f925",
+   "category": "smileys",
+   "name": "Lying face"
+  },
+  {
+   "id": "1fae8",
+   "category": "smileys",
+   "name": "Shaking face"
+  },
+  {
+   "id": "1f642_200d_2194",
+   "category": "smileys",
+   "name": "Head shaking horizontally"
+  },
+  {
+   "id": "1f642_200d_2195",
+   "category": "smileys",
+   "name": "Head shaking vertically"
+  },
+  {
+   "id": "1f60c",
+   "category": "smileys",
+   "name": "Relieved face"
+  },
+  {
+   "id": "1f614",
+   "category": "smileys",
+   "name": "Pensive face"
+  },
+  {
+   "id": "1f62a",
+   "category": "smileys",
+   "name": "Sleepy face"
+  },
+  {
+   "id": "1f924",
+   "category": "smileys",
+   "name": "Drooling face"
+  },
+  {
+   "id": "1f634",
+   "category": "smileys",
+   "name": "Sleeping face"
+  },
+  {
+   "id": "1fae9",
+   "category": "smileys",
+   "name": "Face with bags under eyes"
+  },
+  {
+   "id": "1f637",
+   "category": "smileys",
+   "name": "Face with medical mask"
+  },
+  {
+   "id": "1f912",
+   "category": "smileys",
+   "name": "Face with thermometer"
+  },
+  {
+   "id": "1f915",
+   "category": "smileys",
+   "name": "Face with head-bandage"
+  },
+  {
+   "id": "1f922",
+   "category": "smileys",
+   "name": "Nauseated face"
+  },
+  {
+   "id": "1f92e",
+   "category": "smileys",
+   "name": "Face vomiting"
+  },
+  {
+   "id": "1f927",
+   "category": "smileys",
+   "name": "Sneezing face"
+  },
+  {
+   "id": "1f975",
+   "category": "smileys",
+   "name": "Hot face"
+  },
+  {
+   "id": "1f976",
+   "category": "smileys",
+   "name": "Cold face"
+  },
+  {
+   "id": "1f974",
+   "category": "smileys",
+   "name": "Woozy face"
+  },
+  {
+   "id": "1f635",
+   "category": "smileys",
+   "name": "Face with crossed-out eyes"
+  },
+  {
+   "id": "1f635_200d_1f4ab",
+   "category": "smileys",
+   "name": "Face with spiral eyes"
+  },
+  {
+   "id": "1f92f",
+   "category": "smileys",
+   "name": "Exploding head"
+  },
+  {
+   "id": "1f920",
+   "category": "smileys",
+   "name": "Cowboy hat face"
+  },
+  {
+   "id": "1f973",
+   "category": "smileys",
+   "name": "Partying face"
+  },
+  {
+   "id": "1f978",
+   "category": "smileys",
+   "name": "Disguised face"
+  },
+  {
+   "id": "1f60e",
+   "category": "smileys",
+   "name": "Smiling face with sunglasses"
+  },
+  {
+   "id": "1f913",
+   "category": "smileys",
+   "name": "Nerd face"
+  },
+  {
+   "id": "1f9d0",
+   "category": "smileys",
+   "name": "Face with monocle"
+  },
+  {
+   "id": "1f615",
+   "category": "smileys",
+   "name": "Confused face"
+  },
+  {
+   "id": "1fae4",
+   "category": "smileys",
+   "name": "Face with diagonal mouth"
+  },
+  {
+   "id": "1f61f",
+   "category": "smileys",
+   "name": "Worried face"
+  },
+  {
+   "id": "1f641",
+   "category": "smileys",
+   "name": "Slightly frowning face"
+  },
+  {
+   "id": "2639",
+   "category": "smileys",
+   "name": "Frowning face"
+  },
+  {
+   "id": "1f62e",
+   "category": "smileys",
+   "name": "Face with open mouth"
+  },
+  {
+   "id": "1f62f",
+   "category": "smileys",
+   "name": "Hushed face"
+  },
+  {
+   "id": "1f632",
+   "category": "smileys",
+   "name": "Astonished face"
+  },
+  {
+   "id": "1f633",
+   "category": "smileys",
+   "name": "Flushed face"
+  },
+  {
+   "id": "1faea",
+   "category": "smileys",
+   "name": "Distorted face"
+  },
+  {
+   "id": "1f97a",
+   "category": "smileys",
+   "name": "Pleading face"
+  },
+  {
+   "id": "1f979",
+   "category": "smileys",
+   "name": "Face holding back tears"
+  },
+  {
+   "id": "1f626",
+   "category": "smileys",
+   "name": "Frowning face with open mouth"
+  },
+  {
+   "id": "1f627",
+   "category": "smileys",
+   "name": "Anguished face"
+  },
+  {
+   "id": "1f628",
+   "category": "smileys",
+   "name": "Fearful face"
+  },
+  {
+   "id": "1f630",
+   "category": "smileys",
+   "name": "Anxious face with sweat"
+  },
+  {
+   "id": "1f625",
+   "category": "smileys",
+   "name": "Sad but relieved face"
+  },
+  {
+   "id": "1f622",
+   "category": "smileys",
+   "name": "Crying face"
+  },
+  {
+   "id": "1f62d",
+   "category": "smileys",
+   "name": "Loudly crying face"
+  },
+  {
+   "id": "1f631",
+   "category": "smileys",
+   "name": "Face screaming in fear"
+  },
+  {
+   "id": "1f616",
+   "category": "smileys",
+   "name": "Confounded face"
+  },
+  {
+   "id": "1f623",
+   "category": "smileys",
+   "name": "Persevering face"
+  },
+  {
+   "id": "1f61e",
+   "category": "smileys",
+   "name": "Disappointed face"
+  },
+  {
+   "id": "1f613",
+   "category": "smileys",
+   "name": "Downcast face with sweat"
+  },
+  {
+   "id": "1f629",
+   "category": "smileys",
+   "name": "Weary face"
+  },
+  {
+   "id": "1f62b",
+   "category": "smileys",
+   "name": "Tired face"
+  },
+  {
+   "id": "1f971",
+   "category": "smileys",
+   "name": "Yawning face"
+  },
+  {
+   "id": "1f624",
+   "category": "smileys",
+   "name": "Face with steam from nose"
+  },
+  {
+   "id": "1f621",
+   "category": "smileys",
+   "name": "Enraged face"
+  },
+  {
+   "id": "1f620",
+   "category": "smileys",
+   "name": "Angry face"
+  },
+  {
+   "id": "1f92c",
+   "category": "smileys",
+   "name": "Face with symbols on mouth"
+  },
+  {
+   "id": "1f480",
+   "category": "smileys",
+   "name": "Skull"
+  },
+  {
+   "id": "2620",
+   "category": "smileys",
+   "name": "Skull and crossbones"
+  },
+  {
+   "id": "1f4a9",
+   "category": "smileys",
+   "name": "Pile of poo"
+  },
+  {
+   "id": "1f921",
+   "category": "smileys",
+   "name": "Clown face"
+  },
+  {
+   "id": "1f479",
+   "category": "smileys",
+   "name": "Ogre"
+  },
+  {
+   "id": "1f47a",
+   "category": "smileys",
+   "name": "Goblin"
+  },
+  {
+   "id": "1f47b",
+   "category": "smileys",
+   "name": "Ghost"
+  },
+  {
+   "id": "1f47d",
+   "category": "smileys",
+   "name": "Alien"
+  },
+  {
+   "id": "1f47e",
+   "category": "smileys",
+   "name": "Alien monster"
+  },
+  {
+   "id": "1f916",
+   "category": "smileys",
+   "name": "Robot"
+  },
+  {
+   "id": "1f63a",
+   "category": "smileys",
+   "name": "Grinning cat"
+  },
+  {
+   "id": "1f638",
+   "category": "smileys",
+   "name": "Grinning cat with smiling eyes"
+  },
+  {
+   "id": "1f639",
+   "category": "smileys",
+   "name": "Cat with tears of joy"
+  },
+  {
+   "id": "1f63b",
+   "category": "smileys",
+   "name": "Smiling cat with heart-eyes"
+  },
+  {
+   "id": "1f63c",
+   "category": "smileys",
+   "name": "Cat with wry smile"
+  },
+  {
+   "id": "1f63d",
+   "category": "smileys",
+   "name": "Kissing cat"
+  },
+  {
+   "id": "1f640",
+   "category": "smileys",
+   "name": "Weary cat"
+  },
+  {
+   "id": "1f63f",
+   "category": "smileys",
+   "name": "Crying cat"
+  },
+  {
+   "id": "1f63e",
+   "category": "smileys",
+   "name": "Pouting cat"
+  },
+  {
+   "id": "1f648",
+   "category": "smileys",
+   "name": "See-no-evil monkey"
+  },
+  {
+   "id": "1f649",
+   "category": "smileys",
+   "name": "Hear-no-evil monkey"
+  },
+  {
+   "id": "1f64a",
+   "category": "smileys",
+   "name": "Speak-no-evil monkey"
+  },
+  {
+   "id": "1f48c",
+   "category": "smileys",
+   "name": "Love letter"
+  },
+  {
+   "id": "1f498",
+   "category": "smileys",
+   "name": "Heart with arrow"
+  },
+  {
+   "id": "1f49d",
+   "category": "smileys",
+   "name": "Heart with ribbon"
+  },
+  {
+   "id": "1f496",
+   "category": "smileys",
+   "name": "Sparkling heart"
+  },
+  {
+   "id": "1f497",
+   "category": "smileys",
+   "name": "Growing heart"
+  },
+  {
+   "id": "1f493",
+   "category": "smileys",
+   "name": "Beating heart"
+  },
+  {
+   "id": "1f49e",
+   "category": "smileys",
+   "name": "Revolving hearts"
+  },
+  {
+   "id": "1f495",
+   "category": "smileys",
+   "name": "Two hearts"
+  },
+  {
+   "id": "1f49f",
+   "category": "smileys",
+   "name": "Heart decoration"
+  },
+  {
+   "id": "2763",
+   "category": "smileys",
+   "name": "Heart exclamation"
+  },
+  {
+   "id": "1f494",
+   "category": "smileys",
+   "name": "Broken heart"
+  },
+  {
+   "id": "2764_200d_1f525",
+   "category": "smileys",
+   "name": "Heart on fire"
+  },
+  {
+   "id": "2764_200d_1fa79",
+   "category": "smileys",
+   "name": "Mending heart"
+  },
+  {
+   "id": "2764",
+   "category": "smileys",
+   "name": "Red heart"
+  },
+  {
+   "id": "1fa77",
+   "category": "smileys",
+   "name": "Pink heart"
+  },
+  {
+   "id": "1f9e1",
+   "category": "smileys",
+   "name": "Orange heart"
+  },
+  {
+   "id": "1f49b",
+   "category": "smileys",
+   "name": "Yellow heart"
+  },
+  {
+   "id": "1f49a",
+   "category": "smileys",
+   "name": "Green heart"
+  },
+  {
+   "id": "1f499",
+   "category": "smileys",
+   "name": "Blue heart"
+  },
+  {
+   "id": "1fa75",
+   "category": "smileys",
+   "name": "Light blue heart"
+  },
+  {
+   "id": "1f49c",
+   "category": "smileys",
+   "name": "Purple heart"
+  },
+  {
+   "id": "1f90e",
+   "category": "smileys",
+   "name": "Brown heart"
+  },
+  {
+   "id": "1f5a4",
+   "category": "smileys",
+   "name": "Black heart"
+  },
+  {
+   "id": "1fa76",
+   "category": "smileys",
+   "name": "Grey heart"
+  },
+  {
+   "id": "1f90d",
+   "category": "smileys",
+   "name": "White heart"
+  },
+  {
+   "id": "1f48b",
+   "category": "smileys",
+   "name": "Kiss mark"
+  },
+  {
+   "id": "1f4af",
+   "category": "smileys",
+   "name": "Hundred points"
+  },
+  {
+   "id": "1f4a2",
+   "category": "smileys",
+   "name": "Anger symbol"
+  },
+  {
+   "id": "1faef",
+   "category": "smileys",
+   "name": "Fight cloud"
+  },
+  {
+   "id": "1f4a5",
+   "category": "smileys",
+   "name": "Collision"
+  },
+  {
+   "id": "1f4ab",
+   "category": "smileys",
+   "name": "Dizzy"
+  },
+  {
+   "id": "1f4a6",
+   "category": "smileys",
+   "name": "Sweat droplets"
+  },
+  {
+   "id": "1f4a8",
+   "category": "smileys",
+   "name": "Dashing away"
+  },
+  {
+   "id": "1f573",
+   "category": "smileys",
+   "name": "Hole"
+  },
+  {
+   "id": "1f4ac",
+   "category": "smileys",
+   "name": "Speech balloon"
+  },
+  {
+   "id": "1f441_200d_1f5e8",
+   "category": "smileys",
+   "name": "Eye in speech bubble"
+  },
+  {
+   "id": "1f5e8",
+   "category": "smileys",
+   "name": "Left speech bubble"
+  },
+  {
+   "id": "1f5ef",
+   "category": "smileys",
+   "name": "Right anger bubble"
+  },
+  {
+   "id": "1f4ad",
+   "category": "smileys",
+   "name": "Thought balloon"
+  },
+  {
+   "id": "1f4a4",
+   "category": "smileys",
+   "name": "ZZZ"
+  },
+  {
+   "id": "1f44b",
+   "category": "people",
+   "name": "Waving hand"
+  },
+  {
+   "id": "1f91a",
+   "category": "people",
+   "name": "Raised back of hand"
+  },
+  {
+   "id": "1f590",
+   "category": "people",
+   "name": "Hand with fingers splayed"
+  },
+  {
+   "id": "270b",
+   "category": "people",
+   "name": "Raised hand"
+  },
+  {
+   "id": "1f596",
+   "category": "people",
+   "name": "Vulcan salute"
+  },
+  {
+   "id": "1faf1",
+   "category": "people",
+   "name": "Rightwards hand"
+  },
+  {
+   "id": "1faf2",
+   "category": "people",
+   "name": "Leftwards hand"
+  },
+  {
+   "id": "1faf3",
+   "category": "people",
+   "name": "Palm down hand"
+  },
+  {
+   "id": "1faf4",
+   "category": "people",
+   "name": "Palm up hand"
+  },
+  {
+   "id": "1faf7",
+   "category": "people",
+   "name": "Leftwards pushing hand"
+  },
+  {
+   "id": "1faf8",
+   "category": "people",
+   "name": "Rightwards pushing hand"
+  },
+  {
+   "id": "1f44c",
+   "category": "people",
+   "name": "OK hand"
+  },
+  {
+   "id": "1f90c",
+   "category": "people",
+   "name": "Pinched fingers"
+  },
+  {
+   "id": "1f90f",
+   "category": "people",
+   "name": "Pinching hand"
+  },
+  {
+   "id": "270c",
+   "category": "people",
+   "name": "Victory hand"
+  },
+  {
+   "id": "1f91e",
+   "category": "people",
+   "name": "Crossed fingers"
+  },
+  {
+   "id": "1faf0",
+   "category": "people",
+   "name": "Hand with index finger and thumb crossed"
+  },
+  {
+   "id": "1f91f",
+   "category": "people",
+   "name": "Love-you gesture"
+  },
+  {
+   "id": "1f918",
+   "category": "people",
+   "name": "Sign of the horns"
+  },
+  {
+   "id": "1f919",
+   "category": "people",
+   "name": "Call me hand"
+  },
+  {
+   "id": "1f448",
+   "category": "people",
+   "name": "Backhand index pointing left"
+  },
+  {
+   "id": "1f449",
+   "category": "people",
+   "name": "Backhand index pointing right"
+  },
+  {
+   "id": "1f446",
+   "category": "people",
+   "name": "Backhand index pointing up"
+  },
+  {
+   "id": "1f447",
+   "category": "people",
+   "name": "Backhand index pointing down"
+  },
+  {
+   "id": "261d",
+   "category": "people",
+   "name": "Index pointing up"
+  },
+  {
+   "id": "1faf5",
+   "category": "people",
+   "name": "Index pointing at the viewer"
+  },
+  {
+   "id": "1f44d",
+   "category": "people",
+   "name": "Thumbs up"
+  },
+  {
+   "id": "1f44e",
+   "category": "people",
+   "name": "Thumbs down"
+  },
+  {
+   "id": "1faf9",
+   "category": "people",
+   "name": "Leftwards thumb sign"
+  },
+  {
+   "id": "1fafa",
+   "category": "people",
+   "name": "Rightwards thumb sign"
+  },
+  {
+   "id": "270a",
+   "category": "people",
+   "name": "Raised fist"
+  },
+  {
+   "id": "1f44a",
+   "category": "people",
+   "name": "Oncoming fist"
+  },
+  {
+   "id": "1f91b",
+   "category": "people",
+   "name": "Left-facing fist"
+  },
+  {
+   "id": "1f91c",
+   "category": "people",
+   "name": "Right-facing fist"
+  },
+  {
+   "id": "1f44f",
+   "category": "people",
+   "name": "Clapping hands"
+  },
+  {
+   "id": "1f64c",
+   "category": "people",
+   "name": "Raising hands"
+  },
+  {
+   "id": "1faf6",
+   "category": "people",
+   "name": "Heart hands"
+  },
+  {
+   "id": "1f450",
+   "category": "people",
+   "name": "Open hands"
+  },
+  {
+   "id": "1f932",
+   "category": "people",
+   "name": "Palms up together"
+  },
+  {
+   "id": "1f91d",
+   "category": "people",
+   "name": "Handshake"
+  },
+  {
+   "id": "1f64f",
+   "category": "people",
+   "name": "Folded hands"
+  },
+  {
+   "id": "270d",
+   "category": "people",
+   "name": "Writing hand"
+  },
+  {
+   "id": "1f485",
+   "category": "people",
+   "name": "Nail polish"
+  },
+  {
+   "id": "1f933",
+   "category": "people",
+   "name": "Selfie"
+  },
+  {
+   "id": "1f4aa",
+   "category": "people",
+   "name": "Flexed biceps"
+  },
+  {
+   "id": "1f9be",
+   "category": "people",
+   "name": "Mechanical arm"
+  },
+  {
+   "id": "1f9bf",
+   "category": "people",
+   "name": "Mechanical leg"
+  },
+  {
+   "id": "1f9b5",
+   "category": "people",
+   "name": "Leg"
+  },
+  {
+   "id": "1f9b6",
+   "category": "people",
+   "name": "Foot"
+  },
+  {
+   "id": "1f442",
+   "category": "people",
+   "name": "Ear"
+  },
+  {
+   "id": "1f9bb",
+   "category": "people",
+   "name": "Ear with hearing aid"
+  },
+  {
+   "id": "1f443",
+   "category": "people",
+   "name": "Nose"
+  },
+  {
+   "id": "1f9e0",
+   "category": "people",
+   "name": "Brain"
+  },
+  {
+   "id": "1fac0",
+   "category": "people",
+   "name": "Anatomical heart"
+  },
+  {
+   "id": "1fac1",
+   "category": "people",
+   "name": "Lungs"
+  },
+  {
+   "id": "1f9b7",
+   "category": "people",
+   "name": "Tooth"
+  },
+  {
+   "id": "1f9b4",
+   "category": "people",
+   "name": "Bone"
+  },
+  {
+   "id": "1f440",
+   "category": "people",
+   "name": "Eyes"
+  },
+  {
+   "id": "1f441",
+   "category": "people",
+   "name": "Eye"
+  },
+  {
+   "id": "1f445",
+   "category": "people",
+   "name": "Tongue"
+  },
+  {
+   "id": "1f444",
+   "category": "people",
+   "name": "Mouth"
+  },
+  {
+   "id": "1f476",
+   "category": "people",
+   "name": "Baby"
+  },
+  {
+   "id": "1f9d2",
+   "category": "people",
+   "name": "Child"
+  },
+  {
+   "id": "1f466",
+   "category": "people",
+   "name": "Boy"
+  },
+  {
+   "id": "1f467",
+   "category": "people",
+   "name": "Girl"
+  },
+  {
+   "id": "1f9d1",
+   "category": "people",
+   "name": "Person"
+  },
+  {
+   "id": "1f471",
+   "category": "people",
+   "name": "Person: blond hair"
+  },
+  {
+   "id": "1f468",
+   "category": "people",
+   "name": "Man"
+  },
+  {
+   "id": "1f9d4",
+   "category": "people",
+   "name": "Person: beard"
+  },
+  {
+   "id": "1f9d4_200d_2642",
+   "category": "people",
+   "name": "Man: beard"
+  },
+  {
+   "id": "1f468_200d_1f9b0",
+   "category": "people",
+   "name": "Man: red hair"
+  },
+  {
+   "id": "1f468_200d_1f9b1",
+   "category": "people",
+   "name": "Man: curly hair"
+  },
+  {
+   "id": "1f468_200d_1f9b3",
+   "category": "people",
+   "name": "Man: white hair"
+  },
+  {
+   "id": "1f468_200d_1f9b2",
+   "category": "people",
+   "name": "Man: bald"
+  },
+  {
+   "id": "1f469",
+   "category": "people",
+   "name": "Woman"
+  },
+  {
+   "id": "1f469_200d_1f9b0",
+   "category": "people",
+   "name": "Woman: red hair"
+  },
+  {
+   "id": "1f9d1_200d_1f9b0",
+   "category": "people",
+   "name": "Person: red hair"
+  },
+  {
+   "id": "1f469_200d_1f9b1",
+   "category": "people",
+   "name": "Woman: curly hair"
+  },
+  {
+   "id": "1f9d1_200d_1f9b1",
+   "category": "people",
+   "name": "Person: curly hair"
+  },
+  {
+   "id": "1f469_200d_1f9b3",
+   "category": "people",
+   "name": "Woman: white hair"
+  },
+  {
+   "id": "1f9d1_200d_1f9b3",
+   "category": "people",
+   "name": "Person: white hair"
+  },
+  {
+   "id": "1f469_200d_1f9b2",
+   "category": "people",
+   "name": "Woman: bald"
+  },
+  {
+   "id": "1f9d1_200d_1f9b2",
+   "category": "people",
+   "name": "Person: bald"
+  },
+  {
+   "id": "1f471_200d_2640",
+   "category": "people",
+   "name": "Woman: blond hair"
+  },
+  {
+   "id": "1f471_200d_2642",
+   "category": "people",
+   "name": "Man: blond hair"
+  },
+  {
+   "id": "1f9d3",
+   "category": "people",
+   "name": "Older person"
+  },
+  {
+   "id": "1f474",
+   "category": "people",
+   "name": "Old man"
+  },
+  {
+   "id": "1f475",
+   "category": "people",
+   "name": "Old woman"
+  },
+  {
+   "id": "1f64d",
+   "category": "people",
+   "name": "Person frowning"
+  },
+  {
+   "id": "1f64d_200d_2642",
+   "category": "people",
+   "name": "Man frowning"
+  },
+  {
+   "id": "1f64d_200d_2640",
+   "category": "people",
+   "name": "Woman frowning"
+  },
+  {
+   "id": "1f64e",
+   "category": "people",
+   "name": "Person pouting"
+  },
+  {
+   "id": "1f64e_200d_2642",
+   "category": "people",
+   "name": "Man pouting"
+  },
+  {
+   "id": "1f64e_200d_2640",
+   "category": "people",
+   "name": "Woman pouting"
+  },
+  {
+   "id": "1f645",
+   "category": "people",
+   "name": "Person gesturing NO"
+  },
+  {
+   "id": "1f645_200d_2642",
+   "category": "people",
+   "name": "Man gesturing NO"
+  },
+  {
+   "id": "1f645_200d_2640",
+   "category": "people",
+   "name": "Woman gesturing NO"
+  },
+  {
+   "id": "1f646",
+   "category": "people",
+   "name": "Person gesturing OK"
+  },
+  {
+   "id": "1f646_200d_2642",
+   "category": "people",
+   "name": "Man gesturing OK"
+  },
+  {
+   "id": "1f646_200d_2640",
+   "category": "people",
+   "name": "Woman gesturing OK"
+  },
+  {
+   "id": "1f481",
+   "category": "people",
+   "name": "Person tipping hand"
+  },
+  {
+   "id": "1f481_200d_2642",
+   "category": "people",
+   "name": "Man tipping hand"
+  },
+  {
+   "id": "1f481_200d_2640",
+   "category": "people",
+   "name": "Woman tipping hand"
+  },
+  {
+   "id": "1f64b",
+   "category": "people",
+   "name": "Person raising hand"
+  },
+  {
+   "id": "1f64b_200d_2642",
+   "category": "people",
+   "name": "Man raising hand"
+  },
+  {
+   "id": "1f64b_200d_2640",
+   "category": "people",
+   "name": "Woman raising hand"
+  },
+  {
+   "id": "1f9cf",
+   "category": "people",
+   "name": "Deaf person"
+  },
+  {
+   "id": "1f9cf_200d_2642",
+   "category": "people",
+   "name": "Deaf man"
+  },
+  {
+   "id": "1f9cf_200d_2640",
+   "category": "people",
+   "name": "Deaf woman"
+  },
+  {
+   "id": "1f647",
+   "category": "people",
+   "name": "Person bowing"
+  },
+  {
+   "id": "1f647_200d_2642",
+   "category": "people",
+   "name": "Man bowing"
+  },
+  {
+   "id": "1f647_200d_2640",
+   "category": "people",
+   "name": "Woman bowing"
+  },
+  {
+   "id": "1f926",
+   "category": "people",
+   "name": "Person facepalming"
+  },
+  {
+   "id": "1f926_200d_2642",
+   "category": "people",
+   "name": "Man facepalming"
+  },
+  {
+   "id": "1f926_200d_2640",
+   "category": "people",
+   "name": "Woman facepalming"
+  },
+  {
+   "id": "1f937",
+   "category": "people",
+   "name": "Person shrugging"
+  },
+  {
+   "id": "1f937_200d_2642",
+   "category": "people",
+   "name": "Man shrugging"
+  },
+  {
+   "id": "1f937_200d_2640",
+   "category": "people",
+   "name": "Woman shrugging"
+  },
+  {
+   "id": "1f9d1_200d_2695",
+   "category": "people",
+   "name": "Health worker"
+  },
+  {
+   "id": "1f468_200d_2695",
+   "category": "people",
+   "name": "Man health worker"
+  },
+  {
+   "id": "1f469_200d_2695",
+   "category": "people",
+   "name": "Woman health worker"
+  },
+  {
+   "id": "1f9d1_200d_1f393",
+   "category": "people",
+   "name": "Student"
+  },
+  {
+   "id": "1f468_200d_1f393",
+   "category": "people",
+   "name": "Man student"
+  },
+  {
+   "id": "1f469_200d_1f393",
+   "category": "people",
+   "name": "Woman student"
+  },
+  {
+   "id": "1f9d1_200d_1f3eb",
+   "category": "people",
+   "name": "Teacher"
+  },
+  {
+   "id": "1f468_200d_1f3eb",
+   "category": "people",
+   "name": "Man teacher"
+  },
+  {
+   "id": "1f469_200d_1f3eb",
+   "category": "people",
+   "name": "Woman teacher"
+  },
+  {
+   "id": "1f9d1_200d_2696",
+   "category": "people",
+   "name": "Judge"
+  },
+  {
+   "id": "1f468_200d_2696",
+   "category": "people",
+   "name": "Man judge"
+  },
+  {
+   "id": "1f469_200d_2696",
+   "category": "people",
+   "name": "Woman judge"
+  },
+  {
+   "id": "1f9d1_200d_1f33e",
+   "category": "people",
+   "name": "Farmer"
+  },
+  {
+   "id": "1f468_200d_1f33e",
+   "category": "people",
+   "name": "Man farmer"
+  },
+  {
+   "id": "1f469_200d_1f33e",
+   "category": "people",
+   "name": "Woman farmer"
+  },
+  {
+   "id": "1f9d1_200d_1f373",
+   "category": "people",
+   "name": "Cook"
+  },
+  {
+   "id": "1f468_200d_1f373",
+   "category": "people",
+   "name": "Man cook"
+  },
+  {
+   "id": "1f469_200d_1f373",
+   "category": "people",
+   "name": "Woman cook"
+  },
+  {
+   "id": "1f9d1_200d_1f527",
+   "category": "people",
+   "name": "Mechanic"
+  },
+  {
+   "id": "1f468_200d_1f527",
+   "category": "people",
+   "name": "Man mechanic"
+  },
+  {
+   "id": "1f469_200d_1f527",
+   "category": "people",
+   "name": "Woman mechanic"
+  },
+  {
+   "id": "1f9d1_200d_1f3ed",
+   "category": "people",
+   "name": "Factory worker"
+  },
+  {
+   "id": "1f468_200d_1f3ed",
+   "category": "people",
+   "name": "Man factory worker"
+  },
+  {
+   "id": "1f469_200d_1f3ed",
+   "category": "people",
+   "name": "Woman factory worker"
+  },
+  {
+   "id": "1f9d1_200d_1f4bc",
+   "category": "people",
+   "name": "Office worker"
+  },
+  {
+   "id": "1f468_200d_1f4bc",
+   "category": "people",
+   "name": "Man office worker"
+  },
+  {
+   "id": "1f469_200d_1f4bc",
+   "category": "people",
+   "name": "Woman office worker"
+  },
+  {
+   "id": "1f9d1_200d_1f52c",
+   "category": "people",
+   "name": "Scientist"
+  },
+  {
+   "id": "1f468_200d_1f52c",
+   "category": "people",
+   "name": "Man scientist"
+  },
+  {
+   "id": "1f469_200d_1f52c",
+   "category": "people",
+   "name": "Woman scientist"
+  },
+  {
+   "id": "1f9d1_200d_1f4bb",
+   "category": "people",
+   "name": "Technologist"
+  },
+  {
+   "id": "1f468_200d_1f4bb",
+   "category": "people",
+   "name": "Man technologist"
+  },
+  {
+   "id": "1f469_200d_1f4bb",
+   "category": "people",
+   "name": "Woman technologist"
+  },
+  {
+   "id": "1f9d1_200d_1f3a4",
+   "category": "people",
+   "name": "Singer"
+  },
+  {
+   "id": "1f468_200d_1f3a4",
+   "category": "people",
+   "name": "Man singer"
+  },
+  {
+   "id": "1f469_200d_1f3a4",
+   "category": "people",
+   "name": "Woman singer"
+  },
+  {
+   "id": "1f9d1_200d_1f3a8",
+   "category": "people",
+   "name": "Artist"
+  },
+  {
+   "id": "1f468_200d_1f3a8",
+   "category": "people",
+   "name": "Man artist"
+  },
+  {
+   "id": "1f469_200d_1f3a8",
+   "category": "people",
+   "name": "Woman artist"
+  },
+  {
+   "id": "1f9d1_200d_2708",
+   "category": "people",
+   "name": "Pilot"
+  },
+  {
+   "id": "1f468_200d_2708",
+   "category": "people",
+   "name": "Man pilot"
+  },
+  {
+   "id": "1f469_200d_2708",
+   "category": "people",
+   "name": "Woman pilot"
+  },
+  {
+   "id": "1f9d1_200d_1f680",
+   "category": "people",
+   "name": "Astronaut"
+  },
+  {
+   "id": "1f468_200d_1f680",
+   "category": "people",
+   "name": "Man astronaut"
+  },
+  {
+   "id": "1f469_200d_1f680",
+   "category": "people",
+   "name": "Woman astronaut"
+  },
+  {
+   "id": "1f9d1_200d_1f692",
+   "category": "people",
+   "name": "Firefighter"
+  },
+  {
+   "id": "1f468_200d_1f692",
+   "category": "people",
+   "name": "Man firefighter"
+  },
+  {
+   "id": "1f469_200d_1f692",
+   "category": "people",
+   "name": "Woman firefighter"
+  },
+  {
+   "id": "1f46e",
+   "category": "people",
+   "name": "Police officer"
+  },
+  {
+   "id": "1f46e_200d_2642",
+   "category": "people",
+   "name": "Man police officer"
+  },
+  {
+   "id": "1f46e_200d_2640",
+   "category": "people",
+   "name": "Woman police officer"
+  },
+  {
+   "id": "1f575",
+   "category": "people",
+   "name": "Detective"
+  },
+  {
+   "id": "1f575_200d_2642",
+   "category": "people",
+   "name": "Man detective"
+  },
+  {
+   "id": "1f575_200d_2640",
+   "category": "people",
+   "name": "Woman detective"
+  },
+  {
+   "id": "1f482",
+   "category": "people",
+   "name": "Guard"
+  },
+  {
+   "id": "1f482_200d_2642",
+   "category": "people",
+   "name": "Man guard"
+  },
+  {
+   "id": "1f482_200d_2640",
+   "category": "people",
+   "name": "Woman guard"
+  },
+  {
+   "id": "1f977",
+   "category": "people",
+   "name": "Ninja"
+  },
+  {
+   "id": "1f477",
+   "category": "people",
+   "name": "Construction worker"
+  },
+  {
+   "id": "1f477_200d_2642",
+   "category": "people",
+   "name": "Man construction worker"
+  },
+  {
+   "id": "1f477_200d_2640",
+   "category": "people",
+   "name": "Woman construction worker"
+  },
+  {
+   "id": "1fac5",
+   "category": "people",
+   "name": "Person with crown"
+  },
+  {
+   "id": "1f934",
+   "category": "people",
+   "name": "Prince"
+  },
+  {
+   "id": "1f478",
+   "category": "people",
+   "name": "Princess"
+  },
+  {
+   "id": "1f473",
+   "category": "people",
+   "name": "Person wearing turban"
+  },
+  {
+   "id": "1f473_200d_2642",
+   "category": "people",
+   "name": "Man wearing turban"
+  },
+  {
+   "id": "1f473_200d_2640",
+   "category": "people",
+   "name": "Woman wearing turban"
+  },
+  {
+   "id": "1f472",
+   "category": "people",
+   "name": "Person with skullcap"
+  },
+  {
+   "id": "1f9d5",
+   "category": "people",
+   "name": "Woman with headscarf"
+  },
+  {
+   "id": "1f935",
+   "category": "people",
+   "name": "Person in tuxedo"
+  },
+  {
+   "id": "1f935_200d_2642",
+   "category": "people",
+   "name": "Man in tuxedo"
+  },
+  {
+   "id": "1f470",
+   "category": "people",
+   "name": "Person with veil"
+  },
+  {
+   "id": "1f470_200d_2640",
+   "category": "people",
+   "name": "Woman with veil"
+  },
+  {
+   "id": "1f930",
+   "category": "people",
+   "name": "Pregnant woman"
+  },
+  {
+   "id": "1f469_200d_1f37c",
+   "category": "people",
+   "name": "Woman feeding baby"
+  },
+  {
+   "id": "1f468_200d_1f37c",
+   "category": "people",
+   "name": "Man feeding baby"
+  },
+  {
+   "id": "1f9d1_200d_1f37c",
+   "category": "people",
+   "name": "Person feeding baby"
+  },
+  {
+   "id": "1f9b8",
+   "category": "people",
+   "name": "Superhero"
+  },
+  {
+   "id": "1f9b8_200d_2642",
+   "category": "people",
+   "name": "Man superhero"
+  },
+  {
+   "id": "1f9b8_200d_2640",
+   "category": "people",
+   "name": "Woman superhero"
+  },
+  {
+   "id": "1f9b9",
+   "category": "people",
+   "name": "Supervillain"
+  },
+  {
+   "id": "1f9b9_200d_2642",
+   "category": "people",
+   "name": "Man supervillain"
+  },
+  {
+   "id": "1f9b9_200d_2640",
+   "category": "people",
+   "name": "Woman supervillain"
+  },
+  {
+   "id": "1f9da",
+   "category": "people",
+   "name": "Fairy"
+  },
+  {
+   "id": "1f9da_200d_2642",
+   "category": "people",
+   "name": "Man fairy"
+  },
+  {
+   "id": "1f9db",
+   "category": "people",
+   "name": "Vampire"
+  },
+  {
+   "id": "1f9db_200d_2642",
+   "category": "people",
+   "name": "Man vampire"
+  },
+  {
+   "id": "1f9db_200d_2640",
+   "category": "people",
+   "name": "Woman vampire"
+  },
+  {
+   "id": "1f9dd",
+   "category": "people",
+   "name": "Elf"
+  },
+  {
+   "id": "1f9dd_200d_2642",
+   "category": "people",
+   "name": "Man elf"
+  },
+  {
+   "id": "1f9dd_200d_2640",
+   "category": "people",
+   "name": "Woman elf"
+  },
+  {
+   "id": "1f9de",
+   "category": "people",
+   "name": "Genie"
+  },
+  {
+   "id": "1f9de_200d_2642",
+   "category": "people",
+   "name": "Man genie"
+  },
+  {
+   "id": "1f9df",
+   "category": "people",
+   "name": "Zombie"
+  },
+  {
+   "id": "1f9df_200d_2642",
+   "category": "people",
+   "name": "Man zombie"
+  },
+  {
+   "id": "1f9df_200d_2640",
+   "category": "people",
+   "name": "Woman zombie"
+  },
+  {
+   "id": "1f9cc",
+   "category": "people",
+   "name": "Troll"
+  },
+  {
+   "id": "1fac8",
+   "category": "people",
+   "name": "Hairy creature"
+  },
+  {
+   "id": "1f486",
+   "category": "people",
+   "name": "Person getting massage"
+  },
+  {
+   "id": "1f486_200d_2642",
+   "category": "people",
+   "name": "Man getting massage"
+  },
+  {
+   "id": "1f486_200d_2640",
+   "category": "people",
+   "name": "Woman getting massage"
+  },
+  {
+   "id": "1f487",
+   "category": "people",
+   "name": "Person getting haircut"
+  },
+  {
+   "id": "1f487_200d_2642",
+   "category": "people",
+   "name": "Man getting haircut"
+  },
+  {
+   "id": "1f487_200d_2640",
+   "category": "people",
+   "name": "Woman getting haircut"
+  },
+  {
+   "id": "1f6b6",
+   "category": "people",
+   "name": "Person walking"
+  },
+  {
+   "id": "1f6b6_200d_2642",
+   "category": "people",
+   "name": "Man walking"
+  },
+  {
+   "id": "1f6b6_200d_2640",
+   "category": "people",
+   "name": "Woman walking"
+  },
+  {
+   "id": "1f6b6_200d_27a1",
+   "category": "people",
+   "name": "Person walking facing right"
+  },
+  {
+   "id": "1f6b6_200d_2640_200d_27a1",
+   "category": "people",
+   "name": "Woman walking facing right"
+  },
+  {
+   "id": "1f6b6_200d_2642_200d_27a1",
+   "category": "people",
+   "name": "Man walking facing right"
+  },
+  {
+   "id": "1f9cd",
+   "category": "people",
+   "name": "Person standing"
+  },
+  {
+   "id": "1f9cd_200d_2642",
+   "category": "people",
+   "name": "Man standing"
+  },
+  {
+   "id": "1f9cd_200d_2640",
+   "category": "people",
+   "name": "Woman standing"
+  },
+  {
+   "id": "1f9ce",
+   "category": "people",
+   "name": "Person kneeling"
+  },
+  {
+   "id": "1f9ce_200d_2642",
+   "category": "people",
+   "name": "Man kneeling"
+  },
+  {
+   "id": "1f9ce_200d_2640",
+   "category": "people",
+   "name": "Woman kneeling"
+  },
+  {
+   "id": "1f9ce_200d_27a1",
+   "category": "people",
+   "name": "Person kneeling facing right"
+  },
+  {
+   "id": "1f9ce_200d_2640_200d_27a1",
+   "category": "people",
+   "name": "Woman kneeling facing right"
+  },
+  {
+   "id": "1f9ce_200d_2642_200d_27a1",
+   "category": "people",
+   "name": "Man kneeling facing right"
+  },
+  {
+   "id": "1f9d1_200d_1f9af",
+   "category": "people",
+   "name": "Person with white cane"
+  },
+  {
+   "id": "1f9d1_200d_1f9af_200d_27a1",
+   "category": "people",
+   "name": "Person with white cane facing right"
+  },
+  {
+   "id": "1f468_200d_1f9af",
+   "category": "people",
+   "name": "Man with white cane"
+  },
+  {
+   "id": "1f468_200d_1f9af_200d_27a1",
+   "category": "people",
+   "name": "Man with white cane facing right"
+  },
+  {
+   "id": "1f469_200d_1f9af",
+   "category": "people",
+   "name": "Woman with white cane"
+  },
+  {
+   "id": "1f469_200d_1f9af_200d_27a1",
+   "category": "people",
+   "name": "Woman with white cane facing right"
+  },
+  {
+   "id": "1f9d1_200d_1f9bc",
+   "category": "people",
+   "name": "Person in motorized wheelchair"
+  },
+  {
+   "id": "1f9d1_200d_1f9bc_200d_27a1",
+   "category": "people",
+   "name": "Person in motorized wheelchair facing right"
+  },
+  {
+   "id": "1f468_200d_1f9bc",
+   "category": "people",
+   "name": "Man in motorized wheelchair"
+  },
+  {
+   "id": "1f468_200d_1f9bc_200d_27a1",
+   "category": "people",
+   "name": "Man in motorized wheelchair facing right"
+  },
+  {
+   "id": "1f469_200d_1f9bc",
+   "category": "people",
+   "name": "Woman in motorized wheelchair"
+  },
+  {
+   "id": "1f469_200d_1f9bc_200d_27a1",
+   "category": "people",
+   "name": "Woman in motorized wheelchair facing right"
+  },
+  {
+   "id": "1f9d1_200d_1f9bd",
+   "category": "people",
+   "name": "Person in manual wheelchair"
+  },
+  {
+   "id": "1f9d1_200d_1f9bd_200d_27a1",
+   "category": "people",
+   "name": "Person in manual wheelchair facing right"
+  },
+  {
+   "id": "1f468_200d_1f9bd",
+   "category": "people",
+   "name": "Man in manual wheelchair"
+  },
+  {
+   "id": "1f468_200d_1f9bd_200d_27a1",
+   "category": "people",
+   "name": "Man in manual wheelchair facing right"
+  },
+  {
+   "id": "1f469_200d_1f9bd",
+   "category": "people",
+   "name": "Woman in manual wheelchair"
+  },
+  {
+   "id": "1f469_200d_1f9bd_200d_27a1",
+   "category": "people",
+   "name": "Woman in manual wheelchair facing right"
+  },
+  {
+   "id": "1f3c3",
+   "category": "people",
+   "name": "Person running"
+  },
+  {
+   "id": "1f3c3_200d_2642",
+   "category": "people",
+   "name": "Man running"
+  },
+  {
+   "id": "1f3c3_200d_2640",
+   "category": "people",
+   "name": "Woman running"
+  },
+  {
+   "id": "1f3c3_200d_27a1",
+   "category": "people",
+   "name": "Person running facing right"
+  },
+  {
+   "id": "1f3c3_200d_2640_200d_27a1",
+   "category": "people",
+   "name": "Woman running facing right"
+  },
+  {
+   "id": "1f3c3_200d_2642_200d_27a1",
+   "category": "people",
+   "name": "Man running facing right"
+  },
+  {
+   "id": "1f57a",
+   "category": "people",
+   "name": "Man dancing"
+  },
+  {
+   "id": "1f574",
+   "category": "people",
+   "name": "Person in suit levitating"
+  },
+  {
+   "id": "1f9d7",
+   "category": "people",
+   "name": "Person climbing"
+  },
+  {
+   "id": "1f9d7_200d_2642",
+   "category": "people",
+   "name": "Man climbing"
+  },
+  {
+   "id": "1f9d7_200d_2640",
+   "category": "people",
+   "name": "Woman climbing"
+  },
+  {
+   "id": "1f93a",
+   "category": "people",
+   "name": "Person fencing"
+  },
+  {
+   "id": "1f3c7",
+   "category": "people",
+   "name": "Horse racing"
+  },
+  {
+   "id": "26f7",
+   "category": "people",
+   "name": "Skier"
+  },
+  {
+   "id": "1f3c2",
+   "category": "people",
+   "name": "Snowboarder"
+  },
+  {
+   "id": "1f3cc",
+   "category": "people",
+   "name": "Person golfing"
+  },
+  {
+   "id": "1f3cc_200d_2642",
+   "category": "people",
+   "name": "Man golfing"
+  },
+  {
+   "id": "1f3cc_200d_2640",
+   "category": "people",
+   "name": "Woman golfing"
+  },
+  {
+   "id": "1f3c4",
+   "category": "people",
+   "name": "Person surfing"
+  },
+  {
+   "id": "1f3c4_200d_2642",
+   "category": "people",
+   "name": "Man surfing"
+  },
+  {
+   "id": "1f3c4_200d_2640",
+   "category": "people",
+   "name": "Woman surfing"
+  },
+  {
+   "id": "1f6a3",
+   "category": "people",
+   "name": "Person rowing boat"
+  },
+  {
+   "id": "1f6a3_200d_2642",
+   "category": "people",
+   "name": "Man rowing boat"
+  },
+  {
+   "id": "1f6a3_200d_2640",
+   "category": "people",
+   "name": "Woman rowing boat"
+  },
+  {
+   "id": "1f3ca",
+   "category": "people",
+   "name": "Person swimming"
+  },
+  {
+   "id": "1f3ca_200d_2642",
+   "category": "people",
+   "name": "Man swimming"
+  },
+  {
+   "id": "1f3ca_200d_2640",
+   "category": "people",
+   "name": "Woman swimming"
+  },
+  {
+   "id": "26f9",
+   "category": "people",
+   "name": "Person bouncing ball"
+  },
+  {
+   "id": "26f9_200d_2642",
+   "category": "people",
+   "name": "Man bouncing ball"
+  },
+  {
+   "id": "26f9_200d_2640",
+   "category": "people",
+   "name": "Woman bouncing ball"
+  },
+  {
+   "id": "1f3cb",
+   "category": "people",
+   "name": "Person lifting weights"
+  },
+  {
+   "id": "1f3cb_200d_2642",
+   "category": "people",
+   "name": "Man lifting weights"
+  },
+  {
+   "id": "1f6b4",
+   "category": "people",
+   "name": "Person biking"
+  },
+  {
+   "id": "1f6b4_200d_2642",
+   "category": "people",
+   "name": "Man biking"
+  },
+  {
+   "id": "1f6b4_200d_2640",
+   "category": "people",
+   "name": "Woman biking"
+  },
+  {
+   "id": "1f6b5",
+   "category": "people",
+   "name": "Person mountain biking"
+  },
+  {
+   "id": "1f6b5_200d_2642",
+   "category": "people",
+   "name": "Man mountain biking"
+  },
+  {
+   "id": "1f6b5_200d_2640",
+   "category": "people",
+   "name": "Woman mountain biking"
+  },
+  {
+   "id": "1f938",
+   "category": "people",
+   "name": "Person cartwheeling"
+  },
+  {
+   "id": "1f938_200d_2642",
+   "category": "people",
+   "name": "Man cartwheeling"
+  },
+  {
+   "id": "1f938_200d_2640",
+   "category": "people",
+   "name": "Woman cartwheeling"
+  },
+  {
+   "id": "1f93c",
+   "category": "people",
+   "name": "People wrestling"
+  },
+  {
+   "id": "1f93c_200d_2642",
+   "category": "people",
+   "name": "Men wrestling"
+  },
+  {
+   "id": "1f93c_200d_2640",
+   "category": "people",
+   "name": "Women wrestling"
+  },
+  {
+   "id": "1f93d",
+   "category": "people",
+   "name": "Person playing water polo"
+  },
+  {
+   "id": "1f93d_200d_2642",
+   "category": "people",
+   "name": "Man playing water polo"
+  },
+  {
+   "id": "1f93e",
+   "category": "people",
+   "name": "Person playing handball"
+  },
+  {
+   "id": "1f93e_200d_2642",
+   "category": "people",
+   "name": "Man playing handball"
+  },
+  {
+   "id": "1f93e_200d_2640",
+   "category": "people",
+   "name": "Woman playing handball"
+  },
+  {
+   "id": "1f939",
+   "category": "people",
+   "name": "Person juggling"
+  },
+  {
+   "id": "1f939_200d_2642",
+   "category": "people",
+   "name": "Man juggling"
+  },
+  {
+   "id": "1f939_200d_2640",
+   "category": "people",
+   "name": "Woman juggling"
+  },
+  {
+   "id": "1f9d8",
+   "category": "people",
+   "name": "Person in lotus position"
+  },
+  {
+   "id": "1f9d8_200d_2642",
+   "category": "people",
+   "name": "Man in lotus position"
+  },
+  {
+   "id": "1f9d8_200d_2640",
+   "category": "people",
+   "name": "Woman in lotus position"
+  },
+  {
+   "id": "1f6cc",
+   "category": "people",
+   "name": "Person in bed"
+  },
+  {
+   "id": "1f9d1_200d_1f91d_200d_1f9d1",
+   "category": "people",
+   "name": "People holding hands"
+  },
+  {
+   "id": "1f468_200d_1f469_200d_1f466",
+   "category": "people",
+   "name": "Family: man, woman, boy"
+  },
+  {
+   "id": "1f468_200d_1f469_200d_1f467",
+   "category": "people",
+   "name": "Family: man, woman, girl"
+  },
+  {
+   "id": "1f468_200d_1f469_200d_1f467_200d_1f466",
+   "category": "people",
+   "name": "Family: man, woman, girl, boy"
+  },
+  {
+   "id": "1f468_200d_1f469_200d_1f466_200d_1f466",
+   "category": "people",
+   "name": "Family: man, woman, boy, boy"
+  },
+  {
+   "id": "1f468_200d_1f469_200d_1f467_200d_1f467",
+   "category": "people",
+   "name": "Family: man, woman, girl, girl"
+  },
+  {
+   "id": "1f468_200d_1f466",
+   "category": "people",
+   "name": "Family: man, boy"
+  },
+  {
+   "id": "1f468_200d_1f466_200d_1f466",
+   "category": "people",
+   "name": "Family: man, boy, boy"
+  },
+  {
+   "id": "1f468_200d_1f467",
+   "category": "people",
+   "name": "Family: man, girl"
+  },
+  {
+   "id": "1f468_200d_1f467_200d_1f466",
+   "category": "people",
+   "name": "Family: man, girl, boy"
+  },
+  {
+   "id": "1f468_200d_1f467_200d_1f467",
+   "category": "people",
+   "name": "Family: man, girl, girl"
+  },
+  {
+   "id": "1f469_200d_1f466",
+   "category": "people",
+   "name": "Family: woman, boy"
+  },
+  {
+   "id": "1f469_200d_1f466_200d_1f466",
+   "category": "people",
+   "name": "Family: woman, boy, boy"
+  },
+  {
+   "id": "1f469_200d_1f467",
+   "category": "people",
+   "name": "Family: woman, girl"
+  },
+  {
+   "id": "1f469_200d_1f467_200d_1f466",
+   "category": "people",
+   "name": "Family: woman, girl, boy"
+  },
+  {
+   "id": "1f469_200d_1f467_200d_1f467",
+   "category": "people",
+   "name": "Family: woman, girl, girl"
+  },
+  {
+   "id": "1f5e3",
+   "category": "people",
+   "name": "Speaking head"
+  },
+  {
+   "id": "1f464",
+   "category": "people",
+   "name": "Bust in silhouette"
+  },
+  {
+   "id": "1f465",
+   "category": "people",
+   "name": "Busts in silhouette"
+  },
+  {
+   "id": "1fac2",
+   "category": "people",
+   "name": "People hugging"
+  },
+  {
+   "id": "1f46a",
+   "category": "people",
+   "name": "Family"
+  },
+  {
+   "id": "1f9d1_200d_1f9d1_200d_1f9d2",
+   "category": "people",
+   "name": "Family: adult, adult, child"
+  },
+  {
+   "id": "1f9d1_200d_1f9d1_200d_1f9d2_200d_1f9d2",
+   "category": "people",
+   "name": "Family: adult, adult, child, child"
+  },
+  {
+   "id": "1f9d1_200d_1f9d2",
+   "category": "people",
+   "name": "Family: adult, child"
+  },
+  {
+   "id": "1f9d1_200d_1f9d2_200d_1f9d2",
+   "category": "people",
+   "name": "Family: adult, child, child"
+  },
+  {
+   "id": "1f463",
+   "category": "people",
+   "name": "Footprints"
+  },
+  {
+   "id": "1fac6",
+   "category": "people",
+   "name": "Fingerprint"
+  },
+  {
+   "id": "1f435",
+   "category": "nature",
+   "name": "Monkey face"
+  },
+  {
+   "id": "1f412",
+   "category": "nature",
+   "name": "Monkey"
+  },
+  {
+   "id": "1f98d",
+   "category": "nature",
+   "name": "Gorilla"
+  },
+  {
+   "id": "1f9a7",
+   "category": "nature",
+   "name": "Orangutan"
+  },
+  {
+   "id": "1f436",
+   "category": "nature",
+   "name": "Dog face"
+  },
+  {
+   "id": "1f415",
+   "category": "nature",
+   "name": "Dog"
+  },
+  {
+   "id": "1f9ae",
+   "category": "nature",
+   "name": "Guide dog"
+  },
+  {
+   "id": "1f415_200d_1f9ba",
+   "category": "nature",
+   "name": "Service dog"
+  },
+  {
+   "id": "1f429",
+   "category": "nature",
+   "name": "Poodle"
+  },
+  {
+   "id": "1f43a",
+   "category": "nature",
+   "name": "Wolf"
+  },
+  {
+   "id": "1f98a",
+   "category": "nature",
+   "name": "Fox"
+  },
+  {
+   "id": "1f99d",
+   "category": "nature",
+   "name": "Raccoon"
+  },
+  {
+   "id": "1f431",
+   "category": "nature",
+   "name": "Cat face"
+  },
+  {
+   "id": "1f408",
+   "category": "nature",
+   "name": "Cat"
+  },
+  {
+   "id": "1f408_200d_2b1b",
+   "category": "nature",
+   "name": "Black cat"
+  },
+  {
+   "id": "1f981",
+   "category": "nature",
+   "name": "Lion"
+  },
+  {
+   "id": "1f42f",
+   "category": "nature",
+   "name": "Tiger face"
+  },
+  {
+   "id": "1f405",
+   "category": "nature",
+   "name": "Tiger"
+  },
+  {
+   "id": "1f406",
+   "category": "nature",
+   "name": "Leopard"
+  },
+  {
+   "id": "1f434",
+   "category": "nature",
+   "name": "Horse face"
+  },
+  {
+   "id": "1face",
+   "category": "nature",
+   "name": "Moose"
+  },
+  {
+   "id": "1facf",
+   "category": "nature",
+   "name": "Donkey"
+  },
+  {
+   "id": "1f40e",
+   "category": "nature",
+   "name": "Horse"
+  },
+  {
+   "id": "1f984",
+   "category": "nature",
+   "name": "Unicorn"
+  },
+  {
+   "id": "1f993",
+   "category": "nature",
+   "name": "Zebra"
+  },
+  {
+   "id": "1f98c",
+   "category": "nature",
+   "name": "Deer"
+  },
+  {
+   "id": "1f9ac",
+   "category": "nature",
+   "name": "Bison"
+  },
+  {
+   "id": "1f42e",
+   "category": "nature",
+   "name": "Cow face"
+  },
+  {
+   "id": "1f402",
+   "category": "nature",
+   "name": "Ox"
+  },
+  {
+   "id": "1f403",
+   "category": "nature",
+   "name": "Water buffalo"
+  },
+  {
+   "id": "1f404",
+   "category": "nature",
+   "name": "Cow"
+  },
+  {
+   "id": "1f437",
+   "category": "nature",
+   "name": "Pig face"
+  },
+  {
+   "id": "1f416",
+   "category": "nature",
+   "name": "Pig"
+  },
+  {
+   "id": "1f417",
+   "category": "nature",
+   "name": "Boar"
+  },
+  {
+   "id": "1f43d",
+   "category": "nature",
+   "name": "Pig nose"
+  },
+  {
+   "id": "1f40f",
+   "category": "nature",
+   "name": "Ram"
+  },
+  {
+   "id": "1f411",
+   "category": "nature",
+   "name": "Ewe"
+  },
+  {
+   "id": "1f410",
+   "category": "nature",
+   "name": "Goat"
+  },
+  {
+   "id": "1f42a",
+   "category": "nature",
+   "name": "Camel"
+  },
+  {
+   "id": "1f42b",
+   "category": "nature",
+   "name": "Two-hump camel"
+  },
+  {
+   "id": "1f999",
+   "category": "nature",
+   "name": "Llama"
+  },
+  {
+   "id": "1f992",
+   "category": "nature",
+   "name": "Giraffe"
+  },
+  {
+   "id": "1f418",
+   "category": "nature",
+   "name": "Elephant"
+  },
+  {
+   "id": "1f9a3",
+   "category": "nature",
+   "name": "Mammoth"
+  },
+  {
+   "id": "1f98f",
+   "category": "nature",
+   "name": "Rhinoceros"
+  },
+  {
+   "id": "1f99b",
+   "category": "nature",
+   "name": "Hippopotamus"
+  },
+  {
+   "id": "1f42d",
+   "category": "nature",
+   "name": "Mouse face"
+  },
+  {
+   "id": "1f401",
+   "category": "nature",
+   "name": "Mouse"
+  },
+  {
+   "id": "1f400",
+   "category": "nature",
+   "name": "Rat"
+  },
+  {
+   "id": "1f439",
+   "category": "nature",
+   "name": "Hamster"
+  },
+  {
+   "id": "1f430",
+   "category": "nature",
+   "name": "Rabbit face"
+  },
+  {
+   "id": "1f407",
+   "category": "nature",
+   "name": "Rabbit"
+  },
+  {
+   "id": "1f43f",
+   "category": "nature",
+   "name": "Chipmunk"
+  },
+  {
+   "id": "1f9ab",
+   "category": "nature",
+   "name": "Beaver"
+  },
+  {
+   "id": "1f994",
+   "category": "nature",
+   "name": "Hedgehog"
+  },
+  {
+   "id": "1f987",
+   "category": "nature",
+   "name": "Bat"
+  },
+  {
+   "id": "1f43b",
+   "category": "nature",
+   "name": "Bear"
+  },
+  {
+   "id": "1f43b_200d_2744",
+   "category": "nature",
+   "name": "Polar bear"
+  },
+  {
+   "id": "1f428",
+   "category": "nature",
+   "name": "Koala"
+  },
+  {
+   "id": "1f43c",
+   "category": "nature",
+   "name": "Panda"
+  },
+  {
+   "id": "1f9a5",
+   "category": "nature",
+   "name": "Sloth"
+  },
+  {
+   "id": "1f9a6",
+   "category": "nature",
+   "name": "Otter"
+  },
+  {
+   "id": "1f9a8",
+   "category": "nature",
+   "name": "Skunk"
+  },
+  {
+   "id": "1f998",
+   "category": "nature",
+   "name": "Kangaroo"
+  },
+  {
+   "id": "1f9a1",
+   "category": "nature",
+   "name": "Badger"
+  },
+  {
+   "id": "1f43e",
+   "category": "nature",
+   "name": "Paw prints"
+  },
+  {
+   "id": "1f983",
+   "category": "nature",
+   "name": "Turkey"
+  },
+  {
+   "id": "1f414",
+   "category": "nature",
+   "name": "Chicken"
+  },
+  {
+   "id": "1f413",
+   "category": "nature",
+   "name": "Rooster"
+  },
+  {
+   "id": "1f423",
+   "category": "nature",
+   "name": "Hatching chick"
+  },
+  {
+   "id": "1f424",
+   "category": "nature",
+   "name": "Baby chick"
+  },
+  {
+   "id": "1f425",
+   "category": "nature",
+   "name": "Front-facing baby chick"
+  },
+  {
+   "id": "1f426",
+   "category": "nature",
+   "name": "Bird"
+  },
+  {
+   "id": "1f427",
+   "category": "nature",
+   "name": "Penguin"
+  },
+  {
+   "id": "1f54a",
+   "category": "nature",
+   "name": "Dove"
+  },
+  {
+   "id": "1f985",
+   "category": "nature",
+   "name": "Eagle"
+  },
+  {
+   "id": "1f986",
+   "category": "nature",
+   "name": "Duck"
+  },
+  {
+   "id": "1f9a2",
+   "category": "nature",
+   "name": "Swan"
+  },
+  {
+   "id": "1f989",
+   "category": "nature",
+   "name": "Owl"
+  },
+  {
+   "id": "1f9a4",
+   "category": "nature",
+   "name": "Dodo"
+  },
+  {
+   "id": "1fab6",
+   "category": "nature",
+   "name": "Feather"
+  },
+  {
+   "id": "1f9a9",
+   "category": "nature",
+   "name": "Flamingo"
+  },
+  {
+   "id": "1f99a",
+   "category": "nature",
+   "name": "Peacock"
+  },
+  {
+   "id": "1f99c",
+   "category": "nature",
+   "name": "Parrot"
+  },
+  {
+   "id": "1fabd",
+   "category": "nature",
+   "name": "Wing"
+  },
+  {
+   "id": "1f426_200d_2b1b",
+   "category": "nature",
+   "name": "Black bird"
+  },
+  {
+   "id": "1fabf",
+   "category": "nature",
+   "name": "Goose"
+  },
+  {
+   "id": "1f426_200d_1f525",
+   "category": "nature",
+   "name": "Phoenix"
+  },
+  {
+   "id": "1f438",
+   "category": "nature",
+   "name": "Frog"
+  },
+  {
+   "id": "1f40a",
+   "category": "nature",
+   "name": "Crocodile"
+  },
+  {
+   "id": "1f422",
+   "category": "nature",
+   "name": "Turtle"
+  },
+  {
+   "id": "1f98e",
+   "category": "nature",
+   "name": "Lizard"
+  },
+  {
+   "id": "1f40d",
+   "category": "nature",
+   "name": "Snake"
+  },
+  {
+   "id": "1f432",
+   "category": "nature",
+   "name": "Dragon face"
+  },
+  {
+   "id": "1f409",
+   "category": "nature",
+   "name": "Dragon"
+  },
+  {
+   "id": "1f995",
+   "category": "nature",
+   "name": "Sauropod"
+  },
+  {
+   "id": "1f996",
+   "category": "nature",
+   "name": "T-Rex"
+  },
+  {
+   "id": "1f433",
+   "category": "nature",
+   "name": "Spouting whale"
+  },
+  {
+   "id": "1f40b",
+   "category": "nature",
+   "name": "Whale"
+  },
+  {
+   "id": "1f42c",
+   "category": "nature",
+   "name": "Dolphin"
+  },
+  {
+   "id": "1facd",
+   "category": "nature",
+   "name": "Orca"
+  },
+  {
+   "id": "1f9ad",
+   "category": "nature",
+   "name": "Seal"
+  },
+  {
+   "id": "1f41f",
+   "category": "nature",
+   "name": "Fish"
+  },
+  {
+   "id": "1f420",
+   "category": "nature",
+   "name": "Tropical fish"
+  },
+  {
+   "id": "1f421",
+   "category": "nature",
+   "name": "Blowfish"
+  },
+  {
+   "id": "1f988",
+   "category": "nature",
+   "name": "Shark"
+  },
+  {
+   "id": "1f419",
+   "category": "nature",
+   "name": "Octopus"
+  },
+  {
+   "id": "1f41a",
+   "category": "nature",
+   "name": "Spiral shell"
+  },
+  {
+   "id": "1fab8",
+   "category": "nature",
+   "name": "Coral"
+  },
+  {
+   "id": "1fabc",
+   "category": "nature",
+   "name": "Jellyfish"
+  },
+  {
+   "id": "1f980",
+   "category": "nature",
+   "name": "Crab"
+  },
+  {
+   "id": "1f99e",
+   "category": "nature",
+   "name": "Lobster"
+  },
+  {
+   "id": "1f990",
+   "category": "nature",
+   "name": "Shrimp"
+  },
+  {
+   "id": "1f991",
+   "category": "nature",
+   "name": "Squid"
+  },
+  {
+   "id": "1f9aa",
+   "category": "nature",
+   "name": "Oyster"
+  },
+  {
+   "id": "1f40c",
+   "category": "nature",
+   "name": "Snail"
+  },
+  {
+   "id": "1f98b",
+   "category": "nature",
+   "name": "Butterfly"
+  },
+  {
+   "id": "1facc",
+   "category": "nature",
+   "name": "Monarch butterfly"
+  },
+  {
+   "id": "1f41b",
+   "category": "nature",
+   "name": "Bug"
+  },
+  {
+   "id": "1f41c",
+   "category": "nature",
+   "name": "Ant"
+  },
+  {
+   "id": "1f41d",
+   "category": "nature",
+   "name": "Honeybee"
+  },
+  {
+   "id": "1fab2",
+   "category": "nature",
+   "name": "Beetle"
+  },
+  {
+   "id": "1f41e",
+   "category": "nature",
+   "name": "Lady beetle"
+  },
+  {
+   "id": "1f997",
+   "category": "nature",
+   "name": "Cricket"
+  },
+  {
+   "id": "1fab3",
+   "category": "nature",
+   "name": "Cockroach"
+  },
+  {
+   "id": "1f577",
+   "category": "nature",
+   "name": "Spider"
+  },
+  {
+   "id": "1f578",
+   "category": "nature",
+   "name": "Spider web"
+  },
+  {
+   "id": "1f982",
+   "category": "nature",
+   "name": "Scorpion"
+  },
+  {
+   "id": "1f99f",
+   "category": "nature",
+   "name": "Mosquito"
+  },
+  {
+   "id": "1fab0",
+   "category": "nature",
+   "name": "Fly"
+  },
+  {
+   "id": "1fab1",
+   "category": "nature",
+   "name": "Worm"
+  },
+  {
+   "id": "1f9a0",
+   "category": "nature",
+   "name": "Microbe"
+  },
+  {
+   "id": "1f490",
+   "category": "nature",
+   "name": "Bouquet"
+  },
+  {
+   "id": "1f338",
+   "category": "nature",
+   "name": "Cherry blossom"
+  },
+  {
+   "id": "1f4ae",
+   "category": "nature",
+   "name": "White flower"
+  },
+  {
+   "id": "1fab7",
+   "category": "nature",
+   "name": "Lotus"
+  },
+  {
+   "id": "1f3f5",
+   "category": "nature",
+   "name": "Rosette"
+  },
+  {
+   "id": "1f339",
+   "category": "nature",
+   "name": "Rose"
+  },
+  {
+   "id": "1f940",
+   "category": "nature",
+   "name": "Wilted flower"
+  },
+  {
+   "id": "1f33a",
+   "category": "nature",
+   "name": "Hibiscus"
+  },
+  {
+   "id": "1f33b",
+   "category": "nature",
+   "name": "Sunflower"
+  },
+  {
+   "id": "1f33c",
+   "category": "nature",
+   "name": "Blossom"
+  },
+  {
+   "id": "1f337",
+   "category": "nature",
+   "name": "Tulip"
+  },
+  {
+   "id": "1fabb",
+   "category": "nature",
+   "name": "Hyacinth"
+  },
+  {
+   "id": "1f331",
+   "category": "nature",
+   "name": "Seedling"
+  },
+  {
+   "id": "1fab4",
+   "category": "nature",
+   "name": "Potted plant"
+  },
+  {
+   "id": "1f332",
+   "category": "nature",
+   "name": "Evergreen tree"
+  },
+  {
+   "id": "1f333",
+   "category": "nature",
+   "name": "Deciduous tree"
+  },
+  {
+   "id": "1f334",
+   "category": "nature",
+   "name": "Palm tree"
+  },
+  {
+   "id": "1f335",
+   "category": "nature",
+   "name": "Cactus"
+  },
+  {
+   "id": "1f33e",
+   "category": "nature",
+   "name": "Sheaf of rice"
+  },
+  {
+   "id": "1f33f",
+   "category": "nature",
+   "name": "Herb"
+  },
+  {
+   "id": "2618",
+   "category": "nature",
+   "name": "Shamrock"
+  },
+  {
+   "id": "1f340",
+   "category": "nature",
+   "name": "Four leaf clover"
+  },
+  {
+   "id": "1f341",
+   "category": "nature",
+   "name": "Maple leaf"
+  },
+  {
+   "id": "1f342",
+   "category": "nature",
+   "name": "Fallen leaf"
+  },
+  {
+   "id": "1f343",
+   "category": "nature",
+   "name": "Leaf fluttering in wind"
+  },
+  {
+   "id": "1fab9",
+   "category": "nature",
+   "name": "Empty nest"
+  },
+  {
+   "id": "1faba",
+   "category": "nature",
+   "name": "Nest with eggs"
+  },
+  {
+   "id": "1f344",
+   "category": "nature",
+   "name": "Mushroom"
+  },
+  {
+   "id": "1fabe",
+   "category": "nature",
+   "name": "Leafless tree"
+  },
+  {
+   "id": "1f347",
+   "category": "food",
+   "name": "Grapes"
+  },
+  {
+   "id": "1f348",
+   "category": "food",
+   "name": "Melon"
+  },
+  {
+   "id": "1f349",
+   "category": "food",
+   "name": "Watermelon"
+  },
+  {
+   "id": "1f34a",
+   "category": "food",
+   "name": "Tangerine"
+  },
+  {
+   "id": "1f34b",
+   "category": "food",
+   "name": "Lemon"
+  },
+  {
+   "id": "1f34b_200d_1f7e9",
+   "category": "food",
+   "name": "Lime"
+  },
+  {
+   "id": "1f34c",
+   "category": "food",
+   "name": "Banana"
+  },
+  {
+   "id": "1f34d",
+   "category": "food",
+   "name": "Pineapple"
+  },
+  {
+   "id": "1f96d",
+   "category": "food",
+   "name": "Mango"
+  },
+  {
+   "id": "1f34e",
+   "category": "food",
+   "name": "Red apple"
+  },
+  {
+   "id": "1f34f",
+   "category": "food",
+   "name": "Green apple"
+  },
+  {
+   "id": "1f350",
+   "category": "food",
+   "name": "Pear"
+  },
+  {
+   "id": "1f351",
+   "category": "food",
+   "name": "Peach"
+  },
+  {
+   "id": "1f352",
+   "category": "food",
+   "name": "Cherries"
+  },
+  {
+   "id": "1f353",
+   "category": "food",
+   "name": "Strawberry"
+  },
+  {
+   "id": "1fad0",
+   "category": "food",
+   "name": "Blueberries"
+  },
+  {
+   "id": "1f95d",
+   "category": "food",
+   "name": "Kiwi fruit"
+  },
+  {
+   "id": "1f345",
+   "category": "food",
+   "name": "Tomato"
+  },
+  {
+   "id": "1fad2",
+   "category": "food",
+   "name": "Olive"
+  },
+  {
+   "id": "1f965",
+   "category": "food",
+   "name": "Coconut"
+  },
+  {
+   "id": "1f951",
+   "category": "food",
+   "name": "Avocado"
+  },
+  {
+   "id": "1f346",
+   "category": "food",
+   "name": "Eggplant"
+  },
+  {
+   "id": "1f954",
+   "category": "food",
+   "name": "Potato"
+  },
+  {
+   "id": "1f955",
+   "category": "food",
+   "name": "Carrot"
+  },
+  {
+   "id": "1f33d",
+   "category": "food",
+   "name": "Ear of corn"
+  },
+  {
+   "id": "1f336",
+   "category": "food",
+   "name": "Hot pepper"
+  },
+  {
+   "id": "1fad1",
+   "category": "food",
+   "name": "Bell pepper"
+  },
+  {
+   "id": "1f952",
+   "category": "food",
+   "name": "Cucumber"
+  },
+  {
+   "id": "1fadd",
+   "category": "food",
+   "name": "Pickle"
+  },
+  {
+   "id": "1f96c",
+   "category": "food",
+   "name": "Leafy green"
+  },
+  {
+   "id": "1f966",
+   "category": "food",
+   "name": "Broccoli"
+  },
+  {
+   "id": "1f9c4",
+   "category": "food",
+   "name": "Garlic"
+  },
+  {
+   "id": "1f9c5",
+   "category": "food",
+   "name": "Onion"
+  },
+  {
+   "id": "1f95c",
+   "category": "food",
+   "name": "Peanuts"
+  },
+  {
+   "id": "1fad8",
+   "category": "food",
+   "name": "Beans"
+  },
+  {
+   "id": "1f330",
+   "category": "food",
+   "name": "Chestnut"
+  },
+  {
+   "id": "1fada",
+   "category": "food",
+   "name": "Ginger root"
+  },
+  {
+   "id": "1fadb",
+   "category": "food",
+   "name": "Pea pod"
+  },
+  {
+   "id": "1f344_200d_1f7eb",
+   "category": "food",
+   "name": "Brown mushroom"
+  },
+  {
+   "id": "1fadc",
+   "category": "food",
+   "name": "Root vegetable"
+  },
+  {
+   "id": "1f35e",
+   "category": "food",
+   "name": "Bread"
+  },
+  {
+   "id": "1f950",
+   "category": "food",
+   "name": "Croissant"
+  },
+  {
+   "id": "1f956",
+   "category": "food",
+   "name": "Baguette bread"
+  },
+  {
+   "id": "1fad3",
+   "category": "food",
+   "name": "Flatbread"
+  },
+  {
+   "id": "1f968",
+   "category": "food",
+   "name": "Pretzel"
+  },
+  {
+   "id": "1f96f",
+   "category": "food",
+   "name": "Bagel"
+  },
+  {
+   "id": "1f95e",
+   "category": "food",
+   "name": "Pancakes"
+  },
+  {
+   "id": "1f9c7",
+   "category": "food",
+   "name": "Waffle"
+  },
+  {
+   "id": "1f9c0",
+   "category": "food",
+   "name": "Cheese wedge"
+  },
+  {
+   "id": "1f356",
+   "category": "food",
+   "name": "Meat on bone"
+  },
+  {
+   "id": "1f357",
+   "category": "food",
+   "name": "Poultry leg"
+  },
+  {
+   "id": "1f969",
+   "category": "food",
+   "name": "Cut of meat"
+  },
+  {
+   "id": "1f953",
+   "category": "food",
+   "name": "Bacon"
+  },
+  {
+   "id": "1f354",
+   "category": "food",
+   "name": "Hamburger"
+  },
+  {
+   "id": "1f35f",
+   "category": "food",
+   "name": "French fries"
+  },
+  {
+   "id": "1f355",
+   "category": "food",
+   "name": "Pizza"
+  },
+  {
+   "id": "1f32d",
+   "category": "food",
+   "name": "Hot dog"
+  },
+  {
+   "id": "1f96a",
+   "category": "food",
+   "name": "Sandwich"
+  },
+  {
+   "id": "1f32e",
+   "category": "food",
+   "name": "Taco"
+  },
+  {
+   "id": "1f32f",
+   "category": "food",
+   "name": "Burrito"
+  },
+  {
+   "id": "1fad4",
+   "category": "food",
+   "name": "Tamale"
+  },
+  {
+   "id": "1f959",
+   "category": "food",
+   "name": "Stuffed flatbread"
+  },
+  {
+   "id": "1f9c6",
+   "category": "food",
+   "name": "Falafel"
+  },
+  {
+   "id": "1f95a",
+   "category": "food",
+   "name": "Egg"
+  },
+  {
+   "id": "1f373",
+   "category": "food",
+   "name": "Cooking"
+  },
+  {
+   "id": "1f958",
+   "category": "food",
+   "name": "Shallow pan of food"
+  },
+  {
+   "id": "1f372",
+   "category": "food",
+   "name": "Pot of food"
+  },
+  {
+   "id": "1fad5",
+   "category": "food",
+   "name": "Fondue"
+  },
+  {
+   "id": "1f963",
+   "category": "food",
+   "name": "Bowl with spoon"
+  },
+  {
+   "id": "1f957",
+   "category": "food",
+   "name": "Green salad"
+  },
+  {
+   "id": "1f37f",
+   "category": "food",
+   "name": "Popcorn"
+  },
+  {
+   "id": "1f9c8",
+   "category": "food",
+   "name": "Butter"
+  },
+  {
+   "id": "1f9c2",
+   "category": "food",
+   "name": "Salt"
+  },
+  {
+   "id": "1f96b",
+   "category": "food",
+   "name": "Canned food"
+  },
+  {
+   "id": "1f371",
+   "category": "food",
+   "name": "Bento box"
+  },
+  {
+   "id": "1f358",
+   "category": "food",
+   "name": "Rice cracker"
+  },
+  {
+   "id": "1f359",
+   "category": "food",
+   "name": "Rice ball"
+  },
+  {
+   "id": "1f35a",
+   "category": "food",
+   "name": "Cooked rice"
+  },
+  {
+   "id": "1f35b",
+   "category": "food",
+   "name": "Curry rice"
+  },
+  {
+   "id": "1f35c",
+   "category": "food",
+   "name": "Steaming bowl"
+  },
+  {
+   "id": "1f35d",
+   "category": "food",
+   "name": "Spaghetti"
+  },
+  {
+   "id": "1f360",
+   "category": "food",
+   "name": "Roasted sweet potato"
+  },
+  {
+   "id": "1f362",
+   "category": "food",
+   "name": "Oden"
+  },
+  {
+   "id": "1f363",
+   "category": "food",
+   "name": "Sushi"
+  },
+  {
+   "id": "1f364",
+   "category": "food",
+   "name": "Fried shrimp"
+  },
+  {
+   "id": "1f365",
+   "category": "food",
+   "name": "Fish cake with swirl"
+  },
+  {
+   "id": "1f96e",
+   "category": "food",
+   "name": "Moon cake"
+  },
+  {
+   "id": "1f361",
+   "category": "food",
+   "name": "Dango"
+  },
+  {
+   "id": "1f95f",
+   "category": "food",
+   "name": "Dumpling"
+  },
+  {
+   "id": "1f960",
+   "category": "food",
+   "name": "Fortune cookie"
+  },
+  {
+   "id": "1f961",
+   "category": "food",
+   "name": "Takeout box"
+  },
+  {
+   "id": "1f366",
+   "category": "food",
+   "name": "Soft ice cream"
+  },
+  {
+   "id": "1f367",
+   "category": "food",
+   "name": "Shaved ice"
+  },
+  {
+   "id": "1f368",
+   "category": "food",
+   "name": "Ice cream"
+  },
+  {
+   "id": "1f369",
+   "category": "food",
+   "name": "Doughnut"
+  },
+  {
+   "id": "1f36a",
+   "category": "food",
+   "name": "Cookie"
+  },
+  {
+   "id": "1f382",
+   "category": "food",
+   "name": "Birthday cake"
+  },
+  {
+   "id": "1f370",
+   "category": "food",
+   "name": "Shortcake"
+  },
+  {
+   "id": "1f9c1",
+   "category": "food",
+   "name": "Cupcake"
+  },
+  {
+   "id": "1f967",
+   "category": "food",
+   "name": "Pie"
+  },
+  {
+   "id": "1f36b",
+   "category": "food",
+   "name": "Chocolate bar"
+  },
+  {
+   "id": "1f36c",
+   "category": "food",
+   "name": "Candy"
+  },
+  {
+   "id": "1f36d",
+   "category": "food",
+   "name": "Lollipop"
+  },
+  {
+   "id": "1f36e",
+   "category": "food",
+   "name": "Custard"
+  },
+  {
+   "id": "1f36f",
+   "category": "food",
+   "name": "Honey pot"
+  },
+  {
+   "id": "1f37c",
+   "category": "food",
+   "name": "Baby bottle"
+  },
+  {
+   "id": "1f95b",
+   "category": "food",
+   "name": "Glass of milk"
+  },
+  {
+   "id": "2615",
+   "category": "food",
+   "name": "Hot beverage"
+  },
+  {
+   "id": "1fad6",
+   "category": "food",
+   "name": "Teapot"
+  },
+  {
+   "id": "1f375",
+   "category": "food",
+   "name": "Teacup without handle"
+  },
+  {
+   "id": "1f376",
+   "category": "food",
+   "name": "Sake"
+  },
+  {
+   "id": "1f37e",
+   "category": "food",
+   "name": "Bottle with popping cork"
+  },
+  {
+   "id": "1f377",
+   "category": "food",
+   "name": "Wine glass"
+  },
+  {
+   "id": "1f378",
+   "category": "food",
+   "name": "Cocktail glass"
+  },
+  {
+   "id": "1f379",
+   "category": "food",
+   "name": "Tropical drink"
+  },
+  {
+   "id": "1f37a",
+   "category": "food",
+   "name": "Beer mug"
+  },
+  {
+   "id": "1f37b",
+   "category": "food",
+   "name": "Clinking beer mugs"
+  },
+  {
+   "id": "1f942",
+   "category": "food",
+   "name": "Clinking glasses"
+  },
+  {
+   "id": "1f943",
+   "category": "food",
+   "name": "Tumbler glass"
+  },
+  {
+   "id": "1fad7",
+   "category": "food",
+   "name": "Pouring liquid"
+  },
+  {
+   "id": "1f964",
+   "category": "food",
+   "name": "Cup with straw"
+  },
+  {
+   "id": "1f9cb",
+   "category": "food",
+   "name": "Bubble tea"
+  },
+  {
+   "id": "1f9c3",
+   "category": "food",
+   "name": "Beverage box"
+  },
+  {
+   "id": "1f9c9",
+   "category": "food",
+   "name": "Mate"
+  },
+  {
+   "id": "1f9ca",
+   "category": "food",
+   "name": "Ice"
+  },
+  {
+   "id": "1f962",
+   "category": "food",
+   "name": "Chopsticks"
+  },
+  {
+   "id": "1f37d",
+   "category": "food",
+   "name": "Fork and knife with plate"
+  },
+  {
+   "id": "1f374",
+   "category": "food",
+   "name": "Fork and knife"
+  },
+  {
+   "id": "1f944",
+   "category": "food",
+   "name": "Spoon"
+  },
+  {
+   "id": "1f52a",
+   "category": "food",
+   "name": "Kitchen knife"
+  },
+  {
+   "id": "1fad9",
+   "category": "food",
+   "name": "Jar"
+  },
+  {
+   "id": "1f3fa",
+   "category": "food",
+   "name": "Amphora"
+  },
+  {
+   "id": "1f30d",
+   "category": "travel",
+   "name": "Globe showing Europe-Africa"
+  },
+  {
+   "id": "1f30e",
+   "category": "travel",
+   "name": "Globe showing Americas"
+  },
+  {
+   "id": "1f30f",
+   "category": "travel",
+   "name": "Globe showing Asia-Australia"
+  },
+  {
+   "id": "1f310",
+   "category": "travel",
+   "name": "Globe with meridians"
+  },
+  {
+   "id": "1f5fa",
+   "category": "travel",
+   "name": "World map"
+  },
+  {
+   "id": "1f5fe",
+   "category": "travel",
+   "name": "Map of Japan"
+  },
+  {
+   "id": "1f9ed",
+   "category": "travel",
+   "name": "Compass"
+  },
+  {
+   "id": "1f3d4",
+   "category": "travel",
+   "name": "Snow-capped mountain"
+  },
+  {
+   "id": "26f0",
+   "category": "travel",
+   "name": "Mountain"
+  },
+  {
+   "id": "1f6d8",
+   "category": "travel",
+   "name": "Landslide"
+  },
+  {
+   "id": "1f30b",
+   "category": "travel",
+   "name": "Volcano"
+  },
+  {
+   "id": "1f5fb",
+   "category": "travel",
+   "name": "Mount fuji"
+  },
+  {
+   "id": "1f3d5",
+   "category": "travel",
+   "name": "Camping"
+  },
+  {
+   "id": "1f3d6",
+   "category": "travel",
+   "name": "Beach with umbrella"
+  },
+  {
+   "id": "1f3dc",
+   "category": "travel",
+   "name": "Desert"
+  },
+  {
+   "id": "1f3dd",
+   "category": "travel",
+   "name": "Desert island"
+  },
+  {
+   "id": "1f3de",
+   "category": "travel",
+   "name": "National park"
+  },
+  {
+   "id": "1f3df",
+   "category": "travel",
+   "name": "Stadium"
+  },
+  {
+   "id": "1f3db",
+   "category": "travel",
+   "name": "Classical building"
+  },
+  {
+   "id": "1f3d7",
+   "category": "travel",
+   "name": "Building construction"
+  },
+  {
+   "id": "1f9f1",
+   "category": "travel",
+   "name": "Brick"
+  },
+  {
+   "id": "1faa8",
+   "category": "travel",
+   "name": "Rock"
+  },
+  {
+   "id": "1fab5",
+   "category": "travel",
+   "name": "Wood"
+  },
+  {
+   "id": "1f6d6",
+   "category": "travel",
+   "name": "Hut"
+  },
+  {
+   "id": "1f3d8",
+   "category": "travel",
+   "name": "Houses"
+  },
+  {
+   "id": "1f3da",
+   "category": "travel",
+   "name": "Derelict house"
+  },
+  {
+   "id": "1f3e0",
+   "category": "travel",
+   "name": "House"
+  },
+  {
+   "id": "1f3e1",
+   "category": "travel",
+   "name": "House with garden"
+  },
+  {
+   "id": "1f3e2",
+   "category": "travel",
+   "name": "Office building"
+  },
+  {
+   "id": "1f3e3",
+   "category": "travel",
+   "name": "Japanese post office"
+  },
+  {
+   "id": "1f3e4",
+   "category": "travel",
+   "name": "Post office"
+  },
+  {
+   "id": "1f3e5",
+   "category": "travel",
+   "name": "Hospital"
+  },
+  {
+   "id": "1f3e6",
+   "category": "travel",
+   "name": "Bank"
+  },
+  {
+   "id": "1f3e8",
+   "category": "travel",
+   "name": "Hotel"
+  },
+  {
+   "id": "1f3ea",
+   "category": "travel",
+   "name": "Convenience store"
+  },
+  {
+   "id": "1f3eb",
+   "category": "travel",
+   "name": "School"
+  },
+  {
+   "id": "1f3ec",
+   "category": "travel",
+   "name": "Department store"
+  },
+  {
+   "id": "1f3ed",
+   "category": "travel",
+   "name": "Factory"
+  },
+  {
+   "id": "1f3ef",
+   "category": "travel",
+   "name": "Japanese castle"
+  },
+  {
+   "id": "1f3f0",
+   "category": "travel",
+   "name": "Castle"
+  },
+  {
+   "id": "1f5fc",
+   "category": "travel",
+   "name": "Tokyo tower"
+  },
+  {
+   "id": "1f5fd",
+   "category": "travel",
+   "name": "Statue of Liberty"
+  },
+  {
+   "id": "1f54d",
+   "category": "travel",
+   "name": "Synagogue"
+  },
+  {
+   "id": "26f2",
+   "category": "travel",
+   "name": "Fountain"
+  },
+  {
+   "id": "26fa",
+   "category": "travel",
+   "name": "Tent"
+  },
+  {
+   "id": "1f301",
+   "category": "travel",
+   "name": "Foggy"
+  },
+  {
+   "id": "1f303",
+   "category": "travel",
+   "name": "Night with stars"
+  },
+  {
+   "id": "1f3d9",
+   "category": "travel",
+   "name": "Cityscape"
+  },
+  {
+   "id": "1f304",
+   "category": "travel",
+   "name": "Sunrise over mountains"
+  },
+  {
+   "id": "1f305",
+   "category": "travel",
+   "name": "Sunrise"
+  },
+  {
+   "id": "1f306",
+   "category": "travel",
+   "name": "Cityscape at dusk"
+  },
+  {
+   "id": "1f307",
+   "category": "travel",
+   "name": "Sunset"
+  },
+  {
+   "id": "1f309",
+   "category": "travel",
+   "name": "Bridge at night"
+  },
+  {
+   "id": "2668",
+   "category": "travel",
+   "name": "Hot springs"
+  },
+  {
+   "id": "1f3a0",
+   "category": "travel",
+   "name": "Carousel horse"
+  },
+  {
+   "id": "1f6dd",
+   "category": "travel",
+   "name": "Playground slide"
+  },
+  {
+   "id": "1f3a1",
+   "category": "travel",
+   "name": "Ferris wheel"
+  },
+  {
+   "id": "1f3a2",
+   "category": "travel",
+   "name": "Roller coaster"
+  },
+  {
+   "id": "1f488",
+   "category": "travel",
+   "name": "Barber pole"
+  },
+  {
+   "id": "1f3aa",
+   "category": "travel",
+   "name": "Circus tent"
+  },
+  {
+   "id": "1f682",
+   "category": "travel",
+   "name": "Locomotive"
+  },
+  {
+   "id": "1f683",
+   "category": "travel",
+   "name": "Railway car"
+  },
+  {
+   "id": "1f684",
+   "category": "travel",
+   "name": "High-speed train"
+  },
+  {
+   "id": "1f685",
+   "category": "travel",
+   "name": "Bullet train"
+  },
+  {
+   "id": "1f686",
+   "category": "travel",
+   "name": "Train"
+  },
+  {
+   "id": "1f687",
+   "category": "travel",
+   "name": "Metro"
+  },
+  {
+   "id": "1f688",
+   "category": "travel",
+   "name": "Light rail"
+  },
+  {
+   "id": "1f689",
+   "category": "travel",
+   "name": "Station"
+  },
+  {
+   "id": "1f68a",
+   "category": "travel",
+   "name": "Tram"
+  },
+  {
+   "id": "1f69d",
+   "category": "travel",
+   "name": "Monorail"
+  },
+  {
+   "id": "1f69e",
+   "category": "travel",
+   "name": "Mountain railway"
+  },
+  {
+   "id": "1f68b",
+   "category": "travel",
+   "name": "Tram car"
+  },
+  {
+   "id": "1f68c",
+   "category": "travel",
+   "name": "Bus"
+  },
+  {
+   "id": "1f68d",
+   "category": "travel",
+   "name": "Oncoming bus"
+  },
+  {
+   "id": "1f68e",
+   "category": "travel",
+   "name": "Trolleybus"
+  },
+  {
+   "id": "1f690",
+   "category": "travel",
+   "name": "Minibus"
+  },
+  {
+   "id": "1f691",
+   "category": "travel",
+   "name": "Ambulance"
+  },
+  {
+   "id": "1f692",
+   "category": "travel",
+   "name": "Fire engine"
+  },
+  {
+   "id": "1f693",
+   "category": "travel",
+   "name": "Police car"
+  },
+  {
+   "id": "1f694",
+   "category": "travel",
+   "name": "Oncoming police car"
+  },
+  {
+   "id": "1f695",
+   "category": "travel",
+   "name": "Taxi"
+  },
+  {
+   "id": "1f696",
+   "category": "travel",
+   "name": "Oncoming taxi"
+  },
+  {
+   "id": "1f697",
+   "category": "travel",
+   "name": "Automobile"
+  },
+  {
+   "id": "1f698",
+   "category": "travel",
+   "name": "Oncoming automobile"
+  },
+  {
+   "id": "1f699",
+   "category": "travel",
+   "name": "Sport utility vehicle"
+  },
+  {
+   "id": "1f6fb",
+   "category": "travel",
+   "name": "Pickup truck"
+  },
+  {
+   "id": "1f69a",
+   "category": "travel",
+   "name": "Delivery truck"
+  },
+  {
+   "id": "1f69b",
+   "category": "travel",
+   "name": "Articulated lorry"
+  },
+  {
+   "id": "1f69c",
+   "category": "travel",
+   "name": "Tractor"
+  },
+  {
+   "id": "1f3ce",
+   "category": "travel",
+   "name": "Racing car"
+  },
+  {
+   "id": "1f3cd",
+   "category": "travel",
+   "name": "Motorcycle"
+  },
+  {
+   "id": "1f6f5",
+   "category": "travel",
+   "name": "Motor scooter"
+  },
+  {
+   "id": "1f9bd",
+   "category": "travel",
+   "name": "Manual wheelchair"
+  },
+  {
+   "id": "1f9bc",
+   "category": "travel",
+   "name": "Motorized wheelchair"
+  },
+  {
+   "id": "1f6fa",
+   "category": "travel",
+   "name": "Auto rickshaw"
+  },
+  {
+   "id": "1f6b2",
+   "category": "travel",
+   "name": "Bicycle"
+  },
+  {
+   "id": "1f6f4",
+   "category": "travel",
+   "name": "Kick scooter"
+  },
+  {
+   "id": "1f6f9",
+   "category": "travel",
+   "name": "Skateboard"
+  },
+  {
+   "id": "1f6fc",
+   "category": "travel",
+   "name": "Roller skate"
+  },
+  {
+   "id": "1f68f",
+   "category": "travel",
+   "name": "Bus stop"
+  },
+  {
+   "id": "1f6e3",
+   "category": "travel",
+   "name": "Motorway"
+  },
+  {
+   "id": "1f6e4",
+   "category": "travel",
+   "name": "Railway track"
+  },
+  {
+   "id": "1f6e2",
+   "category": "travel",
+   "name": "Oil drum"
+  },
+  {
+   "id": "26fd",
+   "category": "travel",
+   "name": "Fuel pump"
+  },
+  {
+   "id": "1f6de",
+   "category": "travel",
+   "name": "Wheel"
+  },
+  {
+   "id": "1f6a8",
+   "category": "travel",
+   "name": "Police car light"
+  },
+  {
+   "id": "1f6a5",
+   "category": "travel",
+   "name": "Horizontal traffic light"
+  },
+  {
+   "id": "1f6a6",
+   "category": "travel",
+   "name": "Vertical traffic light"
+  },
+  {
+   "id": "1f6d1",
+   "category": "travel",
+   "name": "Stop sign"
+  },
+  {
+   "id": "1f6a7",
+   "category": "travel",
+   "name": "Construction"
+  },
+  {
+   "id": "1f6d9",
+   "category": "travel",
+   "name": "Lighthouse"
+  },
+  {
+   "id": "2693",
+   "category": "travel",
+   "name": "Anchor"
+  },
+  {
+   "id": "1f6df",
+   "category": "travel",
+   "name": "Ring buoy"
+  },
+  {
+   "id": "26f5",
+   "category": "travel",
+   "name": "Sailboat"
+  },
+  {
+   "id": "1f6f6",
+   "category": "travel",
+   "name": "Canoe"
+  },
+  {
+   "id": "1f6a4",
+   "category": "travel",
+   "name": "Speedboat"
+  },
+  {
+   "id": "1f6f3",
+   "category": "travel",
+   "name": "Passenger ship"
+  },
+  {
+   "id": "26f4",
+   "category": "travel",
+   "name": "Ferry"
+  },
+  {
+   "id": "1f6e5",
+   "category": "travel",
+   "name": "Motor boat"
+  },
+  {
+   "id": "1f6a2",
+   "category": "travel",
+   "name": "Ship"
+  },
+  {
+   "id": "2708",
+   "category": "travel",
+   "name": "Airplane"
+  },
+  {
+   "id": "1f6e9",
+   "category": "travel",
+   "name": "Small airplane"
+  },
+  {
+   "id": "1f6eb",
+   "category": "travel",
+   "name": "Airplane departure"
+  },
+  {
+   "id": "1f6ec",
+   "category": "travel",
+   "name": "Airplane arrival"
+  },
+  {
+   "id": "1fa82",
+   "category": "travel",
+   "name": "Parachute"
+  },
+  {
+   "id": "1f4ba",
+   "category": "travel",
+   "name": "Seat"
+  },
+  {
+   "id": "1f681",
+   "category": "travel",
+   "name": "Helicopter"
+  },
+  {
+   "id": "1f69f",
+   "category": "travel",
+   "name": "Suspension railway"
+  },
+  {
+   "id": "1f6a0",
+   "category": "travel",
+   "name": "Mountain cableway"
+  },
+  {
+   "id": "1f6a1",
+   "category": "travel",
+   "name": "Aerial tramway"
+  },
+  {
+   "id": "1f6f0",
+   "category": "travel",
+   "name": "Satellite"
+  },
+  {
+   "id": "1f680",
+   "category": "travel",
+   "name": "Rocket"
+  },
+  {
+   "id": "1f6f8",
+   "category": "travel",
+   "name": "Flying saucer"
+  },
+  {
+   "id": "1f6ce",
+   "category": "travel",
+   "name": "Bellhop bell"
+  },
+  {
+   "id": "1f9f3",
+   "category": "travel",
+   "name": "Luggage"
+  },
+  {
+   "id": "231b",
+   "category": "travel",
+   "name": "Hourglass done"
+  },
+  {
+   "id": "23f3",
+   "category": "travel",
+   "name": "Hourglass not done"
+  },
+  {
+   "id": "231a",
+   "category": "travel",
+   "name": "Watch"
+  },
+  {
+   "id": "23f0",
+   "category": "travel",
+   "name": "Alarm clock"
+  },
+  {
+   "id": "23f1",
+   "category": "travel",
+   "name": "Stopwatch"
+  },
+  {
+   "id": "23f2",
+   "category": "travel",
+   "name": "Timer clock"
+  },
+  {
+   "id": "1f570",
+   "category": "travel",
+   "name": "Mantelpiece clock"
+  },
+  {
+   "id": "1f55b",
+   "category": "travel",
+   "name": "Twelve o’clock"
+  },
+  {
+   "id": "1f567",
+   "category": "travel",
+   "name": "Twelve-thirty"
+  },
+  {
+   "id": "1f550",
+   "category": "travel",
+   "name": "One o’clock"
+  },
+  {
+   "id": "1f55c",
+   "category": "travel",
+   "name": "One-thirty"
+  },
+  {
+   "id": "1f551",
+   "category": "travel",
+   "name": "Two o’clock"
+  },
+  {
+   "id": "1f55d",
+   "category": "travel",
+   "name": "Two-thirty"
+  },
+  {
+   "id": "1f552",
+   "category": "travel",
+   "name": "Three o’clock"
+  },
+  {
+   "id": "1f55e",
+   "category": "travel",
+   "name": "Three-thirty"
+  },
+  {
+   "id": "1f553",
+   "category": "travel",
+   "name": "Four o’clock"
+  },
+  {
+   "id": "1f55f",
+   "category": "travel",
+   "name": "Four-thirty"
+  },
+  {
+   "id": "1f554",
+   "category": "travel",
+   "name": "Five o’clock"
+  },
+  {
+   "id": "1f560",
+   "category": "travel",
+   "name": "Five-thirty"
+  },
+  {
+   "id": "1f555",
+   "category": "travel",
+   "name": "Six o’clock"
+  },
+  {
+   "id": "1f561",
+   "category": "travel",
+   "name": "Six-thirty"
+  },
+  {
+   "id": "1f556",
+   "category": "travel",
+   "name": "Seven o’clock"
+  },
+  {
+   "id": "1f562",
+   "category": "travel",
+   "name": "Seven-thirty"
+  },
+  {
+   "id": "1f557",
+   "category": "travel",
+   "name": "Eight o’clock"
+  },
+  {
+   "id": "1f563",
+   "category": "travel",
+   "name": "Eight-thirty"
+  },
+  {
+   "id": "1f558",
+   "category": "travel",
+   "name": "Nine o’clock"
+  },
+  {
+   "id": "1f564",
+   "category": "travel",
+   "name": "Nine-thirty"
+  },
+  {
+   "id": "1f559",
+   "category": "travel",
+   "name": "Ten o’clock"
+  },
+  {
+   "id": "1f565",
+   "category": "travel",
+   "name": "Ten-thirty"
+  },
+  {
+   "id": "1f55a",
+   "category": "travel",
+   "name": "Eleven o’clock"
+  },
+  {
+   "id": "1f566",
+   "category": "travel",
+   "name": "Eleven-thirty"
+  },
+  {
+   "id": "1f311",
+   "category": "travel",
+   "name": "New moon"
+  },
+  {
+   "id": "1f312",
+   "category": "travel",
+   "name": "Waxing crescent moon"
+  },
+  {
+   "id": "1f313",
+   "category": "travel",
+   "name": "First quarter moon"
+  },
+  {
+   "id": "1f314",
+   "category": "travel",
+   "name": "Waxing gibbous moon"
+  },
+  {
+   "id": "1f315",
+   "category": "travel",
+   "name": "Full moon"
+  },
+  {
+   "id": "1f316",
+   "category": "travel",
+   "name": "Waning gibbous moon"
+  },
+  {
+   "id": "1f317",
+   "category": "travel",
+   "name": "Last quarter moon"
+  },
+  {
+   "id": "1f318",
+   "category": "travel",
+   "name": "Waning crescent moon"
+  },
+  {
+   "id": "1f319",
+   "category": "travel",
+   "name": "Crescent moon"
+  },
+  {
+   "id": "1f31a",
+   "category": "travel",
+   "name": "New moon face"
+  },
+  {
+   "id": "1f31b",
+   "category": "travel",
+   "name": "First quarter moon face"
+  },
+  {
+   "id": "1f31c",
+   "category": "travel",
+   "name": "Last quarter moon face"
+  },
+  {
+   "id": "1f321",
+   "category": "travel",
+   "name": "Thermometer"
+  },
+  {
+   "id": "2600",
+   "category": "travel",
+   "name": "Sun"
+  },
+  {
+   "id": "1f31d",
+   "category": "travel",
+   "name": "Full moon face"
+  },
+  {
+   "id": "1f31e",
+   "category": "travel",
+   "name": "Sun with face"
+  },
+  {
+   "id": "1fa90",
+   "category": "travel",
+   "name": "Ringed planet"
+  },
+  {
+   "id": "2b50",
+   "category": "travel",
+   "name": "Star"
+  },
+  {
+   "id": "1f31f",
+   "category": "travel",
+   "name": "Glowing star"
+  },
+  {
+   "id": "1f320",
+   "category": "travel",
+   "name": "Shooting star"
+  },
+  {
+   "id": "1f30c",
+   "category": "travel",
+   "name": "Milky way"
+  },
+  {
+   "id": "2601",
+   "category": "travel",
+   "name": "Cloud"
+  },
+  {
+   "id": "26c5",
+   "category": "travel",
+   "name": "Sun behind cloud"
+  },
+  {
+   "id": "26c8",
+   "category": "travel",
+   "name": "Cloud with lightning and rain"
+  },
+  {
+   "id": "1f324",
+   "category": "travel",
+   "name": "Sun behind small cloud"
+  },
+  {
+   "id": "1f325",
+   "category": "travel",
+   "name": "Sun behind large cloud"
+  },
+  {
+   "id": "1f326",
+   "category": "travel",
+   "name": "Sun behind rain cloud"
+  },
+  {
+   "id": "1f327",
+   "category": "travel",
+   "name": "Cloud with rain"
+  },
+  {
+   "id": "1f328",
+   "category": "travel",
+   "name": "Cloud with snow"
+  },
+  {
+   "id": "1f329",
+   "category": "travel",
+   "name": "Cloud with lightning"
+  },
+  {
+   "id": "1f32a",
+   "category": "travel",
+   "name": "Tornado"
+  },
+  {
+   "id": "1f32b",
+   "category": "travel",
+   "name": "Fog"
+  },
+  {
+   "id": "1f32c",
+   "category": "travel",
+   "name": "Wind face"
+  },
+  {
+   "id": "1f300",
+   "category": "travel",
+   "name": "Cyclone"
+  },
+  {
+   "id": "1f308",
+   "category": "travel",
+   "name": "Rainbow"
+  },
+  {
+   "id": "1f302",
+   "category": "travel",
+   "name": "Closed umbrella"
+  },
+  {
+   "id": "2602",
+   "category": "travel",
+   "name": "Umbrella"
+  },
+  {
+   "id": "2614",
+   "category": "travel",
+   "name": "Umbrella with rain drops"
+  },
+  {
+   "id": "26f1",
+   "category": "travel",
+   "name": "Umbrella on ground"
+  },
+  {
+   "id": "26a1",
+   "category": "travel",
+   "name": "High voltage"
+  },
+  {
+   "id": "2744",
+   "category": "travel",
+   "name": "Snowflake"
+  },
+  {
+   "id": "2603",
+   "category": "travel",
+   "name": "Snowman"
+  },
+  {
+   "id": "26c4",
+   "category": "travel",
+   "name": "Snowman without snow"
+  },
+  {
+   "id": "2604",
+   "category": "travel",
+   "name": "Comet"
+  },
+  {
+   "id": "1fa8b",
+   "category": "travel",
+   "name": "Meteor"
+  },
+  {
+   "id": "1f525",
+   "category": "travel",
+   "name": "Fire"
+  },
+  {
+   "id": "1f4a7",
+   "category": "travel",
+   "name": "Droplet"
+  },
+  {
+   "id": "1f30a",
+   "category": "travel",
+   "name": "Water wave"
+  },
+  {
+   "id": "1f386",
+   "category": "activities",
+   "name": "Fireworks"
+  },
+  {
+   "id": "1f387",
+   "category": "activities",
+   "name": "Sparkler"
+  },
+  {
+   "id": "1f9e8",
+   "category": "activities",
+   "name": "Firecracker"
+  },
+  {
+   "id": "2728",
+   "category": "activities",
+   "name": "Sparkles"
+  },
+  {
+   "id": "1f388",
+   "category": "activities",
+   "name": "Balloon"
+  },
+  {
+   "id": "1f389",
+   "category": "activities",
+   "name": "Party popper"
+  },
+  {
+   "id": "1f38a",
+   "category": "activities",
+   "name": "Confetti ball"
+  },
+  {
+   "id": "1f38b",
+   "category": "activities",
+   "name": "Tanabata tree"
+  },
+  {
+   "id": "1f38d",
+   "category": "activities",
+   "name": "Pine decoration"
+  },
+  {
+   "id": "1f38e",
+   "category": "activities",
+   "name": "Japanese dolls"
+  },
+  {
+   "id": "1f38f",
+   "category": "activities",
+   "name": "Carp streamer"
+  },
+  {
+   "id": "1f390",
+   "category": "activities",
+   "name": "Wind chime"
+  },
+  {
+   "id": "1f391",
+   "category": "activities",
+   "name": "Moon viewing ceremony"
+  },
+  {
+   "id": "1f9e7",
+   "category": "activities",
+   "name": "Red envelope"
+  },
+  {
+   "id": "1f380",
+   "category": "activities",
+   "name": "Ribbon"
+  },
+  {
+   "id": "1f381",
+   "category": "activities",
+   "name": "Wrapped gift"
+  },
+  {
+   "id": "1f397",
+   "category": "activities",
+   "name": "Reminder ribbon"
+  },
+  {
+   "id": "1f39f",
+   "category": "activities",
+   "name": "Admission tickets"
+  },
+  {
+   "id": "1f3ab",
+   "category": "activities",
+   "name": "Ticket"
+  },
+  {
+   "id": "1f396",
+   "category": "activities",
+   "name": "Military medal"
+  },
+  {
+   "id": "1f3c6",
+   "category": "activities",
+   "name": "Trophy"
+  },
+  {
+   "id": "1f3c5",
+   "category": "activities",
+   "name": "Sports medal"
+  },
+  {
+   "id": "1f947",
+   "category": "activities",
+   "name": "1st place medal"
+  },
+  {
+   "id": "1f948",
+   "category": "activities",
+   "name": "2nd place medal"
+  },
+  {
+   "id": "1f949",
+   "category": "activities",
+   "name": "3rd place medal"
+  },
+  {
+   "id": "26bd",
+   "category": "activities",
+   "name": "Soccer ball"
+  },
+  {
+   "id": "26be",
+   "category": "activities",
+   "name": "Baseball"
+  },
+  {
+   "id": "1f94e",
+   "category": "activities",
+   "name": "Softball"
+  },
+  {
+   "id": "1f3c0",
+   "category": "activities",
+   "name": "Basketball"
+  },
+  {
+   "id": "1f3d0",
+   "category": "activities",
+   "name": "Volleyball"
+  },
+  {
+   "id": "1f3c8",
+   "category": "activities",
+   "name": "American football"
+  },
+  {
+   "id": "1f3c9",
+   "category": "activities",
+   "name": "Rugby football"
+  },
+  {
+   "id": "1f3be",
+   "category": "activities",
+   "name": "Tennis"
+  },
+  {
+   "id": "1f94f",
+   "category": "activities",
+   "name": "Flying disc"
+  },
+  {
+   "id": "1f3b3",
+   "category": "activities",
+   "name": "Bowling"
+  },
+  {
+   "id": "1f3cf",
+   "category": "activities",
+   "name": "Cricket game"
+  },
+  {
+   "id": "1f3d1",
+   "category": "activities",
+   "name": "Field hockey"
+  },
+  {
+   "id": "1f3d2",
+   "category": "activities",
+   "name": "Ice hockey"
+  },
+  {
+   "id": "1f94d",
+   "category": "activities",
+   "name": "Lacrosse"
+  },
+  {
+   "id": "1f3d3",
+   "category": "activities",
+   "name": "Ping pong"
+  },
+  {
+   "id": "1f3f8",
+   "category": "activities",
+   "name": "Badminton"
+  },
+  {
+   "id": "1f94a",
+   "category": "activities",
+   "name": "Boxing glove"
+  },
+  {
+   "id": "1f94b",
+   "category": "activities",
+   "name": "Martial arts uniform"
+  },
+  {
+   "id": "1f945",
+   "category": "activities",
+   "name": "Goal net"
+  },
+  {
+   "id": "26f3",
+   "category": "activities",
+   "name": "Flag in hole"
+  },
+  {
+   "id": "26f8",
+   "category": "activities",
+   "name": "Ice skate"
+  },
+  {
+   "id": "1f3a3",
+   "category": "activities",
+   "name": "Fishing pole"
+  },
+  {
+   "id": "1f93f",
+   "category": "activities",
+   "name": "Diving mask"
+  },
+  {
+   "id": "1f3bd",
+   "category": "activities",
+   "name": "Running shirt"
+  },
+  {
+   "id": "1f3bf",
+   "category": "activities",
+   "name": "Skis"
+  },
+  {
+   "id": "1f6f7",
+   "category": "activities",
+   "name": "Sled"
+  },
+  {
+   "id": "1f94c",
+   "category": "activities",
+   "name": "Curling stone"
+  },
+  {
+   "id": "1f3af",
+   "category": "activities",
+   "name": "Bullseye"
+  },
+  {
+   "id": "1fa80",
+   "category": "activities",
+   "name": "Yo-yo"
+  },
+  {
+   "id": "1fa81",
+   "category": "activities",
+   "name": "Kite"
+  },
+  {
+   "id": "1f52b",
+   "category": "activities",
+   "name": "Water pistol"
+  },
+  {
+   "id": "1f3b1",
+   "category": "activities",
+   "name": "Pool 8 ball"
+  },
+  {
+   "id": "1fa84",
+   "category": "activities",
+   "name": "Magic wand"
+  },
+  {
+   "id": "1f3ae",
+   "category": "activities",
+   "name": "Video game"
+  },
+  {
+   "id": "1f579",
+   "category": "activities",
+   "name": "Joystick"
+  },
+  {
+   "id": "1f3b0",
+   "category": "activities",
+   "name": "Slot machine"
+  },
+  {
+   "id": "1f3b2",
+   "category": "activities",
+   "name": "Game die"
+  },
+  {
+   "id": "1f9e9",
+   "category": "activities",
+   "name": "Puzzle piece"
+  },
+  {
+   "id": "1f9f8",
+   "category": "activities",
+   "name": "Teddy bear"
+  },
+  {
+   "id": "1fa85",
+   "category": "activities",
+   "name": "Piñata"
+  },
+  {
+   "id": "1faa9",
+   "category": "activities",
+   "name": "Mirror ball"
+  },
+  {
+   "id": "1fa86",
+   "category": "activities",
+   "name": "Nesting dolls"
+  },
+  {
+   "id": "2660",
+   "category": "activities",
+   "name": "Spade suit"
+  },
+  {
+   "id": "2665",
+   "category": "activities",
+   "name": "Heart suit"
+  },
+  {
+   "id": "2666",
+   "category": "activities",
+   "name": "Diamond suit"
+  },
+  {
+   "id": "2663",
+   "category": "activities",
+   "name": "Club suit"
+  },
+  {
+   "id": "265f",
+   "category": "activities",
+   "name": "Chess pawn"
+  },
+  {
+   "id": "1f0cf",
+   "category": "activities",
+   "name": "Joker"
+  },
+  {
+   "id": "1f004",
+   "category": "activities",
+   "name": "Mahjong red dragon"
+  },
+  {
+   "id": "1f3b4",
+   "category": "activities",
+   "name": "Flower playing cards"
+  },
+  {
+   "id": "1f3ad",
+   "category": "activities",
+   "name": "Performing arts"
+  },
+  {
+   "id": "1f5bc",
+   "category": "activities",
+   "name": "Framed picture"
+  },
+  {
+   "id": "1f3a8",
+   "category": "activities",
+   "name": "Artist palette"
+  },
+  {
+   "id": "1f9f5",
+   "category": "activities",
+   "name": "Thread"
+  },
+  {
+   "id": "1faa1",
+   "category": "activities",
+   "name": "Sewing needle"
+  },
+  {
+   "id": "1f9f6",
+   "category": "activities",
+   "name": "Yarn"
+  },
+  {
+   "id": "1faa2",
+   "category": "activities",
+   "name": "Knot"
+  },
+  {
+   "id": "1f453",
+   "category": "objects",
+   "name": "Glasses"
+  },
+  {
+   "id": "1f576",
+   "category": "objects",
+   "name": "Sunglasses"
+  },
+  {
+   "id": "1f97d",
+   "category": "objects",
+   "name": "Goggles"
+  },
+  {
+   "id": "1f97c",
+   "category": "objects",
+   "name": "Lab coat"
+  },
+  {
+   "id": "1f9ba",
+   "category": "objects",
+   "name": "Safety vest"
+  },
+  {
+   "id": "1f454",
+   "category": "objects",
+   "name": "Necktie"
+  },
+  {
+   "id": "1f455",
+   "category": "objects",
+   "name": "T-shirt"
+  },
+  {
+   "id": "1f456",
+   "category": "objects",
+   "name": "Jeans"
+  },
+  {
+   "id": "1f9e3",
+   "category": "objects",
+   "name": "Scarf"
+  },
+  {
+   "id": "1f9e4",
+   "category": "objects",
+   "name": "Gloves"
+  },
+  {
+   "id": "1f9e5",
+   "category": "objects",
+   "name": "Coat"
+  },
+  {
+   "id": "1f9e6",
+   "category": "objects",
+   "name": "Socks"
+  },
+  {
+   "id": "1f457",
+   "category": "objects",
+   "name": "Dress"
+  },
+  {
+   "id": "1f458",
+   "category": "objects",
+   "name": "Kimono"
+  },
+  {
+   "id": "1f97b",
+   "category": "objects",
+   "name": "Sari"
+  },
+  {
+   "id": "1fa73",
+   "category": "objects",
+   "name": "Shorts"
+  },
+  {
+   "id": "1f45a",
+   "category": "objects",
+   "name": "Woman’s clothes"
+  },
+  {
+   "id": "1faad",
+   "category": "objects",
+   "name": "Folding hand fan"
+  },
+  {
+   "id": "1f45b",
+   "category": "objects",
+   "name": "Purse"
+  },
+  {
+   "id": "1f45c",
+   "category": "objects",
+   "name": "Handbag"
+  },
+  {
+   "id": "1f45d",
+   "category": "objects",
+   "name": "Clutch bag"
+  },
+  {
+   "id": "1f6cd",
+   "category": "objects",
+   "name": "Shopping bags"
+  },
+  {
+   "id": "1f392",
+   "category": "objects",
+   "name": "Backpack"
+  },
+  {
+   "id": "1fa74",
+   "category": "objects",
+   "name": "Thong sandal"
+  },
+  {
+   "id": "1f45e",
+   "category": "objects",
+   "name": "Man’s shoe"
+  },
+  {
+   "id": "1f45f",
+   "category": "objects",
+   "name": "Running shoe"
+  },
+  {
+   "id": "1f97e",
+   "category": "objects",
+   "name": "Hiking boot"
+  },
+  {
+   "id": "1f97f",
+   "category": "objects",
+   "name": "Flat shoe"
+  },
+  {
+   "id": "1f460",
+   "category": "objects",
+   "name": "High-heeled shoe"
+  },
+  {
+   "id": "1f461",
+   "category": "objects",
+   "name": "Woman’s sandal"
+  },
+  {
+   "id": "1fa70",
+   "category": "objects",
+   "name": "Ballet shoes"
+  },
+  {
+   "id": "1f462",
+   "category": "objects",
+   "name": "Woman’s boot"
+  },
+  {
+   "id": "1faae",
+   "category": "objects",
+   "name": "Hair pick"
+  },
+  {
+   "id": "1f451",
+   "category": "objects",
+   "name": "Crown"
+  },
+  {
+   "id": "1f452",
+   "category": "objects",
+   "name": "Woman’s hat"
+  },
+  {
+   "id": "1f3a9",
+   "category": "objects",
+   "name": "Top hat"
+  },
+  {
+   "id": "1f393",
+   "category": "objects",
+   "name": "Graduation cap"
+  },
+  {
+   "id": "1f9e2",
+   "category": "objects",
+   "name": "Billed cap"
+  },
+  {
+   "id": "1fa96",
+   "category": "objects",
+   "name": "Military helmet"
+  },
+  {
+   "id": "26d1",
+   "category": "objects",
+   "name": "Rescue worker’s helmet"
+  },
+  {
+   "id": "1f484",
+   "category": "objects",
+   "name": "Lipstick"
+  },
+  {
+   "id": "1f48d",
+   "category": "objects",
+   "name": "Ring"
+  },
+  {
+   "id": "1f48e",
+   "category": "objects",
+   "name": "Gem stone"
+  },
+  {
+   "id": "1f507",
+   "category": "objects",
+   "name": "Muted speaker"
+  },
+  {
+   "id": "1f508",
+   "category": "objects",
+   "name": "Speaker low volume"
+  },
+  {
+   "id": "1f509",
+   "category": "objects",
+   "name": "Speaker medium volume"
+  },
+  {
+   "id": "1f50a",
+   "category": "objects",
+   "name": "Speaker high volume"
+  },
+  {
+   "id": "1f4e2",
+   "category": "objects",
+   "name": "Loudspeaker"
+  },
+  {
+   "id": "1f4e3",
+   "category": "objects",
+   "name": "Megaphone"
+  },
+  {
+   "id": "1f4ef",
+   "category": "objects",
+   "name": "Postal horn"
+  },
+  {
+   "id": "1f514",
+   "category": "objects",
+   "name": "Bell"
+  },
+  {
+   "id": "1f515",
+   "category": "objects",
+   "name": "Bell with slash"
+  },
+  {
+   "id": "1f3bc",
+   "category": "objects",
+   "name": "Musical score"
+  },
+  {
+   "id": "1f3b5",
+   "category": "objects",
+   "name": "Musical note"
+  },
+  {
+   "id": "1f3b6",
+   "category": "objects",
+   "name": "Musical notes"
+  },
+  {
+   "id": "1f399",
+   "category": "objects",
+   "name": "Studio microphone"
+  },
+  {
+   "id": "1f39a",
+   "category": "objects",
+   "name": "Level slider"
+  },
+  {
+   "id": "1f39b",
+   "category": "objects",
+   "name": "Control knobs"
+  },
+  {
+   "id": "1f3a4",
+   "category": "objects",
+   "name": "Microphone"
+  },
+  {
+   "id": "1f3a7",
+   "category": "objects",
+   "name": "Headphone"
+  },
+  {
+   "id": "1f4fb",
+   "category": "objects",
+   "name": "Radio"
+  },
+  {
+   "id": "1f3b7",
+   "category": "objects",
+   "name": "Saxophone"
+  },
+  {
+   "id": "1f3ba",
+   "category": "objects",
+   "name": "Trumpet"
+  },
+  {
+   "id": "1fa8a",
+   "category": "objects",
+   "name": "Trombone"
+  },
+  {
+   "id": "1fa97",
+   "category": "objects",
+   "name": "Accordion"
+  },
+  {
+   "id": "1f3b8",
+   "category": "objects",
+   "name": "Guitar"
+  },
+  {
+   "id": "1f3b9",
+   "category": "objects",
+   "name": "Musical keyboard"
+  },
+  {
+   "id": "1f3bb",
+   "category": "objects",
+   "name": "Violin"
+  },
+  {
+   "id": "1fa95",
+   "category": "objects",
+   "name": "Banjo"
+  },
+  {
+   "id": "1f941",
+   "category": "objects",
+   "name": "Drum"
+  },
+  {
+   "id": "1fa98",
+   "category": "objects",
+   "name": "Long drum"
+  },
+  {
+   "id": "1fa87",
+   "category": "objects",
+   "name": "Maracas"
+  },
+  {
+   "id": "1fa88",
+   "category": "objects",
+   "name": "Flute"
+  },
+  {
+   "id": "1fa89",
+   "category": "objects",
+   "name": "Harp"
+  },
+  {
+   "id": "1f4f1",
+   "category": "objects",
+   "name": "Mobile phone"
+  },
+  {
+   "id": "1f4f2",
+   "category": "objects",
+   "name": "Mobile phone with arrow"
+  },
+  {
+   "id": "260e",
+   "category": "objects",
+   "name": "Telephone"
+  },
+  {
+   "id": "1f4de",
+   "category": "objects",
+   "name": "Telephone receiver"
+  },
+  {
+   "id": "1f4df",
+   "category": "objects",
+   "name": "Pager"
+  },
+  {
+   "id": "1f4e0",
+   "category": "objects",
+   "name": "Fax machine"
+  },
+  {
+   "id": "1f50b",
+   "category": "objects",
+   "name": "Battery"
+  },
+  {
+   "id": "1faab",
+   "category": "objects",
+   "name": "Low battery"
+  },
+  {
+   "id": "1f50c",
+   "category": "objects",
+   "name": "Electric plug"
+  },
+  {
+   "id": "1f4bb",
+   "category": "objects",
+   "name": "Laptop"
+  },
+  {
+   "id": "1f5a5",
+   "category": "objects",
+   "name": "Desktop computer"
+  },
+  {
+   "id": "1f5a8",
+   "category": "objects",
+   "name": "Printer"
+  },
+  {
+   "id": "2328",
+   "category": "objects",
+   "name": "Keyboard"
+  },
+  {
+   "id": "1f5b1",
+   "category": "objects",
+   "name": "Computer mouse"
+  },
+  {
+   "id": "1f5b2",
+   "category": "objects",
+   "name": "Trackball"
+  },
+  {
+   "id": "1f4bd",
+   "category": "objects",
+   "name": "Computer disk"
+  },
+  {
+   "id": "1f4be",
+   "category": "objects",
+   "name": "Floppy disk"
+  },
+  {
+   "id": "1f4bf",
+   "category": "objects",
+   "name": "Optical disk"
+  },
+  {
+   "id": "1f4c0",
+   "category": "objects",
+   "name": "Dvd"
+  },
+  {
+   "id": "1f9ee",
+   "category": "objects",
+   "name": "Abacus"
+  },
+  {
+   "id": "1f3a5",
+   "category": "objects",
+   "name": "Movie camera"
+  },
+  {
+   "id": "1f39e",
+   "category": "objects",
+   "name": "Film frames"
+  },
+  {
+   "id": "1f4fd",
+   "category": "objects",
+   "name": "Film projector"
+  },
+  {
+   "id": "1f3ac",
+   "category": "objects",
+   "name": "Clapper board"
+  },
+  {
+   "id": "1f4fa",
+   "category": "objects",
+   "name": "Television"
+  },
+  {
+   "id": "1f4f7",
+   "category": "objects",
+   "name": "Camera"
+  },
+  {
+   "id": "1f4f8",
+   "category": "objects",
+   "name": "Camera with flash"
+  },
+  {
+   "id": "1f4f9",
+   "category": "objects",
+   "name": "Video camera"
+  },
+  {
+   "id": "1f4fc",
+   "category": "objects",
+   "name": "Videocassette"
+  },
+  {
+   "id": "1f50d",
+   "category": "objects",
+   "name": "Magnifying glass tilted left"
+  },
+  {
+   "id": "1f50e",
+   "category": "objects",
+   "name": "Magnifying glass tilted right"
+  },
+  {
+   "id": "1f56f",
+   "category": "objects",
+   "name": "Candle"
+  },
+  {
+   "id": "1f4a1",
+   "category": "objects",
+   "name": "Light bulb"
+  },
+  {
+   "id": "1f526",
+   "category": "objects",
+   "name": "Flashlight"
+  },
+  {
+   "id": "1f3ee",
+   "category": "objects",
+   "name": "Red paper lantern"
+  },
+  {
+   "id": "1f4d4",
+   "category": "objects",
+   "name": "Notebook with decorative cover"
+  },
+  {
+   "id": "1f4d5",
+   "category": "objects",
+   "name": "Closed book"
+  },
+  {
+   "id": "1f4d6",
+   "category": "objects",
+   "name": "Open book"
+  },
+  {
+   "id": "1f4d7",
+   "category": "objects",
+   "name": "Green book"
+  },
+  {
+   "id": "1f4d8",
+   "category": "objects",
+   "name": "Blue book"
+  },
+  {
+   "id": "1f4d9",
+   "category": "objects",
+   "name": "Orange book"
+  },
+  {
+   "id": "1f4da",
+   "category": "objects",
+   "name": "Books"
+  },
+  {
+   "id": "1f4d3",
+   "category": "objects",
+   "name": "Notebook"
+  },
+  {
+   "id": "1f4d2",
+   "category": "objects",
+   "name": "Ledger"
+  },
+  {
+   "id": "1f4c3",
+   "category": "objects",
+   "name": "Page with curl"
+  },
+  {
+   "id": "1f4dc",
+   "category": "objects",
+   "name": "Scroll"
+  },
+  {
+   "id": "1f4c4",
+   "category": "objects",
+   "name": "Page facing up"
+  },
+  {
+   "id": "1f4f0",
+   "category": "objects",
+   "name": "Newspaper"
+  },
+  {
+   "id": "1f5de",
+   "category": "objects",
+   "name": "Rolled-up newspaper"
+  },
+  {
+   "id": "1f4d1",
+   "category": "objects",
+   "name": "Bookmark tabs"
+  },
+  {
+   "id": "1f516",
+   "category": "objects",
+   "name": "Bookmark"
+  },
+  {
+   "id": "1f3f7",
+   "category": "objects",
+   "name": "Label"
+  },
+  {
+   "id": "1fa99",
+   "category": "objects",
+   "name": "Coin"
+  },
+  {
+   "id": "1f4b0",
+   "category": "objects",
+   "name": "Money bag"
+  },
+  {
+   "id": "1fa8e",
+   "category": "objects",
+   "name": "Treasure chest"
+  },
+  {
+   "id": "1f4b4",
+   "category": "objects",
+   "name": "Yen banknote"
+  },
+  {
+   "id": "1f4b5",
+   "category": "objects",
+   "name": "Dollar banknote"
+  },
+  {
+   "id": "1f4b6",
+   "category": "objects",
+   "name": "Euro banknote"
+  },
+  {
+   "id": "1f4b7",
+   "category": "objects",
+   "name": "Pound banknote"
+  },
+  {
+   "id": "1f4b8",
+   "category": "objects",
+   "name": "Money with wings"
+  },
+  {
+   "id": "1f4b3",
+   "category": "objects",
+   "name": "Credit card"
+  },
+  {
+   "id": "1f9fe",
+   "category": "objects",
+   "name": "Receipt"
+  },
+  {
+   "id": "1f4b9",
+   "category": "objects",
+   "name": "Chart increasing with yen"
+  },
+  {
+   "id": "2709",
+   "category": "objects",
+   "name": "Envelope"
+  },
+  {
+   "id": "1f4e7",
+   "category": "objects",
+   "name": "E-mail"
+  },
+  {
+   "id": "1f4e8",
+   "category": "objects",
+   "name": "Incoming envelope"
+  },
+  {
+   "id": "1f4e9",
+   "category": "objects",
+   "name": "Envelope with arrow"
+  },
+  {
+   "id": "1f4e4",
+   "category": "objects",
+   "name": "Outbox tray"
+  },
+  {
+   "id": "1f4e5",
+   "category": "objects",
+   "name": "Inbox tray"
+  },
+  {
+   "id": "1f4e6",
+   "category": "objects",
+   "name": "Package"
+  },
+  {
+   "id": "1f4eb",
+   "category": "objects",
+   "name": "Closed mailbox with raised flag"
+  },
+  {
+   "id": "1f4ea",
+   "category": "objects",
+   "name": "Closed mailbox with lowered flag"
+  },
+  {
+   "id": "1f4ec",
+   "category": "objects",
+   "name": "Open mailbox with raised flag"
+  },
+  {
+   "id": "1f4ed",
+   "category": "objects",
+   "name": "Open mailbox with lowered flag"
+  },
+  {
+   "id": "1f4ee",
+   "category": "objects",
+   "name": "Postbox"
+  },
+  {
+   "id": "1f5f3",
+   "category": "objects",
+   "name": "Ballot box with ballot"
+  },
+  {
+   "id": "270f",
+   "category": "objects",
+   "name": "Pencil"
+  },
+  {
+   "id": "2712",
+   "category": "objects",
+   "name": "Black nib"
+  },
+  {
+   "id": "1f58b",
+   "category": "objects",
+   "name": "Fountain pen"
+  },
+  {
+   "id": "1f58a",
+   "category": "objects",
+   "name": "Pen"
+  },
+  {
+   "id": "1f58c",
+   "category": "objects",
+   "name": "Paintbrush"
+  },
+  {
+   "id": "1f58d",
+   "category": "objects",
+   "name": "Crayon"
+  },
+  {
+   "id": "1f4dd",
+   "category": "objects",
+   "name": "Memo"
+  },
+  {
+   "id": "1fa8c",
+   "category": "objects",
+   "name": "Eraser"
+  },
+  {
+   "id": "1f4bc",
+   "category": "objects",
+   "name": "Briefcase"
+  },
+  {
+   "id": "1f4c1",
+   "category": "objects",
+   "name": "File folder"
+  },
+  {
+   "id": "1f4c2",
+   "category": "objects",
+   "name": "Open file folder"
+  },
+  {
+   "id": "1f5c2",
+   "category": "objects",
+   "name": "Card index dividers"
+  },
+  {
+   "id": "1f4c5",
+   "category": "objects",
+   "name": "Calendar"
+  },
+  {
+   "id": "1f4c6",
+   "category": "objects",
+   "name": "Tear-off calendar"
+  },
+  {
+   "id": "1f5d2",
+   "category": "objects",
+   "name": "Spiral notepad"
+  },
+  {
+   "id": "1f5d3",
+   "category": "objects",
+   "name": "Spiral calendar"
+  },
+  {
+   "id": "1f4c7",
+   "category": "objects",
+   "name": "Card index"
+  },
+  {
+   "id": "1f4c8",
+   "category": "objects",
+   "name": "Chart increasing"
+  },
+  {
+   "id": "1f4c9",
+   "category": "objects",
+   "name": "Chart decreasing"
+  },
+  {
+   "id": "1f4ca",
+   "category": "objects",
+   "name": "Bar chart"
+  },
+  {
+   "id": "1f4cb",
+   "category": "objects",
+   "name": "Clipboard"
+  },
+  {
+   "id": "1f4cc",
+   "category": "objects",
+   "name": "Pushpin"
+  },
+  {
+   "id": "1f4cd",
+   "category": "objects",
+   "name": "Round pushpin"
+  },
+  {
+   "id": "1f4ce",
+   "category": "objects",
+   "name": "Paperclip"
+  },
+  {
+   "id": "1f587",
+   "category": "objects",
+   "name": "Linked paperclips"
+  },
+  {
+   "id": "1f4cf",
+   "category": "objects",
+   "name": "Straight ruler"
+  },
+  {
+   "id": "1f4d0",
+   "category": "objects",
+   "name": "Triangular ruler"
+  },
+  {
+   "id": "2702",
+   "category": "objects",
+   "name": "Scissors"
+  },
+  {
+   "id": "1f5c3",
+   "category": "objects",
+   "name": "Card file box"
+  },
+  {
+   "id": "1f5c4",
+   "category": "objects",
+   "name": "File cabinet"
+  },
+  {
+   "id": "1f5d1",
+   "category": "objects",
+   "name": "Wastebasket"
+  },
+  {
+   "id": "1f512",
+   "category": "objects",
+   "name": "Locked"
+  },
+  {
+   "id": "1f513",
+   "category": "objects",
+   "name": "Unlocked"
+  },
+  {
+   "id": "1f50f",
+   "category": "objects",
+   "name": "Locked with pen"
+  },
+  {
+   "id": "1f510",
+   "category": "objects",
+   "name": "Locked with key"
+  },
+  {
+   "id": "1f511",
+   "category": "objects",
+   "name": "Key"
+  },
+  {
+   "id": "1f5dd",
+   "category": "objects",
+   "name": "Old key"
+  },
+  {
+   "id": "1fa8d",
+   "category": "objects",
+   "name": "Net with handle"
+  },
+  {
+   "id": "1f528",
+   "category": "objects",
+   "name": "Hammer"
+  },
+  {
+   "id": "1fa93",
+   "category": "objects",
+   "name": "Axe"
+  },
+  {
+   "id": "26cf",
+   "category": "objects",
+   "name": "Pick"
+  },
+  {
+   "id": "2692",
+   "category": "objects",
+   "name": "Hammer and pick"
+  },
+  {
+   "id": "1f6e0",
+   "category": "objects",
+   "name": "Hammer and wrench"
+  },
+  {
+   "id": "1f5e1",
+   "category": "objects",
+   "name": "Dagger"
+  },
+  {
+   "id": "2694",
+   "category": "objects",
+   "name": "Crossed swords"
+  },
+  {
+   "id": "1f4a3",
+   "category": "objects",
+   "name": "Bomb"
+  },
+  {
+   "id": "1fa83",
+   "category": "objects",
+   "name": "Boomerang"
+  },
+  {
+   "id": "1f3f9",
+   "category": "objects",
+   "name": "Bow and arrow"
+  },
+  {
+   "id": "1f6e1",
+   "category": "objects",
+   "name": "Shield"
+  },
+  {
+   "id": "1fa9a",
+   "category": "objects",
+   "name": "Carpentry saw"
+  },
+  {
+   "id": "1f527",
+   "category": "objects",
+   "name": "Wrench"
+  },
+  {
+   "id": "1fa9b",
+   "category": "objects",
+   "name": "Screwdriver"
+  },
+  {
+   "id": "1f529",
+   "category": "objects",
+   "name": "Nut and bolt"
+  },
+  {
+   "id": "2699",
+   "category": "objects",
+   "name": "Gear"
+  },
+  {
+   "id": "1f5dc",
+   "category": "objects",
+   "name": "Clamp"
+  },
+  {
+   "id": "2696",
+   "category": "objects",
+   "name": "Balance scale"
+  },
+  {
+   "id": "1f9af",
+   "category": "objects",
+   "name": "White cane"
+  },
+  {
+   "id": "1f517",
+   "category": "objects",
+   "name": "Link"
+  },
+  {
+   "id": "26d3_200d_1f4a5",
+   "category": "objects",
+   "name": "Broken chain"
+  },
+  {
+   "id": "26d3",
+   "category": "objects",
+   "name": "Chains"
+  },
+  {
+   "id": "1fa9d",
+   "category": "objects",
+   "name": "Hook"
+  },
+  {
+   "id": "1f9f0",
+   "category": "objects",
+   "name": "Toolbox"
+  },
+  {
+   "id": "1f9f2",
+   "category": "objects",
+   "name": "Magnet"
+  },
+  {
+   "id": "1fa9c",
+   "category": "objects",
+   "name": "Ladder"
+  },
+  {
+   "id": "1fa8f",
+   "category": "objects",
+   "name": "Shovel"
+  },
+  {
+   "id": "2697",
+   "category": "objects",
+   "name": "Alembic"
+  },
+  {
+   "id": "1f9ea",
+   "category": "objects",
+   "name": "Test tube"
+  },
+  {
+   "id": "1f9eb",
+   "category": "objects",
+   "name": "Petri dish"
+  },
+  {
+   "id": "1f9ec",
+   "category": "objects",
+   "name": "Dna"
+  },
+  {
+   "id": "1f52c",
+   "category": "objects",
+   "name": "Microscope"
+  },
+  {
+   "id": "1f52d",
+   "category": "objects",
+   "name": "Telescope"
+  },
+  {
+   "id": "1f4e1",
+   "category": "objects",
+   "name": "Satellite antenna"
+  },
+  {
+   "id": "1f489",
+   "category": "objects",
+   "name": "Syringe"
+  },
+  {
+   "id": "1fa78",
+   "category": "objects",
+   "name": "Drop of blood"
+  },
+  {
+   "id": "1f48a",
+   "category": "objects",
+   "name": "Pill"
+  },
+  {
+   "id": "1fa79",
+   "category": "objects",
+   "name": "Adhesive bandage"
+  },
+  {
+   "id": "1fa7c",
+   "category": "objects",
+   "name": "Crutch"
+  },
+  {
+   "id": "1fa7a",
+   "category": "objects",
+   "name": "Stethoscope"
+  },
+  {
+   "id": "1fa7b",
+   "category": "objects",
+   "name": "X-ray"
+  },
+  {
+   "id": "1f6aa",
+   "category": "objects",
+   "name": "Door"
+  },
+  {
+   "id": "1f6d7",
+   "category": "objects",
+   "name": "Elevator"
+  },
+  {
+   "id": "1fa9e",
+   "category": "objects",
+   "name": "Mirror"
+  },
+  {
+   "id": "1fa9f",
+   "category": "objects",
+   "name": "Window"
+  },
+  {
+   "id": "1f6cf",
+   "category": "objects",
+   "name": "Bed"
+  },
+  {
+   "id": "1f6cb",
+   "category": "objects",
+   "name": "Couch and lamp"
+  },
+  {
+   "id": "1fa91",
+   "category": "objects",
+   "name": "Chair"
+  },
+  {
+   "id": "1f6bd",
+   "category": "objects",
+   "name": "Toilet"
+  },
+  {
+   "id": "1faa0",
+   "category": "objects",
+   "name": "Plunger"
+  },
+  {
+   "id": "1f6bf",
+   "category": "objects",
+   "name": "Shower"
+  },
+  {
+   "id": "1f6c1",
+   "category": "objects",
+   "name": "Bathtub"
+  },
+  {
+   "id": "1faa4",
+   "category": "objects",
+   "name": "Mouse trap"
+  },
+  {
+   "id": "1fa92",
+   "category": "objects",
+   "name": "Razor"
+  },
+  {
+   "id": "1f9f4",
+   "category": "objects",
+   "name": "Lotion bottle"
+  },
+  {
+   "id": "1f9f7",
+   "category": "objects",
+   "name": "Safety pin"
+  },
+  {
+   "id": "1f9f9",
+   "category": "objects",
+   "name": "Broom"
+  },
+  {
+   "id": "1f9fa",
+   "category": "objects",
+   "name": "Basket"
+  },
+  {
+   "id": "1f9fb",
+   "category": "objects",
+   "name": "Roll of paper"
+  },
+  {
+   "id": "1faa3",
+   "category": "objects",
+   "name": "Bucket"
+  },
+  {
+   "id": "1f9fc",
+   "category": "objects",
+   "name": "Soap"
+  },
+  {
+   "id": "1fae7",
+   "category": "objects",
+   "name": "Bubbles"
+  },
+  {
+   "id": "1faa5",
+   "category": "objects",
+   "name": "Toothbrush"
+  },
+  {
+   "id": "1f9fd",
+   "category": "objects",
+   "name": "Sponge"
+  },
+  {
+   "id": "1f9ef",
+   "category": "objects",
+   "name": "Fire extinguisher"
+  },
+  {
+   "id": "1f6d2",
+   "category": "objects",
+   "name": "Shopping cart"
+  },
+  {
+   "id": "1f6ac",
+   "category": "objects",
+   "name": "Cigarette"
+  },
+  {
+   "id": "26b0",
+   "category": "objects",
+   "name": "Coffin"
+  },
+  {
+   "id": "1faa6",
+   "category": "objects",
+   "name": "Headstone"
+  },
+  {
+   "id": "26b1",
+   "category": "objects",
+   "name": "Funeral urn"
+  },
+  {
+   "id": "1faac",
+   "category": "objects",
+   "name": "Hamsa"
+  },
+  {
+   "id": "1f5ff",
+   "category": "objects",
+   "name": "Moai"
+  },
+  {
+   "id": "1faa7",
+   "category": "objects",
+   "name": "Placard"
+  },
+  {
+   "id": "1faaa",
+   "category": "objects",
+   "name": "Identification card"
+  },
+  {
+   "id": "1f3e7",
+   "category": "symbols",
+   "name": "ATM sign"
+  },
+  {
+   "id": "1f6ae",
+   "category": "symbols",
+   "name": "Litter in bin sign"
+  },
+  {
+   "id": "1f6b0",
+   "category": "symbols",
+   "name": "Potable water"
+  },
+  {
+   "id": "267f",
+   "category": "symbols",
+   "name": "Wheelchair symbol"
+  },
+  {
+   "id": "1f6b9",
+   "category": "symbols",
+   "name": "Men’s room"
+  },
+  {
+   "id": "1f6ba",
+   "category": "symbols",
+   "name": "Women’s room"
+  },
+  {
+   "id": "1f6bb",
+   "category": "symbols",
+   "name": "Restroom"
+  },
+  {
+   "id": "1f6bc",
+   "category": "symbols",
+   "name": "Baby symbol"
+  },
+  {
+   "id": "1f6be",
+   "category": "symbols",
+   "name": "Water closet"
+  },
+  {
+   "id": "1f6c2",
+   "category": "symbols",
+   "name": "Passport control"
+  },
+  {
+   "id": "1f6c3",
+   "category": "symbols",
+   "name": "Customs"
+  },
+  {
+   "id": "1f6c4",
+   "category": "symbols",
+   "name": "Baggage claim"
+  },
+  {
+   "id": "1f6c5",
+   "category": "symbols",
+   "name": "Left luggage"
+  },
+  {
+   "id": "26a0",
+   "category": "symbols",
+   "name": "Warning"
+  },
+  {
+   "id": "1f6b8",
+   "category": "symbols",
+   "name": "Children crossing"
+  },
+  {
+   "id": "26d4",
+   "category": "symbols",
+   "name": "No entry"
+  },
+  {
+   "id": "1f6ab",
+   "category": "symbols",
+   "name": "Prohibited"
+  },
+  {
+   "id": "1f6b3",
+   "category": "symbols",
+   "name": "No bicycles"
+  },
+  {
+   "id": "1f6ad",
+   "category": "symbols",
+   "name": "No smoking"
+  },
+  {
+   "id": "1f6af",
+   "category": "symbols",
+   "name": "No littering"
+  },
+  {
+   "id": "1f6b1",
+   "category": "symbols",
+   "name": "Non-potable water"
+  },
+  {
+   "id": "1f6b7",
+   "category": "symbols",
+   "name": "No pedestrians"
+  },
+  {
+   "id": "1f4f5",
+   "category": "symbols",
+   "name": "No mobile phones"
+  },
+  {
+   "id": "1f51e",
+   "category": "symbols",
+   "name": "No one under eighteen"
+  },
+  {
+   "id": "2622",
+   "category": "symbols",
+   "name": "Radioactive"
+  },
+  {
+   "id": "2623",
+   "category": "symbols",
+   "name": "Biohazard"
+  },
+  {
+   "id": "2b06",
+   "category": "symbols",
+   "name": "Up arrow"
+  },
+  {
+   "id": "2197",
+   "category": "symbols",
+   "name": "Up-right arrow"
+  },
+  {
+   "id": "27a1",
+   "category": "symbols",
+   "name": "Right arrow"
+  },
+  {
+   "id": "2198",
+   "category": "symbols",
+   "name": "Down-right arrow"
+  },
+  {
+   "id": "2b07",
+   "category": "symbols",
+   "name": "Down arrow"
+  },
+  {
+   "id": "2199",
+   "category": "symbols",
+   "name": "Down-left arrow"
+  },
+  {
+   "id": "2b05",
+   "category": "symbols",
+   "name": "Left arrow"
+  },
+  {
+   "id": "2196",
+   "category": "symbols",
+   "name": "Up-left arrow"
+  },
+  {
+   "id": "2195",
+   "category": "symbols",
+   "name": "Up-down arrow"
+  },
+  {
+   "id": "2194",
+   "category": "symbols",
+   "name": "Left-right arrow"
+  },
+  {
+   "id": "21a9",
+   "category": "symbols",
+   "name": "Right arrow curving left"
+  },
+  {
+   "id": "21aa",
+   "category": "symbols",
+   "name": "Left arrow curving right"
+  },
+  {
+   "id": "2934",
+   "category": "symbols",
+   "name": "Right arrow curving up"
+  },
+  {
+   "id": "2935",
+   "category": "symbols",
+   "name": "Right arrow curving down"
+  },
+  {
+   "id": "1f503",
+   "category": "symbols",
+   "name": "Clockwise vertical arrows"
+  },
+  {
+   "id": "1f504",
+   "category": "symbols",
+   "name": "Counterclockwise arrows button"
+  },
+  {
+   "id": "1f519",
+   "category": "symbols",
+   "name": "BACK arrow"
+  },
+  {
+   "id": "1f51a",
+   "category": "symbols",
+   "name": "END arrow"
+  },
+  {
+   "id": "1f51b",
+   "category": "symbols",
+   "name": "ON! arrow"
+  },
+  {
+   "id": "1f51c",
+   "category": "symbols",
+   "name": "SOON arrow"
+  },
+  {
+   "id": "1f51d",
+   "category": "symbols",
+   "name": "TOP arrow"
+  },
+  {
+   "id": "269b",
+   "category": "symbols",
+   "name": "Atom symbol"
+  },
+  {
+   "id": "2721",
+   "category": "symbols",
+   "name": "Star of David"
+  },
+  {
+   "id": "262e",
+   "category": "symbols",
+   "name": "Peace symbol"
+  },
+  {
+   "id": "1f54e",
+   "category": "symbols",
+   "name": "Menorah"
+  },
+  {
+   "id": "1f52f",
+   "category": "symbols",
+   "name": "Dotted six-pointed star"
+  },
+  {
+   "id": "2648",
+   "category": "symbols",
+   "name": "Aries"
+  },
+  {
+   "id": "2649",
+   "category": "symbols",
+   "name": "Taurus"
+  },
+  {
+   "id": "264a",
+   "category": "symbols",
+   "name": "Gemini"
+  },
+  {
+   "id": "264b",
+   "category": "symbols",
+   "name": "Cancer"
+  },
+  {
+   "id": "264c",
+   "category": "symbols",
+   "name": "Leo"
+  },
+  {
+   "id": "264d",
+   "category": "symbols",
+   "name": "Virgo"
+  },
+  {
+   "id": "264e",
+   "category": "symbols",
+   "name": "Libra"
+  },
+  {
+   "id": "264f",
+   "category": "symbols",
+   "name": "Scorpio"
+  },
+  {
+   "id": "2650",
+   "category": "symbols",
+   "name": "Sagittarius"
+  },
+  {
+   "id": "2651",
+   "category": "symbols",
+   "name": "Capricorn"
+  },
+  {
+   "id": "2652",
+   "category": "symbols",
+   "name": "Aquarius"
+  },
+  {
+   "id": "2653",
+   "category": "symbols",
+   "name": "Pisces"
+  },
+  {
+   "id": "26ce",
+   "category": "symbols",
+   "name": "Ophiuchus"
+  },
+  {
+   "id": "1f500",
+   "category": "symbols",
+   "name": "Shuffle tracks button"
+  },
+  {
+   "id": "1f501",
+   "category": "symbols",
+   "name": "Repeat button"
+  },
+  {
+   "id": "1f502",
+   "category": "symbols",
+   "name": "Repeat single button"
+  },
+  {
+   "id": "25b6",
+   "category": "symbols",
+   "name": "Play button"
+  },
+  {
+   "id": "23e9",
+   "category": "symbols",
+   "name": "Fast-forward button"
+  },
+  {
+   "id": "23ed",
+   "category": "symbols",
+   "name": "Next track button"
+  },
+  {
+   "id": "23ef",
+   "category": "symbols",
+   "name": "Play or pause button"
+  },
+  {
+   "id": "25c0",
+   "category": "symbols",
+   "name": "Reverse button"
+  },
+  {
+   "id": "23ea",
+   "category": "symbols",
+   "name": "Fast reverse button"
+  },
+  {
+   "id": "23ee",
+   "category": "symbols",
+   "name": "Last track button"
+  },
+  {
+   "id": "1f53c",
+   "category": "symbols",
+   "name": "Upwards button"
+  },
+  {
+   "id": "23eb",
+   "category": "symbols",
+   "name": "Fast up button"
+  },
+  {
+   "id": "1f53d",
+   "category": "symbols",
+   "name": "Downwards button"
+  },
+  {
+   "id": "23ec",
+   "category": "symbols",
+   "name": "Fast down button"
+  },
+  {
+   "id": "23f8",
+   "category": "symbols",
+   "name": "Pause button"
+  },
+  {
+   "id": "23f9",
+   "category": "symbols",
+   "name": "Stop button"
+  },
+  {
+   "id": "23fa",
+   "category": "symbols",
+   "name": "Record button"
+  },
+  {
+   "id": "23cf",
+   "category": "symbols",
+   "name": "Eject button"
+  },
+  {
+   "id": "1f3a6",
+   "category": "symbols",
+   "name": "Cinema"
+  },
+  {
+   "id": "1f505",
+   "category": "symbols",
+   "name": "Dim button"
+  },
+  {
+   "id": "1f506",
+   "category": "symbols",
+   "name": "Bright button"
+  },
+  {
+   "id": "1f4f6",
+   "category": "symbols",
+   "name": "Antenna bars"
+  },
+  {
+   "id": "1f6dc",
+   "category": "symbols",
+   "name": "Wireless"
+  },
+  {
+   "id": "1f4f3",
+   "category": "symbols",
+   "name": "Vibration mode"
+  },
+  {
+   "id": "1f4f4",
+   "category": "symbols",
+   "name": "Mobile phone off"
+  },
+  {
+   "id": "2640",
+   "category": "symbols",
+   "name": "Female sign"
+  },
+  {
+   "id": "2642",
+   "category": "symbols",
+   "name": "Male sign"
+  },
+  {
+   "id": "2716",
+   "category": "symbols",
+   "name": "Multiply"
+  },
+  {
+   "id": "2795",
+   "category": "symbols",
+   "name": "Plus"
+  },
+  {
+   "id": "2796",
+   "category": "symbols",
+   "name": "Minus"
+  },
+  {
+   "id": "2797",
+   "category": "symbols",
+   "name": "Divide"
+  },
+  {
+   "id": "1f7f0",
+   "category": "symbols",
+   "name": "Heavy equals sign"
+  },
+  {
+   "id": "267e",
+   "category": "symbols",
+   "name": "Infinity"
+  },
+  {
+   "id": "203c",
+   "category": "symbols",
+   "name": "Double exclamation mark"
+  },
+  {
+   "id": "2049",
+   "category": "symbols",
+   "name": "Exclamation question mark"
+  },
+  {
+   "id": "2753",
+   "category": "symbols",
+   "name": "Red question mark"
+  },
+  {
+   "id": "2754",
+   "category": "symbols",
+   "name": "White question mark"
+  },
+  {
+   "id": "2755",
+   "category": "symbols",
+   "name": "White exclamation mark"
+  },
+  {
+   "id": "2757",
+   "category": "symbols",
+   "name": "Red exclamation mark"
+  },
+  {
+   "id": "3030",
+   "category": "symbols",
+   "name": "Wavy dash"
+  },
+  {
+   "id": "1f4b1",
+   "category": "symbols",
+   "name": "Currency exchange"
+  },
+  {
+   "id": "1f4b2",
+   "category": "symbols",
+   "name": "Heavy dollar sign"
+  },
+  {
+   "id": "2695",
+   "category": "symbols",
+   "name": "Medical symbol"
+  },
+  {
+   "id": "267b",
+   "category": "symbols",
+   "name": "Recycling symbol"
+  },
+  {
+   "id": "269c",
+   "category": "symbols",
+   "name": "Fleur-de-lis"
+  },
+  {
+   "id": "1f531",
+   "category": "symbols",
+   "name": "Trident emblem"
+  },
+  {
+   "id": "1f4db",
+   "category": "symbols",
+   "name": "Name badge"
+  },
+  {
+   "id": "1f530",
+   "category": "symbols",
+   "name": "Japanese symbol for beginner"
+  },
+  {
+   "id": "2b55",
+   "category": "symbols",
+   "name": "Hollow red circle"
+  },
+  {
+   "id": "2705",
+   "category": "symbols",
+   "name": "Check mark button"
+  },
+  {
+   "id": "2611",
+   "category": "symbols",
+   "name": "Check box with check"
+  },
+  {
+   "id": "2714",
+   "category": "symbols",
+   "name": "Check mark"
+  },
+  {
+   "id": "274c",
+   "category": "symbols",
+   "name": "Cross mark"
+  },
+  {
+   "id": "274e",
+   "category": "symbols",
+   "name": "Cross mark button"
+  },
+  {
+   "id": "27b0",
+   "category": "symbols",
+   "name": "Curly loop"
+  },
+  {
+   "id": "27bf",
+   "category": "symbols",
+   "name": "Double curly loop"
+  },
+  {
+   "id": "303d",
+   "category": "symbols",
+   "name": "Part alternation mark"
+  },
+  {
+   "id": "2733",
+   "category": "symbols",
+   "name": "Eight-spoked asterisk"
+  },
+  {
+   "id": "2734",
+   "category": "symbols",
+   "name": "Eight-pointed star"
+  },
+  {
+   "id": "2747",
+   "category": "symbols",
+   "name": "Sparkle"
+  },
+  {
+   "id": "00a9",
+   "category": "symbols",
+   "name": "Copyright"
+  },
+  {
+   "id": "00ae",
+   "category": "symbols",
+   "name": "Registered"
+  },
+  {
+   "id": "2122",
+   "category": "symbols",
+   "name": "Trade mark"
+  },
+  {
+   "id": "1fadf",
+   "category": "symbols",
+   "name": "Splatter"
+  },
+  {
+   "id": "0023_20e3",
+   "category": "symbols",
+   "name": "Keycap: #"
+  },
+  {
+   "id": "002a_20e3",
+   "category": "symbols",
+   "name": "Keycap: *"
+  },
+  {
+   "id": "0030_20e3",
+   "category": "symbols",
+   "name": "Keycap: 0"
+  },
+  {
+   "id": "0031_20e3",
+   "category": "symbols",
+   "name": "Keycap: 1"
+  },
+  {
+   "id": "0032_20e3",
+   "category": "symbols",
+   "name": "Keycap: 2"
+  },
+  {
+   "id": "0033_20e3",
+   "category": "symbols",
+   "name": "Keycap: 3"
+  },
+  {
+   "id": "0034_20e3",
+   "category": "symbols",
+   "name": "Keycap: 4"
+  },
+  {
+   "id": "0035_20e3",
+   "category": "symbols",
+   "name": "Keycap: 5"
+  },
+  {
+   "id": "0036_20e3",
+   "category": "symbols",
+   "name": "Keycap: 6"
+  },
+  {
+   "id": "0037_20e3",
+   "category": "symbols",
+   "name": "Keycap: 7"
+  },
+  {
+   "id": "0038_20e3",
+   "category": "symbols",
+   "name": "Keycap: 8"
+  },
+  {
+   "id": "0039_20e3",
+   "category": "symbols",
+   "name": "Keycap: 9"
+  },
+  {
+   "id": "1f51f",
+   "category": "symbols",
+   "name": "Keycap: 10"
+  },
+  {
+   "id": "1f520",
+   "category": "symbols",
+   "name": "Input latin uppercase"
+  },
+  {
+   "id": "1f521",
+   "category": "symbols",
+   "name": "Input latin lowercase"
+  },
+  {
+   "id": "1f522",
+   "category": "symbols",
+   "name": "Input numbers"
+  },
+  {
+   "id": "1f523",
+   "category": "symbols",
+   "name": "Input symbols"
+  },
+  {
+   "id": "1f524",
+   "category": "symbols",
+   "name": "Input latin letters"
+  },
+  {
+   "id": "1f170",
+   "category": "symbols",
+   "name": "A button (blood type)"
+  },
+  {
+   "id": "1f18e",
+   "category": "symbols",
+   "name": "AB button (blood type)"
+  },
+  {
+   "id": "1f171",
+   "category": "symbols",
+   "name": "B button (blood type)"
+  },
+  {
+   "id": "1f191",
+   "category": "symbols",
+   "name": "CL button"
+  },
+  {
+   "id": "1f192",
+   "category": "symbols",
+   "name": "COOL button"
+  },
+  {
+   "id": "1f193",
+   "category": "symbols",
+   "name": "FREE button"
+  },
+  {
+   "id": "2139",
+   "category": "symbols",
+   "name": "Information"
+  },
+  {
+   "id": "1f194",
+   "category": "symbols",
+   "name": "ID button"
+  },
+  {
+   "id": "24c2",
+   "category": "symbols",
+   "name": "Circled M"
+  },
+  {
+   "id": "1f195",
+   "category": "symbols",
+   "name": "NEW button"
+  },
+  {
+   "id": "1f196",
+   "category": "symbols",
+   "name": "NG button"
+  },
+  {
+   "id": "1f17e",
+   "category": "symbols",
+   "name": "O button (blood type)"
+  },
+  {
+   "id": "1f197",
+   "category": "symbols",
+   "name": "OK button"
+  },
+  {
+   "id": "1f17f",
+   "category": "symbols",
+   "name": "P button"
+  },
+  {
+   "id": "1f198",
+   "category": "symbols",
+   "name": "SOS button"
+  },
+  {
+   "id": "1f199",
+   "category": "symbols",
+   "name": "UP! button"
+  },
+  {
+   "id": "1f19a",
+   "category": "symbols",
+   "name": "VS button"
+  },
+  {
+   "id": "1f201",
+   "category": "symbols",
+   "name": "Japanese “here” button"
+  },
+  {
+   "id": "1f202",
+   "category": "symbols",
+   "name": "Japanese “service charge” button"
+  },
+  {
+   "id": "1f237",
+   "category": "symbols",
+   "name": "Japanese “monthly amount” button"
+  },
+  {
+   "id": "1f236",
+   "category": "symbols",
+   "name": "Japanese “not free of charge” button"
+  },
+  {
+   "id": "1f22f",
+   "category": "symbols",
+   "name": "Japanese “reserved” button"
+  },
+  {
+   "id": "1f250",
+   "category": "symbols",
+   "name": "Japanese “bargain” button"
+  },
+  {
+   "id": "1f239",
+   "category": "symbols",
+   "name": "Japanese “discount” button"
+  },
+  {
+   "id": "1f21a",
+   "category": "symbols",
+   "name": "Japanese “free of charge” button"
+  },
+  {
+   "id": "1f232",
+   "category": "symbols",
+   "name": "Japanese “prohibited” button"
+  },
+  {
+   "id": "1f251",
+   "category": "symbols",
+   "name": "Japanese “acceptable” button"
+  },
+  {
+   "id": "1f238",
+   "category": "symbols",
+   "name": "Japanese “application” button"
+  },
+  {
+   "id": "1f234",
+   "category": "symbols",
+   "name": "Japanese “passing grade” button"
+  },
+  {
+   "id": "1f233",
+   "category": "symbols",
+   "name": "Japanese “vacancy” button"
+  },
+  {
+   "id": "3297",
+   "category": "symbols",
+   "name": "Japanese “congratulations” button"
+  },
+  {
+   "id": "3299",
+   "category": "symbols",
+   "name": "Japanese “secret” button"
+  },
+  {
+   "id": "1f23a",
+   "category": "symbols",
+   "name": "Japanese “open for business” button"
+  },
+  {
+   "id": "1f235",
+   "category": "symbols",
+   "name": "Japanese “no vacancy” button"
+  },
+  {
+   "id": "1f534",
+   "category": "symbols",
+   "name": "Red circle"
+  },
+  {
+   "id": "1f7e0",
+   "category": "symbols",
+   "name": "Orange circle"
+  },
+  {
+   "id": "1f7e1",
+   "category": "symbols",
+   "name": "Yellow circle"
+  },
+  {
+   "id": "1f7e2",
+   "category": "symbols",
+   "name": "Green circle"
+  },
+  {
+   "id": "1f535",
+   "category": "symbols",
+   "name": "Blue circle"
+  },
+  {
+   "id": "1f7e3",
+   "category": "symbols",
+   "name": "Purple circle"
+  },
+  {
+   "id": "1f7e4",
+   "category": "symbols",
+   "name": "Brown circle"
+  },
+  {
+   "id": "26ab",
+   "category": "symbols",
+   "name": "Black circle"
+  },
+  {
+   "id": "26aa",
+   "category": "symbols",
+   "name": "White circle"
+  },
+  {
+   "id": "1f7e5",
+   "category": "symbols",
+   "name": "Red square"
+  },
+  {
+   "id": "1f7e7",
+   "category": "symbols",
+   "name": "Orange square"
+  },
+  {
+   "id": "1f7e8",
+   "category": "symbols",
+   "name": "Yellow square"
+  },
+  {
+   "id": "1f7e9",
+   "category": "symbols",
+   "name": "Green square"
+  },
+  {
+   "id": "1f7e6",
+   "category": "symbols",
+   "name": "Blue square"
+  },
+  {
+   "id": "1f7ea",
+   "category": "symbols",
+   "name": "Purple square"
+  },
+  {
+   "id": "1f7eb",
+   "category": "symbols",
+   "name": "Brown square"
+  },
+  {
+   "id": "2b1b",
+   "category": "symbols",
+   "name": "Black large square"
+  },
+  {
+   "id": "2b1c",
+   "category": "symbols",
+   "name": "White large square"
+  },
+  {
+   "id": "25fc",
+   "category": "symbols",
+   "name": "Black medium square"
+  },
+  {
+   "id": "25fb",
+   "category": "symbols",
+   "name": "White medium square"
+  },
+  {
+   "id": "25fe",
+   "category": "symbols",
+   "name": "Black medium-small square"
+  },
+  {
+   "id": "25fd",
+   "category": "symbols",
+   "name": "White medium-small square"
+  },
+  {
+   "id": "25aa",
+   "category": "symbols",
+   "name": "Black small square"
+  },
+  {
+   "id": "25ab",
+   "category": "symbols",
+   "name": "White small square"
+  },
+  {
+   "id": "1f536",
+   "category": "symbols",
+   "name": "Large orange diamond"
+  },
+  {
+   "id": "1f537",
+   "category": "symbols",
+   "name": "Large blue diamond"
+  },
+  {
+   "id": "1f538",
+   "category": "symbols",
+   "name": "Small orange diamond"
+  },
+  {
+   "id": "1f539",
+   "category": "symbols",
+   "name": "Small blue diamond"
+  },
+  {
+   "id": "1f53a",
+   "category": "symbols",
+   "name": "Red triangle pointed up"
+  },
+  {
+   "id": "1f53b",
+   "category": "symbols",
+   "name": "Red triangle pointed down"
+  },
+  {
+   "id": "1f4a0",
+   "category": "symbols",
+   "name": "Diamond with a dot"
+  },
+  {
+   "id": "1f518",
+   "category": "symbols",
+   "name": "Radio button"
+  },
+  {
+   "id": "1f533",
+   "category": "symbols",
+   "name": "White square button"
+  },
+  {
+   "id": "1f532",
+   "category": "symbols",
+   "name": "Black square button"
+  },
+  {
+   "id": "1f3c1",
+   "category": "flags",
+   "name": "Chequered flag"
+  },
+  {
+   "id": "1f6a9",
+   "category": "flags",
+   "name": "Triangular flag"
+  },
+  {
+   "id": "1f38c",
+   "category": "flags",
+   "name": "Crossed flags"
+  },
+  {
+   "id": "1f3f4",
+   "category": "flags",
+   "name": "Black flag"
+  },
+  {
+   "id": "1f3f3",
+   "category": "flags",
+   "name": "White flag"
+  },
+  {
+   "id": "1f3f4_200d_2620",
+   "category": "flags",
+   "name": "Pirate flag"
+  },
+  {
+   "id": "1f1ee_1f1f1",
+   "category": "flags",
+   "name": "Flag: Israel"
+  }
+ ]
+}

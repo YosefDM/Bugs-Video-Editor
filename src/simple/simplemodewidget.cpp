@@ -17,6 +17,8 @@
 
 #include "simplemodewidget.h"
 
+#include "collageitemview.h"
+
 #include "Logger.h"
 #include "qmltypes/qmlutilities.h"
 #include "simplecontroller.h"
@@ -37,6 +39,7 @@
 #include <QQuickWidget>
 #include <QResizeEvent>
 #include <QVBoxLayout>
+#include <QtQml/qqml.h>
 
 namespace {
 
@@ -76,6 +79,7 @@ SimpleModeWidget::SimpleModeWidget(QWidget *parent)
     , m_controller(new SimpleController(this))
 {
     loadFonts();
+    qmlRegisterType<CollageItemView>("BugsSimple", 1, 0, "CollageItemView");
     setAcceptDrops(true);
     setFocusPolicy(Qt::StrongFocus);
     setAutoFillBackground(true);
@@ -315,6 +319,14 @@ void SimpleModeWidget::keyPressEvent(QKeyEvent *event)
     case Qt::Key_Space:
         m_controller->togglePlay();
         return;
+    case Qt::Key_Delete:
+    case Qt::Key_Backspace:
+        // Removes the selected text or sticker on a collage.
+        if (m_controller->collageActive() && m_controller->collageSelectedItem() >= 0) {
+            m_controller->removeCollageItem(m_controller->collageSelectedItem());
+            return;
+        }
+        break;
     case Qt::Key_Left:
         m_controller->stepFrames(shift ? -30 : -1);
         return;
