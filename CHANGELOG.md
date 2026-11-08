@@ -5,6 +5,8 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 
 ## Unreleased
 
+## 1.1.0
+
 ### Added
 - **Collages with text and stickers.** Add words, or a ready phrase such as "Mazel Tov!", "מזל טוב" or "Good Shabbos", in six fonts and ten colours, and pick from 1,600 stickers: a Jewish group (Magen David, menorah, candle, kiddush cup, challah, the Israel flag and more), then faces, people, animals, food, celebrations, places, things and symbols. Drag them into place, pull the corner dot to resize, turn them with the knob, bring them to the front or back, or remove them. Anything not tznius or inappropriate is left out, and every figure of a person was checked by eye.
 - Collage spacing and rounded corners sliders, and ten background colours, in place of the three border choices.
