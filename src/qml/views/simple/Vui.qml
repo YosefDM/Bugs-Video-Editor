@@ -13,11 +13,20 @@ Shotcut.VuiBase {
     readonly property real cropY: simple.cropRect.y * frameH
     readonly property real cropW: simple.cropRect.width * frameW
     readonly property real cropH: simple.cropRect.height * frameH
-    readonly property real minSize: 0.05
+    // A fifth of the picture, so the corner handles never pile up on each other.
+    readonly property real minSize: 0.2
 
     onDropped: (drop) => {
         simple.addUrls(drop.urls);
         drop.accept();
+    }
+
+    // With no file open, the player can still hold the last picture it showed, or the full
+    // editor's black frame after Back to Simple. Cover it with the plain background.
+    Rectangle {
+        visible: !simple.hasFile
+        anchors.fill: parent
+        color: "#0B0C0E"
     }
 
     Text {

@@ -837,6 +837,27 @@ private slots:
         QCOMPARE(right.pixelColor(380, 200), QColor(Qt::blue));
     }
 
+    // Pictures too small to preview properly, such as icons, are not opened; real photos are.
+    void tinyPicturesAreNotOpened()
+    {
+        for (int side : {1, 3, 33}) {
+            QImage image(side, side, QImage::Format_RGB32);
+            image.fill(Qt::red);
+            const QString file = path(QStringLiteral("tiny%1.png").arg(side));
+            QVERIFY(image.save(file));
+            Edit edit;
+            QVERIFY(!openMedia(file, &edit));
+        }
+        Edit edit;
+        QVERIFY(openMedia(m_jpg, &edit));
+        // An empty file named like a video is not opened either.
+        const QString empty = path(QStringLiteral("empty.mp4"));
+        QFile file(empty);
+        QVERIFY(file.open(QIODevice::WriteOnly));
+        file.close();
+        QVERIFY(!openMedia(empty, &edit));
+    }
+
     void captionPictureHasText()
     {
         Edit edit;

@@ -54,8 +54,10 @@ Use a real iPhone HEVC video, an Android video, a video received through WhatsAp
 - [ ] Put text on a photo, drag it into place, change its font and colour, and save it
 - [ ] Save a picture from a video
 - [ ] Crop a photo to a square and save it
+- [ ] Open a `.tif` photo (the Linux dev machine can't, for lack of `libtiff.so.5`)
 - [ ] Make a collage from several photos, shuffle it and save it
 - [ ] Light and dark mode switch and are remembered after restarting
+- [ ] No light strip along the bottom edge of the window in Simple mode, with the window not maximised
 - [ ] Combine clips opens Advanced with the file, and Back to Simple returns
 - [ ] Originals are unchanged
 - [ ] A regular Shotcut install on the same machine still works and keeps its own settings

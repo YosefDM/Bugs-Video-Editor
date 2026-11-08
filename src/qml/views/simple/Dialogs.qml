@@ -193,7 +193,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: "Version " + Qt.application.version + " · Created by Yosef"
+                    text: "Version " + Qt.application.version + " · Made for Levi by Yosef"
                     color: root.t.muted
                     font.family: "Inter"
                     font.pixelSize: 12

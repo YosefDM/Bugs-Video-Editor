@@ -242,7 +242,8 @@ private:
     SimpleModeWidget *m_simpleMode{nullptr};
     bool m_simpleCloseConfirmed{false};
     QByteArray m_advancedState;
-    QString m_combineProject; // Advanced's project for the file Simple mode had open
+    QString m_combineProject;    // Advanced's project for the file Simple mode had open
+    QByteArray m_simpleGeometry; // the window's size and place in Simple mode, while in Advanced
     QString m_combineName;
     QToolButton *m_backToSimpleButton{nullptr};
 

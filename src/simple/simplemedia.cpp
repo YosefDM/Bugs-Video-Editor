@@ -223,7 +223,9 @@ bool openMedia(const QString &path, Edit *edit)
         QImageReader reader(result.mediaPath);
         reader.setAutoTransform(true);
         const QImage image = reader.read();
-        if (image.isNull())
+        // Tiny pictures, such as icons, preview as random colour when a side is an odd number of
+        // pixels (seen up to 33). Photos are always far bigger, so they are not opened.
+        if (image.isNull() || image.width() < 64 || image.height() < 64)
             return false;
         result.sourceSize = image.size();
         result.frames = kPhotoFrames;
@@ -330,6 +332,22 @@ QString thumbnailFor(const QString &path)
     return image.convertToFormat(QImage::Format_RGB32).save(target, "JPG", 85) ? target : QString();
 }
 
+namespace {
+// True when every pixel is close to black, as a frame past the end of a video comes out.
+bool isBlack(const QImage &image)
+{
+    const QImage small = image.scaled(16, 16).convertToFormat(QImage::Format_RGB32);
+    for (int y = 0; y < small.height(); ++y) {
+        for (int x = 0; x < small.width(); ++x) {
+            const QRgb p = small.pixel(x, y);
+            if (qRed(p) > 12 || qGreen(p) > 12 || qBlue(p) > 12)
+                return false;
+        }
+    }
+    return true;
+}
+} // namespace
+
 QStringList filmstripFor(const Edit &edit,
                          int count,
                          const std::function<bool(const QStringList &)> &progress)
@@ -351,12 +369,26 @@ QStringList filmstripFor(const Edit &edit,
     for (int i = 0; i < count; ++i) {
         const QString target = prefix + QString::number(i) + QStringLiteral(".jpg");
         if (!QFileInfo::exists(target)) {
-            producer.seek(qMin(edit.frames - 1, int((i + 0.5) * edit.frames / count)));
-            Mlt::Frame *frame = producer.get_frame();
-            if (frame && frame->is_valid()) {
-                frameImage(*frame, width, kStripHeight, "bilinear").save(target, "JPG", 80);
+            // Some files, including ones BUGS! saved, report a frame or two more than they can
+            // show, so the last picture came out black. Step back a little until one shows.
+            int position = qMin(edit.frames - 1, int((i + 0.5) * edit.frames / count));
+            QImage picture;
+            for (int attempt = 0; attempt < 6 && picture.isNull(); ++attempt) {
+                producer.seek(qMax(0, position));
+                Mlt::Frame *frame = producer.get_frame();
+                if (frame && frame->is_valid()) {
+                    const QImage image = frameImage(*frame, width, kStripHeight, "bilinear");
+                    const bool lastPart = position > edit.frames * 0.9;
+                    if (!image.isNull() && !(lastPart && isBlack(image)))
+                        picture = image;
+                }
+                delete frame;
+                position -= qMax(1, int(edit.fps() / 2));
             }
-            delete frame;
+            if (!picture.isNull())
+                picture.save(target, "JPG", 80);
+            else if (!result.isEmpty())
+                QFile::copy(result.last(), target);
         }
         result << target;
         if (progress && !progress(result))

@@ -101,6 +101,10 @@ SimpleController::SimpleController(QObject *parent)
         });
     });
 
+    m_rejectTimer.setSingleShot(true);
+    m_rejectTimer.setInterval(500);
+    connect(&m_rejectTimer, &QTimer::timeout, this, &SimpleController::showRejectedFiles);
+
     m_frameThumbTimer.setSingleShot(true);
     m_frameThumbTimer.setInterval(150);
     connect(&m_frameThumbTimer, &QTimer::timeout, this, &SimpleController::updateFrameThumb);
@@ -122,7 +126,8 @@ SimpleController::SimpleController(QObject *parent)
 
 void SimpleController::loadSettings()
 {
-    m_dark = m_settings.value(kDarkKey, true).toBool();
+    // Light until Levi picks dark with the button in the header; his choice is remembered.
+    m_dark = m_settings.value(kDarkKey, false).toBool();
     m_originals = m_settings.value(kLibraryKey).toStringList();
 }
 
@@ -151,6 +156,9 @@ void SimpleController::setTab(const QString &tab)
 {
     if (tab == m_tab)
         return;
+    // Collage photos are picked from Originals, so going to Finished stops picking.
+    if (m_collagePicking && tab != QLatin1String("originals"))
+        leaveCollage();
     m_tab = tab;
     emit changed();
     emit libraryChanged();
@@ -221,19 +229,24 @@ void SimpleController::ensureThumbnail(const QString &path)
     (void) QtConcurrent::run([self, path]() {
         const QString thumb = thumbnailFor(path);
         QString badge;
-        if (!isPhotoPath(path)) {
-            Edit edit;
-            if (openMedia(path, &edit))
-                badge = badgeForMedia(edit);
-        }
+        Edit edit;
+        const bool readable = openMedia(path, &edit);
+        if (readable && !isPhotoPath(path))
+            badge = badgeForMedia(edit);
         if (!self)
             return;
         QMetaObject::invokeMethod(
             self.data(),
-            [self, path, thumb, badge]() {
+            [self, path, thumb, badge, readable]() {
                 if (!self)
                     return;
                 self->m_thumbsPending.removeAll(path);
+                // A file just added that BUGS! can't open, such as an empty or damaged one, is
+                // taken out again straight away rather than sitting there blank.
+                if (self->m_justAdded.remove(path) && !readable) {
+                    self->rejectAddedFile(path);
+                    return;
+                }
                 if (!thumb.isEmpty())
                     self->m_thumbs.insert(path, thumb);
                 if (!badge.isEmpty())
@@ -271,8 +284,10 @@ void SimpleController::addPaths(const QStringList &paths, bool openFirst)
         }
         if (first.isEmpty())
             first = path;
-        if (!m_originals.contains(path))
+        if (!m_originals.contains(path)) {
             m_originals.prepend(path);
+            m_justAdded.insert(path);
+        }
         ensureThumbnail(path);
     }
     if (!first.isEmpty()) {
@@ -289,6 +304,33 @@ void SimpleController::addPaths(const QStringList &paths, bool openFirst)
                                : QStringLiteral("%1 files weren't videos or photos BUGS! can open.")
                                      .arg(skipped),
                   true);
+}
+
+void SimpleController::rejectAddedFile(const QString &path)
+{
+    m_originals.removeAll(path);
+    saveLibrary();
+    emit libraryChanged();
+    // Files added together are reported together.
+    m_rejectedNames << QFileInfo(path).fileName();
+    m_rejectTimer.start();
+}
+
+void SimpleController::showRejectedFiles()
+{
+    const QStringList names = m_rejectedNames;
+    m_rejectedNames.clear();
+    if (names.isEmpty())
+        return;
+    const QString list = names.size() == 1
+                             ? names.first()
+                             : names.mid(0, names.size() - 1).join(QStringLiteral(", "))
+                                   + QStringLiteral(" and ") + names.last();
+    showToast(QStringLiteral("BUGS! couldn't open %1, so %2 added.")
+                  .arg(list,
+                       names.size() == 1 ? QStringLiteral("it wasn't")
+                                         : QStringLiteral("they weren't")),
+              true);
 }
 
 void SimpleController::addUrls(const QList<QUrl> &urls)
@@ -475,8 +517,8 @@ QVariantList SimpleController::cuts() const
         item[QStringLiteral("start")] = cut.start;
         item[QStringLiteral("end")] = cut.end;
         item[QStringLiteral("label")]
-            = QStringLiteral("%1 → %2").arg(formatTime(cut.start / m_edit.fps()),
-                                            formatTime(cut.end / m_edit.fps()));
+            = QStringLiteral("%1 → %2").arg(formatTime(cut.start / m_edit.fps(), true),
+                                            formatTime(cut.end / m_edit.fps(), true));
         result << item;
     }
     return result;
@@ -494,8 +536,9 @@ QString SimpleController::selectionText() const
 {
     if (m_selection.isEmpty())
         return QString();
-    return QStringLiteral("%1 → %2").arg(formatTime(m_selection.start / m_edit.fps()),
-                                         formatTime(m_selection.end / m_edit.fps()));
+    // Tenths, so a part under a second does not read as "0:00 → 0:01".
+    return QStringLiteral("%1 → %2").arg(formatTime(m_selection.start / m_edit.fps(), true),
+                                         formatTime(m_selection.end / m_edit.fps(), true));
 }
 
 QString SimpleController::selectionInfo() const
@@ -1545,7 +1588,8 @@ void SimpleController::finish()
         });
         return;
     }
-    if (!hasFile() || m_saving)
+    // While photos are being picked for a collage, there is nothing to save yet.
+    if (!hasFile() || m_saving || m_collagePicking)
         return;
     // MLT would save its "INVALID" placeholder in place of a file that is gone.
     if (!filesStillThere({m_edit.sourcePath, m_edit.mediaPath}))
@@ -1564,13 +1608,21 @@ void SimpleController::finish()
     const bool keepPng
         = QFileInfo(edit.sourcePath).suffix().compare(QLatin1String("png"), Qt::CaseInsensitive)
           == 0;
+    // A photo with no changes is copied as it is, keeping its quality and name. An iPhone photo
+    // is still turned into a JPG, which every phone and computer can open.
+    const bool unchanged = !edit.hasChanges();
+    const bool copyAsIs = unchanged && edit.mediaPath == edit.sourcePath;
     const QString base = QFileInfo(edit.sourcePath).completeBaseName()
-                         + QStringLiteral(" - edited");
+                         + (unchanged ? QString() : QStringLiteral(" - edited"));
     QPointer<SimpleController> self(this);
-    (void) QtConcurrent::run([self, edit, keepPng, base]() {
-        const QImage image = renderFrame(edit, 0);
+    (void) QtConcurrent::run([self, edit, keepPng, base, copyAsIs]() {
         QString path;
         bool ok = false;
+        if (copyAsIs) {
+            path = uniquePath(finishedDir(), base, QFileInfo(edit.sourcePath).suffix().toLower());
+            ok = QFile::copy(edit.sourcePath, path);
+        }
+        const QImage image = copyAsIs ? QImage() : renderFrame(edit, 0);
         if (!image.isNull()) {
             path = uniquePath(finishedDir(),
                               base,

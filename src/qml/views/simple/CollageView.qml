@@ -12,11 +12,27 @@ Rectangle {
 
     color: "#0B0C0E"
 
+    // Before the collage is made: what to do next.
+    Text {
+        visible: simple.collagePicking
+        anchors.centerIn: parent
+        width: parent.width - 64
+        horizontalAlignment: Text.AlignHCenter
+        text: simple.collageMaking ? "Making your collage…"
+              : simple.collagePickCount < 2 ? "Tap the photos for your collage on the left."
+              : simple.collagePickCount + " photos picked. Press Make collage on the left."
+        wrapMode: Text.WordWrap
+        color: "#9A9EA8"
+        font.family: "Inter"
+        font.pixelSize: 15
+    }
+
     Image {
         id: collage
 
         anchors.fill: parent
         anchors.margins: 24
+        visible: simple.collageActive
         source: simple.collagePreview
         fillMode: Image.PreserveAspectFit
         cache: false

@@ -8,6 +8,8 @@ Rectangle {
     id: root
 
     readonly property var t: Theme.colors(simple.dark)
+    // A file is open and being edited: not a collage, and not picking photos for one.
+    readonly property bool editing: simple.hasFile && !simple.collageActive && !simple.collagePicking
 
     color: t.panel
 
@@ -152,9 +154,18 @@ Rectangle {
                 Layout.preferredHeight: 4
             }
 
+            // Picking photos for a collage
+            Heading {
+                visible: simple.collagePicking
+                Layout.leftMargin: 18
+                Layout.rightMargin: 18
+                title: "Make a collage"
+                body: "Tap the photos you want on the left. Pick at least two, then press Make collage."
+            }
+
             // Nothing open yet
             Text {
-                visible: !simple.hasFile && !simple.collageActive
+                visible: !simple.hasFile && !simple.collageActive && !simple.collagePicking
                 Layout.fillWidth: true
                 Layout.leftMargin: 18
                 Layout.rightMargin: 18
@@ -865,7 +876,7 @@ Rectangle {
 
             // Trim
             ColumnLayout {
-                visible: simple.hasFile && !simple.collageActive && simple.tool === "trim"
+                visible: root.editing && simple.tool === "trim"
                 Layout.fillWidth: true
                 Layout.leftMargin: 18
                 Layout.rightMargin: 18
@@ -927,7 +938,7 @@ Rectangle {
 
             // Cut out
             ColumnLayout {
-                visible: simple.hasFile && !simple.collageActive && simple.tool === "cut"
+                visible: root.editing && simple.tool === "cut"
                 Layout.fillWidth: true
                 Layout.leftMargin: 18
                 Layout.rightMargin: 18
@@ -1079,7 +1090,7 @@ Rectangle {
 
             // Crop
             ColumnLayout {
-                visible: simple.hasFile && !simple.collageActive && simple.tool === "crop"
+                visible: root.editing && simple.tool === "crop"
                 Layout.fillWidth: true
                 Layout.leftMargin: 18
                 Layout.rightMargin: 18
@@ -1173,7 +1184,7 @@ Rectangle {
 
             // Caption
             ColumnLayout {
-                visible: simple.hasFile && !simple.collageActive && simple.tool === "caption"
+                visible: root.editing && simple.tool === "caption"
                 Layout.fillWidth: true
                 Layout.leftMargin: 18
                 Layout.rightMargin: 18
@@ -1285,7 +1296,7 @@ Rectangle {
                 // is filled in by hand when the selection changes.
                 onSelectedChanged: wordsInput.text = label ? label.text : ""
 
-                visible: simple.hasFile && !simple.collageActive && simple.tool === "text"
+                visible: root.editing && simple.tool === "text"
                 Layout.fillWidth: true
                 Layout.leftMargin: 18
                 Layout.rightMargin: 18
@@ -1533,7 +1544,7 @@ Rectangle {
 
             // Save picture
             ColumnLayout {
-                visible: simple.hasFile && !simple.collageActive && simple.tool === "frame"
+                visible: root.editing && simple.tool === "frame"
                 Layout.fillWidth: true
                 Layout.leftMargin: 18
                 Layout.rightMargin: 18
