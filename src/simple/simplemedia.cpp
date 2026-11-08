@@ -29,6 +29,7 @@
 #include <QLinearGradient>
 #include <QPainter>
 #include <QProcess>
+#include <QSaveFile>
 #include <QStandardPaths>
 #include <QTextOption>
 #include <QTransform>
@@ -461,6 +462,12 @@ void drawLabels(QPainter &painter, const Edit &edit, const QSize &frame)
                                          text);
         box.moveCenter(QPoint(qRound(label.center.x() * frame.width()),
                               qRound(label.center.y() * frame.height())));
+        // Longer words grow both ways from the centre, so they could run off the side. Keep them on
+        // the picture; Vui.qml does the same, so the preview matches.
+        if (box.width() <= frame.width())
+            box.moveLeft(qBound(0, box.left(), frame.width() - box.width()));
+        if (box.height() <= frame.height())
+            box.moveTop(qBound(0, box.top(), frame.height() - box.height()));
         const int shadow = qMax(1, font.pixelSize() / 16);
         painter.setPen(QColor(0, 0, 0, 150));
         painter.drawText(box.translated(shadow, shadow), flags, text);
@@ -494,8 +501,15 @@ QString writeCaptionImage(const Edit &edit)
         QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex().left(24));
     const QString target
         = QDir(cacheDir()).filePath(QStringLiteral("caption-") + name + QStringLiteral(".png"));
-    if (!QFileInfo::exists(target))
-        renderCaption(edit, frame).save(target, "PNG");
+    if (!QFileInfo::exists(target)) {
+        // Light compression: this is a working file, redrawn each time the words change, and
+        // full compression of a full-size picture is slow. Written under another
+        // name first, because it may be made off the screen's thread while the preview asks
+        // for it, and a half-written picture must never be read.
+        QSaveFile file(target);
+        if (file.open(QIODevice::WriteOnly) && renderCaption(edit, frame).save(&file, "PNG", 90))
+            file.commit();
+    }
     return target;
 }
 

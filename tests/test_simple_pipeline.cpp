@@ -735,6 +735,34 @@ private slots:
         QVERIFY(white > 100);
     }
 
+    // Long words placed at the edge used to grow off the picture. They are kept on it, starting
+    // at the edge, as the preview shows them.
+    void labelsAtTheEdgeStayOnThePicture()
+    {
+        Edit edit;
+        QVERIFY(openMedia(m_landscape, &edit));
+        TextLabel label;
+        label.text = QStringLiteral("Rabbi Shlomo Chaim Kanarek");
+        label.center = QPointF(0.0, 0.5);
+        label.size = 2;
+        edit.labels << label;
+        const QSize frame(1280, 720);
+        const QImage image = renderCaption(edit, frame);
+        int left = frame.width();
+        int right = -1;
+        for (int y = 0; y < frame.height(); ++y) {
+            for (int x = 0; x < frame.width(); ++x) {
+                if (qAlpha(image.pixel(x, y)) > 128) {
+                    left = qMin(left, x);
+                    right = qMax(right, x);
+                }
+            }
+        }
+        // Starts at the left edge, and all of the words fit: they reach well past the middle.
+        QVERIFY2(left < 12, qPrintable(QString::number(left)));
+        QVERIFY2(right > frame.width() / 2, qPrintable(QString::number(right)));
+    }
+
     void thumbnailsWork()
     {
         QVERIFY(!thumbnailFor(m_landscape).isEmpty());

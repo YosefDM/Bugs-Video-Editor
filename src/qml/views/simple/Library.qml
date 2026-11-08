@@ -197,9 +197,9 @@ Rectangle {
 
                     ActionButton {
                         Layout.fillWidth: true
-                        text: "Make collage"
+                        text: simple.collageMaking ? "Making…" : "Make collage"
                         primary: true
-                        enabled: simple.collagePickCount >= 2
+                        enabled: simple.collagePickCount >= 2 && !simple.collageMaking
                         onClicked: simple.makeCollage()
                     }
                 }

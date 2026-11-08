@@ -231,8 +231,11 @@ Shotcut.VuiBase {
 
                 width: words.implicitWidth
                 height: words.implicitHeight
-                x: modelData.x * labelLayer.width - width / 2
-                y: modelData.y * labelLayer.height - height / 2
+                // Kept on the picture as the words get longer, like drawLabels() in simplemedia.cpp.
+                x: width > labelLayer.width ? modelData.x * labelLayer.width - width / 2
+                   : Math.max(0, Math.min(labelLayer.width - width, modelData.x * labelLayer.width - width / 2))
+                y: height > labelLayer.height ? modelData.y * labelLayer.height - height / 2
+                   : Math.max(0, Math.min(labelLayer.height - height, modelData.y * labelLayer.height - height / 2))
 
                 Text {
                     x: Math.max(1, labelItem.px / 16)

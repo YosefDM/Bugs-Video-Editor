@@ -171,6 +171,9 @@ struct CompileOptions
     QString target;       // when set, adds the encoder settings that save to this file
     QString videoCodec{QStringLiteral("libx264")};
     int threads{0};
+    // MLT's real_time: -1 processes one frame at a time; -N uses N threads, as Shotcut's export
+    // does with "Parallel processing".
+    int realTime{-1};
 };
 
 // The one description of the edited result, in MLT XML. Preview and save both load this,

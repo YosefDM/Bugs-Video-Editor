@@ -49,5 +49,7 @@ var icons = {
     folder: 'M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z',
     info: 'M21 12a9 9 0 1 1-18 0a9 9 0 1 1 18 0 M12 11v5 M12 8v.01',
     play: 'M8 5v14l11-7z',
-    pause: 'M7 5h3v14H7z M14 5h3v14h-3z'
+    pause: 'M7 5h3v14H7z M14 5h3v14h-3z',
+    back: 'M4.5 13.5a8 8 0 1 0 1.8-7.1 M5.5 3v4h4',
+    forward: 'M19.5 13.5a8 8 0 1 1-1.8-7.1 M18.5 3v4h-4'
 };
