@@ -161,6 +161,49 @@ Rectangle {
         }
     }
 
+    // Taking a file off the Originals list, which a stray tap on its X did without asking
+    Card {
+        visible: simple.dialog === "removeFile"
+        Accessible.name: removeTitle.text
+
+        Text {
+            id: removeTitle
+
+            Layout.fillWidth: true
+            text: "Take it off the list?"
+            wrapMode: Text.WordWrap
+            color: root.t.text
+            font.family: "Inter"
+            font.pixelSize: 18
+            font.weight: Font.DemiBold
+        }
+
+        Body {
+            text: "<b>" + simple.removeName + "</b> will leave Originals. The file itself stays where it is, and you can add it again any time."
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.topMargin: 4
+            spacing: 8
+
+            ActionButton {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 44
+                text: "Take it off"
+                onClicked: simple.removeFromLibraryAnyway()
+            }
+
+            ActionButton {
+                Layout.fillWidth: true
+                Layout.preferredHeight: 44
+                text: "Keep it"
+                primary: true
+                onClicked: simple.dismissDialog()
+            }
+        }
+    }
+
     // About
     Card {
         visible: simple.dialog === "about"

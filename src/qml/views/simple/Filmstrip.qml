@@ -10,6 +10,8 @@ Item {
     readonly property int handleWidth: 14
     readonly property int frames: Math.max(1, simple.frames)
     readonly property bool cutTool: simple.tool === "cut"
+    readonly property bool hideTool: simple.tool === "hide"
+    readonly property color hideColor: "#8A4FD8"
     // The yellow frame and handles only show while trimming. Elsewhere the trimmed-off ends just
     // stay dimmed.
     readonly property bool trimTool: simple.tool === "trim"
@@ -99,6 +101,118 @@ Item {
                 name: "cut"
                 color: "#FF8A8D"
                 strokeWidth: 2.4
+            }
+        }
+    }
+
+    // Hidden parts: blacked out or blurred while the sound plays on
+    Repeater {
+        model: simple.hides
+
+        delegate: Rectangle {
+            id: band
+
+            required property var modelData
+            required property int index
+            readonly property bool selected: strip.hideTool && index === simple.selectedHide
+
+            x: strip.xForFrame(modelData.start)
+            width: Math.max(4, strip.xForFrame(modelData.end) - x)
+            height: strip.height
+            color: selected ? "#738A4FD8" : "#4D8A4FD8"
+            border.width: selected ? 0 : 1
+            border.color: strip.hideColor
+
+            Rectangle {
+                visible: band.selected
+                width: parent.width
+                height: 3
+                color: strip.hideColor
+            }
+
+            Rectangle {
+                visible: band.selected
+                anchors.bottom: parent.bottom
+                width: parent.width
+                height: 3
+                color: strip.hideColor
+            }
+
+            Icon {
+                anchors.centerIn: parent
+                visible: parent.width > 22
+                size: 14
+                name: "hide"
+                color: "#FFFFFF"
+                strokeWidth: 2.2
+            }
+
+            // In Hide, tap one to pick it, drag the middle to move it.
+            MouseArea {
+                property int grabFrame: 0
+                property int grabStart: 0
+                property int grabEnd: 0
+
+                anchors.fill: parent
+                enabled: strip.hideTool
+                cursorShape: band.selected ? Qt.SizeAllCursor : Qt.PointingHandCursor
+                onPressed: (mouse) => {
+                    if (!band.selected)
+                        simple.selectHide(band.index);
+                    grabFrame = strip.frameForX(mapToItem(strip, mouse.x, 0).x);
+                    grabStart = band.modelData.start;
+                    grabEnd = band.modelData.end;
+                }
+                onPositionChanged: (mouse) => {
+                    if (!pressed)
+                        return;
+                    var delta = strip.frameForX(mapToItem(strip, mouse.x, 0).x) - grabFrame;
+                    delta = Math.max(simple.trimStart - grabStart, Math.min(simple.trimEnd - grabEnd, delta));
+                    simple.setHideTime(grabStart + delta, grabEnd + delta);
+                }
+                onReleased: simple.endHideTimeDrag()
+            }
+
+            Rectangle {
+                visible: band.selected
+                x: -5
+                y: -3
+                width: 10
+                height: parent.height + 6
+                radius: 4
+                color: strip.hideColor
+
+                MouseArea {
+                    anchors.fill: parent
+                    anchors.margins: -6
+                    cursorShape: Qt.SizeHorCursor
+                    onPositionChanged: (mouse) => {
+                        if (pressed)
+                            simple.setHideTime(strip.frameForX(mapToItem(strip, mouse.x, 0).x), band.modelData.end);
+                    }
+                    onReleased: simple.endHideTimeDrag()
+                }
+            }
+
+            Rectangle {
+                visible: band.selected
+                x: parent.width - 5
+                y: -3
+                width: 10
+                height: parent.height + 6
+                radius: 4
+                color: strip.hideColor
+
+                MouseArea {
+                    anchors.fill: parent
+                    anchors.margins: -6
+                    cursorShape: Qt.SizeHorCursor
+                    onPositionChanged: (mouse) => {
+                        if (pressed)
+                            simple.setHideTime(band.modelData.start, strip.frameForX(mapToItem(strip, mouse.x, 0).x));
+                    }
+                    onReleased: simple.endHideTimeDrag()
+                }
             }
         }
     }
@@ -304,15 +418,58 @@ Item {
         }
     }
 
-    // Playhead
-    Rectangle {
-        x: strip.xForFrame(simple.playhead) - 1
-        y: -4
-        width: 3
-        height: parent.height + 8
-        radius: 2
-        color: "#FFFFFF"
-        border.width: 0.5
-        border.color: "#66000000"
+    // Playhead. Its handle stands above the strip, clear of the red box and the trim handles, so
+    // it can always be dragged on its own.
+    Item {
+        id: playhead
+
+        x: strip.xForFrame(simple.playhead) - width / 2
+        y: -24
+        width: 22
+        height: strip.height + 28
+        Accessible.role: Accessible.Slider
+        Accessible.name: "Where the video is"
+
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            y: 18
+            width: 3
+            height: parent.height - 18
+            radius: 2
+            color: "#FFFFFF"
+            border.width: 0.5
+            border.color: "#66000000"
+        }
+
+        Rectangle {
+            anchors.horizontalCenter: parent.horizontalCenter
+            width: 18
+            height: 18
+            radius: 9
+            color: "#FFFFFF"
+            border.width: 1.5
+            border.color: "#80000000"
+        }
+
+        MouseArea {
+            // Only the handle above the strip, so the strip, the red box and the purple parts
+            // below still take their own drags.
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.top: parent.top
+            height: 22
+            anchors.leftMargin: -8
+            anchors.rightMargin: -8
+            anchors.topMargin: -6
+            cursorShape: Qt.SizeHorCursor
+            onPressed: (mouse) => {
+                simple.pausePreview();
+                simple.seekSource(strip.frameForX(mapToItem(strip, mouse.x, 0).x));
+            }
+            onPositionChanged: (mouse) => {
+                if (pressed)
+                    simple.seekSource(strip.frameForX(mapToItem(strip, mouse.x, 0).x));
+            }
+        }
     }
 }

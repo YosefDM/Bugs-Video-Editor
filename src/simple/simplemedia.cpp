@@ -570,11 +570,55 @@ QString photoForEdit(const Edit &edit)
     return image.save(target, "PNG") ? target : edit.mediaPath;
 }
 
+QStringList writeHideMasks(const Edit &edit)
+{
+    QStringList masks;
+    // The shape filter stretches the mask to the frame, so a small one is enough.
+    const QSize turned = edit.rotatedSize();
+    const QSize size = turned.isEmpty() ? QSize(640, 360)
+                                        : turned.scaled(640, 640, Qt::KeepAspectRatio);
+    for (const Hide &hide : edit.hides) {
+        if (!hide.blur || size.isEmpty()) {
+            masks << QString();
+            continue;
+        }
+        const QRectF area = hide.area.intersected(QRectF(0, 0, 1, 1));
+        const QString key = QStringLiteral("%1x%2|%3,%4,%5,%6")
+                                .arg(size.width())
+                                .arg(size.height())
+                                .arg(area.x(), 0, 'f', 5)
+                                .arg(area.y(), 0, 'f', 5)
+                                .arg(area.width(), 0, 'f', 5)
+                                .arg(area.height(), 0, 'f', 5);
+        const QString name = QString::fromLatin1(
+            QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex().left(24));
+        const QString target
+            = QDir(cacheDir()).filePath(QStringLiteral("hide-") + name + QStringLiteral(".png"));
+        if (!QFileInfo::exists(target)) {
+            QImage mask(size, QImage::Format_Grayscale8);
+            mask.fill(Qt::white);
+            QPainter painter(&mask);
+            painter.fillRect(QRectF(area.x() * size.width(),
+                                    area.y() * size.height(),
+                                    area.width() * size.width(),
+                                    area.height() * size.height()),
+                             Qt::black);
+            painter.end();
+            QSaveFile file(target);
+            if (file.open(QIODevice::WriteOnly) && mask.save(&file, "PNG"))
+                file.commit();
+        }
+        masks << target;
+    }
+    return masks;
+}
+
 QImage renderFrame(const Edit &edit, int editedFrame)
 {
     CompileOptions options;
     options.captionImage = writeCaptionImage(edit);
     options.photoPath = photoForEdit(edit);
+    options.hideMasks = writeHideMasks(edit);
     const QString xml = compileXml(edit, options);
     const QSize size = edit.outputSize();
     Mlt::Profile profile;
@@ -631,6 +675,46 @@ QImage loadPhotoToCover(const QString &readablePath, const QSize &cover)
     return reader.read();
 }
 
+QPainterPath collageOutline(const QString &outline, const QSize &size, double margin)
+{
+    QPainterPath path;
+    // Shapes keep their own proportions, as big as fits in the middle of the page.
+    const double side = qMin(size.width(), size.height()) - 2 * margin;
+    if (side <= 0)
+        return path;
+    const QRectF box((size.width() - side) / 2, (size.height() - side) / 2, side, side);
+    if (outline == QLatin1String("circle")) {
+        path.addEllipse(box);
+    } else if (outline == QLatin1String("heart")) {
+        // The classic heart curve, drawn as many short lines and stretched to fill the box.
+        QPolygonF points;
+        for (int i = 0; i < 360; ++i) {
+            const double t = i * M_PI / 180.0;
+            const double x = 16 * std::pow(std::sin(t), 3);
+            const double y = 13 * std::cos(t) - 5 * std::cos(2 * t) - 2 * std::cos(3 * t)
+                             - std::cos(4 * t);
+            // x runs -16..16 and y about -17..12, upwards.
+            points << QPointF(box.left() + (x + 16) / 32 * box.width(),
+                              box.top() + (12.0 - y) / 29.0 * box.height());
+        }
+        path.addPolygon(points);
+        path.closeSubpath();
+    } else if (outline == QLatin1String("star")) {
+        QPolygonF points;
+        const QPointF centre = box.center();
+        const double outer = side / 2;
+        const double inner = outer * 0.45;
+        for (int i = 0; i < 10; ++i) {
+            const double angle = -M_PI / 2 + i * M_PI / 5;
+            const double r = i % 2 ? inner : outer;
+            points << centre + QPointF(r * std::cos(angle), r * std::sin(angle) + outer * 0.08);
+        }
+        path.addPolygon(points);
+        path.closeSubpath();
+    }
+    return path;
+}
+
 QVector<QRect> collageCellRects(const Collage::Layout &layout, const QSize &size)
 {
     // Edges are rounded on their own, so neighbouring cells share an edge with no gap.
@@ -684,6 +768,21 @@ QImage renderCollage(const Collage::Layout &layout,
     const double border = style.border * shorter;
     const double half = border / 2.0;
     const double radius = style.radius * shorter;
+
+    // A sticker behind everything, as big as fits and in the middle.
+    if (!style.backdrop.isNull()) {
+        const QSizeF fitted
+            = QSizeF(style.backdrop.size()).scaled(QSizeF(size), Qt::KeepAspectRatio);
+        const QRectF target((size.width() - fitted.width()) / 2,
+                            (size.height() - fitted.height()) / 2,
+                            fitted.width(),
+                            fitted.height());
+        painter.drawImage(target, style.backdrop);
+    }
+    // Photos cut into a shape show only inside it; the background shows round it.
+    const QPainterPath outline = collageOutline(style.outline, size, border);
+    if (!outline.isEmpty())
+        painter.setClipPath(outline);
     const QVector<QRect> rects = collageCellRects(layout, size);
     for (int i = 0; i < int(layout.size()); ++i) {
         const QRect cell = rects.at(i);

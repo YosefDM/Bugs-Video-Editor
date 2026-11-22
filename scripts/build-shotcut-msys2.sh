@@ -72,6 +72,11 @@ WHISPERCPP_REVISION="v1.8.3"
 ENABLE_RNNOISE=1
 RNNOISE_HEAD=1
 RNNOISE_REVISION=
+# BUGS!: built here because MSYS2 no longer ships it for MINGW64. Simple mode's faster playback
+# needs it to keep voices at their own pitch.
+ENABLE_RUBBERBAND=1
+RUBBERBAND_HEAD=0
+RUBBERBAND_REVISION="v4.0.0"
 NV_CODEC_REVISION="sdk/12.0"
 
 PYTHON_VERSION=$(python3 --version | awk '{split($2, parts, "."); print parts[1] "." parts[2]}')
@@ -202,6 +207,9 @@ function to_key {
     ;;
     rnnoise)
       echo 18
+    ;;
+    rubberband)
+      echo 19
     ;;
     *)
       echo UNKNOWN
@@ -414,6 +422,9 @@ function set_globals {
     if test "$ENABLE_RNNOISE" = 1 ; then
       SUBDIRS="rnnoise $SUBDIRS"
     fi
+    if test "$ENABLE_RUBBERBAND" = 1 ; then
+      SUBDIRS="rubberband $SUBDIRS"
+    fi
     SUBDIRS="$SUBDIRS mlt shotcut"
   fi
 
@@ -465,6 +476,7 @@ function set_globals {
   REPOLOCS[16]="https://github.com/opencv/opencv_contrib.git"
   REPOLOCS[17]="https://github.com/ddennedy/libspatialaudio.git"
   REPOLOCS[18]="https://github.com/xiph/rnnoise.git"
+  REPOLOCS[19]="https://github.com/breakfastquay/rubberband.git"
 
   # REPOTYPE Array holds the repo types. (Yes, this might be redundant, but easy for me)
   REPOTYPES[0]="git"
@@ -486,6 +498,7 @@ function set_globals {
   REPOTYPES[16]="git"
   REPOTYPES[17]="git"
   REPOTYPES[18]="git"
+  REPOTYPES[19]="git"
 
   # And, set up the revisions
   REVISIONS[0]=""
@@ -555,6 +568,10 @@ function set_globals {
   if test 0 = "$RNNOISE_HEAD" -a "$RNNOISE_REVISION" ; then
     REVISIONS[18]="$RNNOISE_REVISION"
   fi
+  REVISIONS[19]=""
+  if test 0 = "$RUBBERBAND_HEAD" -a "$RUBBERBAND_REVISION" ; then
+    REVISIONS[19]="$RUBBERBAND_REVISION"
+  fi
 
   # Figure out the number of cores in the system. Used both by make and startup script
   CPUS=$(nproc)
@@ -600,9 +617,14 @@ function set_globals {
   #####
   # mlt
   CONFIG[1]="cmake -GNinja -DCMAKE_INSTALL_PREFIX=$FINAL_INSTALL_DIR -DCMAKE_PREFIX_PATH=$QTDIR -DMOD_GDK=OFF -DMOD_GLAXNIMATE_QT6=ON -DMOD_PLACEBO=OFF -DMOD_SPATIALAUDIO=ON"
-  # BUGS!: MSYS2 no longer ships rubberband, sox or lilv for MINGW64. These only add optional audio
-  # filters in Advanced mode.
-  CONFIG[1]="${CONFIG[1]} -DMOD_RUBBERBAND=OFF -DMOD_SOX=OFF -DUSE_LV2=OFF"
+  # BUGS!: MSYS2 no longer ships rubberband, sox or lilv for MINGW64. Rubber Band is built above,
+  # for Simple mode's faster playback; sox and lilv only add optional filters in Advanced mode.
+  CONFIG[1]="${CONFIG[1]} -DMOD_SOX=OFF -DUSE_LV2=OFF"
+  if [ "$ENABLE_RUBBERBAND" = "1" ]; then
+    CONFIG[1]="${CONFIG[1]} -DMOD_RUBBERBAND=ON"
+  else
+    CONFIG[1]="${CONFIG[1]} -DMOD_RUBBERBAND=OFF"
+  fi
   [ "$ENABLE_OPENCV" = "1" ] && CONFIG[1]="${CONFIG[1]} -DMOD_OPENCV=ON"
   if [ "$DEBUG_BUILD" = "1" ]; then
     CONFIG[1]="${CONFIG[1]} -DCMAKE_BUILD_TYPE=RelWithDebInfo"
@@ -764,6 +786,14 @@ function set_globals {
   LDFLAGS_[18]="$LDFLAGS"
   BUILD[18]="make -j$MAKEJ"
   INSTALL[18]="make install"
+
+  #####
+  # rubberband: its own FFT and resampler, and only the library
+  CONFIG[19]="meson setup build --prefix=$FINAL_INSTALL_DIR --libdir=$FINAL_INSTALL_DIR/lib --buildtype=release -Dfft=builtin -Dresampler=builtin -Djni=disabled -Dladspa=disabled -Dlv2=disabled -Dvamp=disabled -Dcmdline=disabled -Dtests=disabled"
+  CFLAGS_[19]="$CFLAGS"
+  LDFLAGS_[19]="$LDFLAGS"
+  BUILD[19]="ninja -C build -j $MAKEJ"
+  INSTALL[19]="ninja -C build install"
 }
 
 function build_dav1d {

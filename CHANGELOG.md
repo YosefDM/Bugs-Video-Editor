@@ -5,6 +5,28 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 
 ## Unreleased
 
+### Added
+- **Hide**: black out or blur the picture for a few seconds while the sound keeps playing, such as when the camera turns to the ladies during a speech. It covers the whole picture, or only a box drawn over the part to hide. Black takes that part right out.
+- **Picture**: make a video or photo lighter or darker, and **Clean up an old tape** for a video of a VCR tape, which takes out most of the lines that flash up and down, the snow and the fuzzy noise.
+- **Sound**: up to 4 times louder without crackling, **Clearer voices**, and **Take out static** for hiss and hum.
+- Watching at **3×**. Voices keep their own pitch at every speed instead of sounding squeaky.
+- **Watch it without this part** in Cut out plays across the join before anything is removed.
+- In Cut out, Back 10 moves the start of the red box earlier and Forward 30 moves its end later.
+- **Close** in the header clears the screen to start afresh. The Originals and Finished lists stay as they are.
+- Collages: tap photos in the list to add them or take them out at any time, or **Take this photo out**. One photo is enough for a collage.
+- Collage sizes 4 × 6, 6 × 4, 5 × 7 and 8 × 10, or any size typed in inches. The saved picture prints at that size.
+- Collages can be cut into a heart, circle or star, and any sticker can go behind the photos, as big as fits.
+
+### Fixed
+- Tapping a time box on a touch screen did nothing, and sliders could not be dragged with a finger. A finger now works everywhere the mouse does.
+- Back 10 and Forward 30 paused the video. Playing carries on.
+- The white line on the strip has a handle above it, so it can be dragged without moving the red box.
+- Files went missing from Originals: the X on a tile took a file off the list at the first tap, with no way back. It now asks first.
+- A videos-only or photos-only filter stayed on when switching lists, so files looked gone. Each list now opens showing everything.
+- Files on a USB stick that came back as a different drive letter showed as Missing. BUGS! now finds them again.
+- 1.5× played at normal speed.
+- After **Finish** on a collage nothing seemed to happen. The list now shows Finished, with the new collage marked.
+
 ## 1.1.0
 
 ### Added
