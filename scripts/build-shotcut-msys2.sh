@@ -376,7 +376,7 @@ function set_globals {
   # Subdirs list, for number of common operations
   # Note, the function to_key depends on this
   if [ -z "$SUBDIRS" ]; then
-    [ "$TARGET_ARCH" = "mingw64" ] && SUBDIRS="AMF nv-codec-headers"
+    [ "$TARGET_ARCH" = "ucrt64" ] && SUBDIRS="AMF nv-codec-headers"
     # BUGS!: aom is not built; MSYS2's package is used instead. This aom version does not accept
     # the nasm MSYS2 now ships, and BUGS! never encodes AV1.
     SUBDIRS="$SUBDIRS dav1d FFmpeg"
@@ -600,9 +600,6 @@ function set_globals {
   #####
   # mlt
   CONFIG[1]="cmake -GNinja -DCMAKE_INSTALL_PREFIX=$FINAL_INSTALL_DIR -DCMAKE_PREFIX_PATH=$QTDIR -DMOD_GDK=OFF -DMOD_GLAXNIMATE_QT6=ON -DMOD_PLACEBO=OFF -DMOD_SPATIALAUDIO=ON"
-  # BUGS!: MSYS2 no longer ships rubberband, sox or lilv for MINGW64. These only add optional audio
-  # filters in Advanced mode.
-  CONFIG[1]="${CONFIG[1]} -DMOD_RUBBERBAND=OFF -DMOD_SOX=OFF -DUSE_LV2=OFF"
   [ "$ENABLE_OPENCV" = "1" ] && CONFIG[1]="${CONFIG[1]} -DMOD_OPENCV=ON"
   if [ "$DEBUG_BUILD" = "1" ]; then
     CONFIG[1]="${CONFIG[1]} -DCMAKE_BUILD_TYPE=RelWithDebInfo"
@@ -759,7 +756,7 @@ function set_globals {
   # rnnoise
   [ ! -e "$SOURCE_DIR"/rnnoise/configure ] && PRECONFIG[18]="./autogen.sh"
   CONFIG[18]="./configure --prefix=$FINAL_INSTALL_DIR --enable-shared --disable-static"
-  [ "$TARGET_ARCH" = "mingw64" ] && CONFIG[18]="${CONFIG[18]}  --enable-x86-rtcd"
+  [ "$TARGET_ARCH" = "ucrt64" ] && CONFIG[18]="${CONFIG[18]}  --enable-x86-rtcd"
   CFLAGS_[18]="$CFLAGS"
   LDFLAGS_[18]="$LDFLAGS"
   BUILD[18]="make -j$MAKEJ"
@@ -1299,7 +1296,7 @@ function deploy
   if [ "$TARGET_ARCH" = "clangarm64" ]; then
     log Copying some libs from msys2
     cmd cp -p /${TARGET_ARCH}/bin/{libcrypto-3-arm64.dll,libjasper.dll,libjpeg-8.dll,libmng-2.dll,liblcms2-2.dll,libtiff-6.dll,libjbig-0.dll,libdeflate.dll,libLerc.dll,libunwind.dll,libwebpdemux-2.dll,libcairo-2.dll,libfontconfig-1.dll,libpixman-1-0.dll,libxml2-16.dll,libomp.dll,libebur128.dll,libsamplerate-0.dll,librubberband-2.dll,libsox-3.dll,libopencore-amrnb-0.dll,libvo-amrwbenc-0.dll,libFLAC.dll,libltdl-7.dll,libgsm.dll,libmad-0.dll,libao-4.dll,libid3tag-0.dll,libtwolame-0.dll,libvorbisfile-3.dll,libwavpack-1.dll,libsndfile-1.dll,libopencore-amrwb-0.dll,libmpg123-0.dll,libopusfile-0.dll,libmysofa.dll,libvidstab.dll,libexpat-1.dll,liblz4.dll,libfftw3f-3.dll,liblilv-0.dll,libserd-0.dll,libsord-0.dll,libsratom-0.dll,libzix-0.dll} .
-    # possibly needed on mingw64: libcrypto-3-x64.dll,liblz4.dll,libunwind.dll
+    # possibly needed on ucrt64: libcrypto-3-x64.dll,liblz4.dll,libunwind.dll
   fi
   if [ "$DEBUG_BUILD" = "1" -o "$SDK" = "1" ]; then
     [ "$TARGET_ARCH" != "clangarm64" ] && cmd cp -p "$SOURCE_DIR"/shotcut/drmingw/x64/bin/*.{dll,yes} .

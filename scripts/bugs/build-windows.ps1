@@ -30,7 +30,7 @@ if (-not $?) { & $Gh auth login --web --git-protocol https }
 $Token = (& $Gh auth token | Out-String).Trim()
 if (-not $Token) { Write-Host 'Could not sign in to GitHub.' -ForegroundColor Red; return }
 
-# 3. Everything else runs inside MSYS2's MINGW64 shell.
+# 3. Everything else runs inside MSYS2's UCRT64 shell, as Shotcut's own build does.
 $Script = @'
 set -euo pipefail
 step() { printf '\n\033[36m==> %s\033[0m\n' "$1"; }
@@ -38,33 +38,25 @@ step() { printf '\n\033[36m==> %s\033[0m\n' "$1"; }
 step 'Installing build tools and libraries'
 PACKAGES=$(cat <<'LIST'
 autotools base-devel bzip2 coreutils git gzip tar xz zip perl-List-MoreUtils perl-XML-Parser
-mingw-w64-x86_64-toolchain mingw-w64-x86_64-aom mingw-w64-x86_64-cmake mingw-w64-x86_64-meson mingw-w64-x86_64-nasm
-mingw-w64-x86_64-ninja mingw-w64-x86_64-cairo mingw-w64-x86_64-eigen3
-mingw-w64-x86_64-dlfcn mingw-w64-x86_64-fftw mingw-w64-x86_64-gcc-fortran mingw-w64-x86_64-gettext-tools
-mingw-w64-x86_64-harfbuzz mingw-w64-x86_64-ladspa-sdk mingw-w64-x86_64-lame mingw-w64-x86_64-libarchive mingw-w64-x86_64-libepoxy
-mingw-w64-x86_64-libexif mingw-w64-x86_64-libimagequant mingw-w64-x86_64-libsamplerate
-mingw-w64-x86_64-libtheora mingw-w64-x86_64-libvorbis mingw-w64-x86_64-libvpx mingw-w64-x86_64-libwebp
-mingw-w64-x86_64-libxml2 mingw-w64-x86_64-onevpl mingw-w64-x86_64-openblas
-mingw-w64-x86_64-openssl mingw-w64-x86_64-opus mingw-w64-x86_64-potrace mingw-w64-x86_64-python-pip
-mingw-w64-x86_64-qt6-base mingw-w64-x86_64-qt6-charts mingw-w64-x86_64-qt6-declarative
-mingw-w64-x86_64-qt6-imageformats mingw-w64-x86_64-qt6-multimedia mingw-w64-x86_64-qt6-multimedia-wmf
-mingw-w64-x86_64-qt6-svg mingw-w64-x86_64-qt6-tools mingw-w64-x86_64-qt6-translations
-mingw-w64-x86_64-qt6-websockets mingw-w64-x86_64-svt-av1
-mingw-w64-x86_64-vid.stab mingw-w64-x86_64-vulkan-headers mingw-w64-x86_64-vulkan-loader
-mingw-w64-x86_64-x264 mingw-w64-x86_64-x265 mingw-w64-x86_64-zimg
+mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-aom mingw-w64-ucrt-x86_64-cmake mingw-w64-ucrt-x86_64-meson
+mingw-w64-ucrt-x86_64-nasm mingw-w64-ucrt-x86_64-ninja mingw-w64-ucrt-x86_64-yasm mingw-w64-ucrt-x86_64-cairo
+mingw-w64-ucrt-x86_64-eigen3 mingw-w64-ucrt-x86_64-dlfcn mingw-w64-ucrt-x86_64-fftw mingw-w64-ucrt-x86_64-gcc-fortran
+mingw-w64-ucrt-x86_64-gettext-tools mingw-w64-ucrt-x86_64-harfbuzz mingw-w64-ucrt-x86_64-ladspa-sdk
+mingw-w64-ucrt-x86_64-lame mingw-w64-ucrt-x86_64-libarchive mingw-w64-ucrt-x86_64-libepoxy mingw-w64-ucrt-x86_64-libexif
+mingw-w64-ucrt-x86_64-libimagequant mingw-w64-ucrt-x86_64-libsamplerate mingw-w64-ucrt-x86_64-libtheora
+mingw-w64-ucrt-x86_64-libvorbis mingw-w64-ucrt-x86_64-libvpl mingw-w64-ucrt-x86_64-libvpx mingw-w64-ucrt-x86_64-libwebp
+mingw-w64-ucrt-x86_64-libxml2 mingw-w64-ucrt-x86_64-lilv mingw-w64-ucrt-x86_64-openblas mingw-w64-ucrt-x86_64-openssl
+mingw-w64-ucrt-x86_64-opus mingw-w64-ucrt-x86_64-potrace mingw-w64-ucrt-x86_64-python-pip mingw-w64-ucrt-x86_64-qt6-base
+mingw-w64-ucrt-x86_64-qt6-charts mingw-w64-ucrt-x86_64-qt6-declarative mingw-w64-ucrt-x86_64-qt6-imageformats
+mingw-w64-ucrt-x86_64-qt6-multimedia mingw-w64-ucrt-x86_64-qt6-multimedia-wmf mingw-w64-ucrt-x86_64-qt6-svg
+mingw-w64-ucrt-x86_64-qt6-tools mingw-w64-ucrt-x86_64-qt6-translations mingw-w64-ucrt-x86_64-qt6-websockets
+mingw-w64-ucrt-x86_64-rubberband mingw-w64-ucrt-x86_64-sox mingw-w64-ucrt-x86_64-svt-av1 mingw-w64-ucrt-x86_64-vid.stab
+mingw-w64-ucrt-x86_64-vulkan-headers mingw-w64-ucrt-x86_64-vulkan-loader mingw-w64-ucrt-x86_64-x264
+mingw-w64-ucrt-x86_64-x265 mingw-w64-ucrt-x86_64-zimg
 LIST
 )
 # shellcheck disable=SC2086
 pacman -S --needed --noconfirm $PACKAGES
-
-if [ ! -f "$HOME/.bugs-prebuilt-v7" ]; then
-    step 'Downloading prebuilt dependencies from the Shotcut project'
-    cd "$HOME"
-    curl -fLO --no-progress-meter https://s3.amazonaws.com/misc.meltymedia/shotcut-build/mlt-prebuilt-mingw64-v7.txz
-    tar -xJf mlt-prebuilt-mingw64-v7.txz
-    rm mlt-prebuilt-mingw64-v7.txz
-    touch "$HOME/.bugs-prebuilt-v7"
-fi
 
 # The token is only passed for these commands; it is not saved in the repository.
 AUTH="Authorization: Basic $(printf 'x:%s' "$BUGS_TOKEN" | base64 -w0)"
@@ -103,7 +95,7 @@ $ScriptFile = Join-Path $env:TEMP 'bugs-build.sh'
 [IO.File]::WriteAllText($ScriptFile, $Script.Replace("`r`n", "`n"))
 $ScriptPath = (& (Join-Path $Msys 'usr\bin\cygpath.exe') -u $ScriptFile | Out-String).Trim()
 
-$env:MSYSTEM = 'MINGW64'
+$env:MSYSTEM = 'UCRT64'
 $env:CHERE_INVOKING = '1'
 
 # Its first update can replace the shell it runs in, so each round is its own run.
