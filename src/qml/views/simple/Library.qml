@@ -8,6 +8,8 @@ Rectangle {
 
     readonly property var t: Theme.colors(simple.dark)
     readonly property bool onOriginals: simple.tab === "originals"
+    // Taps on Originals add photos to the open collage or take them out.
+    readonly property bool addsToCollage: simple.collageActive && onOriginals
 
     color: t.panel
 
@@ -303,7 +305,7 @@ Rectangle {
                             source: cell.modelData.thumb
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
-                            opacity: cell.modelData.missing || ((simple.collagePicking || simple.collageActive) && !cell.modelData.pickable) ? 0.3 : 1
+                            opacity: cell.modelData.missing || ((simple.collagePicking || root.addsToCollage) && !cell.modelData.pickable) ? 0.3 : 1
                         }
 
                         Rectangle {
@@ -409,8 +411,9 @@ Rectangle {
                     z: -1
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    // With a collage open, a photo goes in or comes out of it.
-                    onClicked: simple.collagePicking || (simple.collageActive && cell.modelData.pickable)
+                    // With a collage open, a photo in Originals goes in or comes out of it. In
+                    // Finished a tap opens the file, such as the collage just saved.
+                    onClicked: simple.collagePicking || (root.addsToCollage && cell.modelData.pickable)
                                ? simple.toggleCollagePick(cell.modelData.path)
                                : simple.openFile(cell.modelData.path)
                 }

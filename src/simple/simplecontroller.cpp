@@ -165,7 +165,8 @@ void SimpleController::saveLibrary()
 void SimpleController::findMovedOriginals()
 {
     QStringList volumes;
-    bool changed = false;
+    bool anyMoved = false;
+    bool openMoved = false;
     for (int i = 0; i < m_originals.size(); ++i) {
         const QString path = m_originals.at(i);
         // Only Windows paths, such as E:/Videos/IMG_0001.MOV, have a drive letter to change.
@@ -190,18 +191,53 @@ void SimpleController::findMovedOriginals()
             const QString found = info.absoluteFilePath();
             m_originals[i] = found;
             m_sizes.insert(found, m_sizes.take(path));
-            if (m_sessions.contains(path))
-                m_sessions.insert(found, m_sessions.take(path));
-            if (m_edit.sourcePath == path)
-                m_edit.sourcePath = found;
+            // Unfinished changes and their undo steps name the file too, as does what the engine
+            // reads (the same file, except for an iPhone photo's working copy).
+            const auto move = [&](Edit &edit) {
+                if (edit.sourcePath != path)
+                    return;
+                edit.sourcePath = found;
+                if (edit.mediaPath == path)
+                    edit.mediaPath = found;
+            };
+            const auto moveAll = [&](Edit &edit, QVector<Edit> &undo, QVector<Edit> &redo) {
+                move(edit);
+                for (Edit &step : undo)
+                    move(step);
+                for (Edit &step : redo)
+                    move(step);
+            };
+            if (m_sessions.contains(path)) {
+                Session session = m_sessions.take(path);
+                moveAll(session.edit, session.undo, session.redo);
+                m_sessions.insert(found, session);
+            }
+            if (m_savedEdits.contains(path)) {
+                Edit saved = m_savedEdits.take(path);
+                move(saved);
+                m_savedEdits.insert(found, saved);
+            }
+            if (m_savedPictures.contains(path))
+                m_savedPictures.insert(found, m_savedPictures.take(path));
+            if (m_edit.sourcePath == path) {
+                moveAll(m_edit, m_undo, m_redo);
+                move(m_dragStart);
+                openMoved = true;
+            }
             ensureThumbnail(found);
-            changed = true;
+            anyMoved = true;
             break;
         }
     }
-    if (changed) {
+    if (anyMoved) {
         saveLibrary();
         emit libraryChanged();
+    }
+    // The open file was the one gone missing: show it from where it is now.
+    if (openMoved) {
+        m_previewXml.clear();
+        rebuildPreview(m_playhead);
+        emit changed();
     }
 }
 
@@ -611,6 +647,8 @@ void SimpleController::setTool(const QString &tool)
 {
     if (tool == m_tool || !hasFile())
         return;
+    // Watching the cut shows another edit, so the preview goes back to the real one.
+    const bool wasWatching = m_watchingCut;
     stopWatchingCut(false);
     const bool wasCrop = m_tool == QLatin1String("crop");
     const bool wasText = m_tool == QLatin1String("text");
@@ -631,7 +669,7 @@ void SimpleController::setTool(const QString &tool)
         m_selectedHide = 0;
     // Crop shows the whole picture with the box on top; other tools show the cropped result.
     // Text draws the labels live so they can be dragged, so they leave the baked overlay.
-    if (wasCrop != isCrop || wasText != isText)
+    if (wasWatching || wasCrop != isCrop || wasText != isText)
         rebuildPreview(m_playhead);
     emit changed();
 }
@@ -1136,7 +1174,16 @@ void SimpleController::skipSeconds(double seconds)
     seekSource(qBound(m_edit.trim.start, m_playhead + frames, m_edit.trim.end - 1));
     // Shotcut pauses after every jump; skipping while watching should keep playing.
     if (wasPlaying)
-        MAIN.player()->play(1.0);
+        playOn();
+}
+
+void SimpleController::playOn()
+{
+    // Straight to the engine. Shotcut's player starts again from the beginning when it thinks
+    // it is still at the end, which it can for a moment after a jump, as when the red box was
+    // last moved to the end of the video.
+    if (MLT.producer())
+        MLT.play(1.0);
 }
 
 void SimpleController::pausePreview()
@@ -1332,15 +1379,19 @@ void SimpleController::watchCut()
     const int lead = qRound(3 * m_edit.fps());
     m_watchEdit = m_edit;
     m_watchEdit.addCut(m_selection);
-    m_watchStop = qMin(m_edit.trim.end - 1, m_selection.end + lead);
+    // A red box at the end leaves nothing after it to reach, so it stops at the last frame left.
+    const auto kept = m_watchEdit.kept();
+    const int lastKept = kept.isEmpty() ? m_edit.trim.start : kept.last().end - 1;
+    m_watchStop = qMin(lastKept, m_selection.end + lead);
     const int from = qMax(m_edit.trim.start, m_selection.start - lead);
     if (MLT.producer() && m_playing)
         MAIN.player()->pause();
     m_watchingCut = true;
+    m_watchPlayed = false;
     // The preview is the same as Finish would save with the part removed, so what he sees is
     // what he gets.
     rebuildPreview(from < m_selection.start ? from : m_selection.end);
-    MAIN.player()->play(1.0);
+    playOn();
     emit changed();
 }
 
@@ -1488,7 +1539,12 @@ void SimpleController::setHideTime(int start, int end)
     if (time == Range{start, end})
         return;
     time = Range{start, end};
-    seekSource(start != previousStart ? start : end - 1);
+    // Shows the edge being dragged. The position is kept now, not when the frame arrives, as
+    // letting go rebuilds the preview at it.
+    const int edge = start != previousStart ? start : end - 1;
+    seekSource(edge);
+    m_playhead = edge;
+    emit positionChanged();
     emit changed();
 }
 
@@ -1749,6 +1805,8 @@ void SimpleController::undo()
     }
     if (m_undo.isEmpty())
         return;
+    // The preview is rebuilt below from the real edit, not the one being watched.
+    stopWatchingCut(false);
     m_redo.append(m_edit);
     m_edit = m_undo.takeLast();
     m_lastCoalesceKey.clear();
@@ -1771,6 +1829,8 @@ void SimpleController::redo()
     }
     if (m_redo.isEmpty())
         return;
+    // The preview is rebuilt below from the real edit, not the one being watched.
+    stopWatchingCut(false);
     m_undo.append(m_edit);
     m_edit = m_redo.takeLast();
     m_lastCoalesceKey.clear();
@@ -1860,7 +1920,7 @@ void SimpleController::rebuildPreview(int sourceFrame)
     MAIN.player()->seek(m_edit.isPhoto ? 0 : position);
     m_playing = false;
     if (wasPlaying && !m_edit.isPhoto)
-        MAIN.player()->play(1.0);
+        playOn();
     emit positionChanged();
     emit playingChanged();
     emit changed();
@@ -1873,8 +1933,13 @@ void SimpleController::onFrameDisplayed(const SharedFrame &frame)
     const int position = frame.get_position();
     const int source = m_previewFullTime ? position
                                          : shownEdit().sourceFromPreview(position, m_previewSpeed);
-    // Watching the cut stops a few seconds after the join, back on the full video.
-    if (m_watchingCut && m_playing && source >= m_watchStop) {
+    // Watching the cut stops a few seconds after the join, or at the end of the video, where
+    // the player has already paused itself. Frames shown before it started playing don't count.
+    if (m_watchingCut && m_playing)
+        m_watchPlayed = true;
+    if (m_watchingCut && m_watchPlayed
+        && (source >= m_watchStop || position >= MLT.producer()->get_length() - 1)) {
+        m_watchPlayed = false;
         QTimer::singleShot(0, this, [this]() { stopWatchingCut(); });
         return;
     }
@@ -2173,7 +2238,7 @@ void SimpleController::startVideoExport(bool allowHardware)
     // Like Shotcut's "Parallel processing": a few threads prepare frames at once, which is most
     // of the time a save takes. One core is left for the rest of the laptop.
     const int cores = QThread::idealThreadCount();
-    options.realTime = cores > 2 ? -qMin(cores - 1, 4) : -1;
+    options.realTime = cores > 2 && !edit.needsFramesInOrder() ? -qMin(cores - 1, 4) : -1;
 
     auto *job = new MeltJob(QFileInfo(m_exportTarget).fileName(),
                             compileXml(edit, options),
@@ -2431,6 +2496,7 @@ void SimpleController::collagePhotosRead(const std::vector<Collage::Photo> &phot
     m_collageDesign.items.clear();
     m_collageDesign.outline.clear();
     m_collageDesign.backdrop.clear();
+    m_lastCollage.clear();
     m_collageDesign.crops = QVector<Collage::PhotoCrop>(int(m_collageDesign.photos.size()));
     m_collageDesign.layout = buildCollageLayout(m_collageDesign);
     m_collageSelected = -1;
@@ -2446,6 +2512,7 @@ void SimpleController::collagePhotosRead(const std::vector<Collage::Photo> &phot
 void SimpleController::leaveCollage()
 {
     m_collagePicking = false;
+    m_lastCollage.clear();
     // Photos still being read for a collage are no longer wanted.
     m_collageMaking = false;
     ++m_collageMakeGeneration;
@@ -2906,6 +2973,8 @@ void SimpleController::applyCollageDesign(const CollageDesign &design)
     const bool lookChanged = !design.sameLook(m_collageDesign);
     const bool layoutChanged = design.layout != m_collageDesign.layout
                                || design.hero != m_collageDesign.hero;
+    // Which photos are in it shows as numbers on the Originals tiles.
+    const bool photosChanged = design.sources != m_collageDesign.sources;
     m_collageDesign = design;
     m_collageSelectedItem = qMin(m_collageSelectedItem, int(design.items.size()) - 1);
     // The frames moved, so the selected one would now mark another photo.
@@ -2917,6 +2986,8 @@ void SimpleController::applyCollageDesign(const CollageDesign &design)
     if (lookChanged)
         drawCollagePreview();
     emit changed();
+    if (photosChanged)
+        emit libraryChanged();
 }
 
 void SimpleController::pushCollageUndo(const CollageDesign &before, const QString &coalesceKey)

@@ -162,6 +162,9 @@ struct Edit
     // Anything drawn over the picture: the caption and the labels.
     bool hasOverlay() const { return hasCaption() || hasLabels(); }
     bool hasPictureFixes() const { return brightness != 0 || cleanUp; }
+    // Cleaning up a tape compares each frame with the next, so the frames must reach it one at a
+    // time and in order; saving on several threads at once mixed them up.
+    bool needsFramesInOrder() const { return cleanUp && !isPhoto; }
     bool hasSoundChanges() const
     {
         return !isPhoto && hasAudio && (volume != 100 || clearVoices || removeStatic);

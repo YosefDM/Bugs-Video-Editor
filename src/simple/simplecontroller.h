@@ -471,6 +471,8 @@ private:
     bool filesStillThere(const QStringList &paths);
     void pushUndo(const Simple::Edit &before, const QString &coalesceKey = QString());
     void afterEdit(bool rebuildPreview);
+    // Carries on playing from where the preview is now.
+    void playOn();
     void rebuildPreview(int sourceFrame);
     void updateFrameThumb();
     void onFrameDisplayed(const SharedFrame &frame);
@@ -545,6 +547,7 @@ private:
     bool m_watchingCut{false};
     Simple::Edit m_watchEdit;
     int m_watchStop{0};
+    bool m_watchPlayed{false}; // it has started playing, so reaching the stop ends it
     const Simple::Edit &shownEdit() const { return m_watchingCut ? m_watchEdit : m_edit; }
     void changePicture(const Simple::Edit &before, const QString &coalesceKey);
     int m_selectedHide{-1};

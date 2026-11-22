@@ -359,6 +359,10 @@ private slots:
         xml = compileXml(look, CompileOptions());
         QVERIFY(xml.contains(QStringLiteral("avfilter.eq")));
         QVERIFY(xml.contains(QStringLiteral("avfilter.tmedian")));
+        // Saving a cleaned-up tape uses one thread, so its frames stay in order.
+        QVERIFY(look.needsFramesInOrder());
+        look.cleanUp = false;
+        QVERIFY(!look.needsFramesInOrder());
         look.reset();
         QVERIFY(!look.hasChanges());
     }

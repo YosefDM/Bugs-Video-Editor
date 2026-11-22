@@ -244,10 +244,11 @@ class TestSimplePipeline : public QObject
 
     QString path(const QString &name) const { return m_dir.filePath(name); }
 
-    QString save(const Edit &edit, const QString &name)
+    QString save(const Edit &edit, const QString &name, int realTime = -1)
     {
         const QString target = path(name);
         CompileOptions options;
+        options.realTime = realTime;
         options.captionImage = writeCaptionImage(edit);
         options.hideMasks = writeHideMasks(edit);
         options.target = target;
@@ -1158,12 +1159,80 @@ private slots:
         red.fill(Qt::red);
         style.backdrop = red;
         const QSize size(1200, 800); // 6 by 4: the sticker fills the middle square
-        const QImage collage = renderCollage(layout, {}, size, style, [&](int, const QSize &cover) {
-            return loadPhotoToCover(file, cover);
-        });
-        QCOMPARE(collage.pixelColor(600, 400), QColor(Qt::blue));  // inside the heart
-        QCOMPARE(collage.pixelColor(30, 400), QColor(Qt::yellow)); // beside the square
-        QCOMPARE(collage.pixelColor(215, 30), QColor(Qt::red)); // in the square, outside the heart
+        // With and without rounded corners: the photos' own rounding must not undo the heart.
+        for (const double corners : {0.0, 0.05}) {
+            style.radius = corners;
+            const QImage collage
+                = renderCollage(layout, {}, size, style, [&](int, const QSize &cover) {
+                      return loadPhotoToCover(file, cover);
+                  });
+            QCOMPARE(collage.pixelColor(600, 400), QColor(Qt::blue));  // inside the heart
+            QCOMPARE(collage.pixelColor(30, 400), QColor(Qt::yellow)); // beside the square
+            QCOMPARE(collage.pixelColor(215, 30),
+                     QColor(Qt::red)); // in the square, outside the heart
+        }
+    }
+
+    // Cleaning up a tape compares neighbouring frames, so it must get them in order. Saved the
+    // way the app saves, with as many threads as it would use, every frame is still in its place.
+    void cleanUpKeepsFramesInOrder()
+    {
+        const QString numbered = path(QStringLiteral("numbered.mp4"));
+        // Each frame's brightness is its number, so the order can be read back.
+        QVERIFY(ffmpeg({"-f",
+                        "lavfi",
+                        "-i",
+                        "color=gray:size=320x240:rate=30,format=yuv420p,geq=lum='N*2+10'"
+                        ":cb=128:cr=128",
+                        "-t",
+                        "4",
+                        "-c:v",
+                        "libx264",
+                        "-g",
+                        "30",
+                        "-bf",
+                        "2",
+                        "-crf",
+                        "1",
+                        numbered}));
+        Edit edit;
+        QVERIFY(openMedia(numbered, &edit));
+        edit.cleanUp = true;
+        QVERIFY(edit.needsFramesInOrder());
+        const QString out = save(edit,
+                                 QStringLiteral("inorder.mp4"),
+                                 edit.needsFramesInOrder() ? -1 : -4);
+        QVERIFY(!out.isEmpty());
+        QByteArray stats;
+        QVERIFY(run(
+            QStringLiteral("ffmpeg"),
+            {QStringLiteral("-v"),
+             QStringLiteral("error"),
+             QStringLiteral("-i"),
+             out,
+             QStringLiteral("-vf"),
+             QStringLiteral(
+                 "crop=40:40:200:100,signalstats,metadata=print:key=lavfi.signalstats.YAVG:file=-"),
+             QStringLiteral("-f"),
+             QStringLiteral("null"),
+             QStringLiteral("-")},
+            &stats));
+        QVector<int> numbers;
+        for (const QByteArray &line : stats.split('\n')) {
+            const int at = line.indexOf("YAVG=");
+            if (at >= 0)
+                numbers << qRound((line.mid(at + 5).toDouble() - 10) / 2);
+        }
+        QCOMPARE(numbers.size(), 120);
+        QVERIFY(numbers.last() - numbers.first() > 100);
+        // From the fourth frame on, none goes back to an earlier one. Frames out of order did, such
+        // as 33, 33, 31, 33 when saved on four threads.
+        for (int i = 4; i < numbers.size(); ++i)
+            QVERIFY2(numbers[i] >= numbers[i - 1],
+                     qPrintable(QStringLiteral("frame %1: %2 after %3")
+                                    .arg(i)
+                                    .arg(numbers[i])
+                                    .arg(numbers[i - 1])));
     }
 
     void thumbnailsWork()

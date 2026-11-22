@@ -807,7 +807,8 @@ QImage renderCollage(const Collage::Layout &layout,
             const double r = qMin(radius, qMin(target.width(), target.height()) / 2);
             clip.addRoundedRect(target, r, r);
             painter.save();
-            painter.setClipPath(clip);
+            // Within the outline, when the photos are cut into a shape.
+            painter.setClipPath(clip, outline.isEmpty() ? Qt::ReplaceClip : Qt::IntersectClip);
             painter.drawImage(target, picture, source);
             painter.restore();
         } else {

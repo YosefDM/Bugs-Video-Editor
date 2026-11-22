@@ -105,15 +105,17 @@ Item {
         }
     }
 
-    // Hidden parts: blacked out or blurred while the sound plays on
+    // Hidden parts: blacked out or blurred while the sound plays on. Counted rather than given
+    // the list, so a part survives its own drag: a new list each step would rebuild it and end
+    // the drag after its first move.
     Repeater {
-        model: simple.hides
+        model: simple.hides.length
 
         delegate: Rectangle {
             id: band
 
-            required property var modelData
             required property int index
+            readonly property var modelData: simple.hides[index] || ({ start: 0, end: 0, blur: false })
             readonly property bool selected: strip.hideTool && index === simple.selectedHide
 
             x: strip.xForFrame(modelData.start)
