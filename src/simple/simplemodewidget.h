@@ -64,6 +64,7 @@ private:
     QQuickWidget *m_library{nullptr};
     QQuickWidget *m_options{nullptr};
     bool m_active{false};
+    bool m_videoAcceptedTouch{true}; // restored when Advanced gets the video widget back
 };
 
 #endif // SIMPLEMODEWIDGET_H

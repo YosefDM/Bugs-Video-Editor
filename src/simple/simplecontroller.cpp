@@ -34,11 +34,13 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QGuiApplication>
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QProcess>
 #include <QStandardPaths>
+#include <QStorageInfo>
 #include <QThread>
 #include <QUrl>
 #include <QtConcurrent/QtConcurrentRun>
@@ -50,6 +52,7 @@ namespace {
 const char kLibraryKey[] = "simple/originals";
 const char kDarkKey[] = "simple/dark";
 const char kWelcomedKey[] = "simple/welcomed";
+const char kSizesKey[] = "simple/sizes";
 const int kFilmstripCells = 16;
 const int kToastMs = 4000;
 
@@ -114,8 +117,21 @@ SimpleController::SimpleController(QObject *parent)
         refreshFinished();
     });
     refreshFinished();
+    findMovedOriginals();
     for (const auto &path : std::as_const(m_originals))
         ensureThumbnail(path);
+    // A USB stick plugged back in may get another drive letter.
+    connect(qGuiApp,
+            &QGuiApplication::applicationStateChanged,
+            this,
+            [this](Qt::ApplicationState state) {
+                if (state == Qt::ApplicationActive)
+                    findMovedOriginals();
+            });
+    auto *missingTimer = new QTimer(this);
+    missingTimer->setInterval(10000);
+    connect(missingTimer, &QTimer::timeout, this, &SimpleController::findMovedOriginals);
+    missingTimer->start();
 
 #ifdef Q_OS_WIN
     detectHardwareEncoder();
@@ -129,12 +145,100 @@ void SimpleController::loadSettings()
     // Light until Levi picks dark with the button in the header; his choice is remembered.
     m_dark = m_settings.value(kDarkKey, false).toBool();
     m_originals = m_settings.value(kLibraryKey).toStringList();
+    const QVariantMap sizes = m_settings.value(kSizesKey).toMap();
+    for (auto it = sizes.cbegin(); it != sizes.cend(); ++it)
+        m_sizes.insert(it.key(), it.value().toLongLong());
 }
 
 void SimpleController::saveLibrary()
 {
     m_settings.setValue(kLibraryKey, m_originals);
+    QVariantMap sizes;
+    for (const auto &path : std::as_const(m_originals)) {
+        if (m_sizes.contains(path))
+            sizes.insert(path, m_sizes.value(path));
+    }
+    m_settings.setValue(kSizesKey, sizes);
     m_settings.sync();
+}
+
+void SimpleController::findMovedOriginals()
+{
+    QStringList volumes;
+    bool anyMoved = false;
+    bool openMoved = false;
+    for (int i = 0; i < m_originals.size(); ++i) {
+        const QString path = m_originals.at(i);
+        // Only Windows paths, such as E:/Videos/IMG_0001.MOV, have a drive letter to change.
+        if (path.size() < 4 || path.at(1) != QLatin1Char(':') || QFileInfo::exists(path)
+            || !m_sizes.contains(path))
+            continue;
+        if (volumes.isEmpty()) {
+            for (const QStorageInfo &volume : QStorageInfo::mountedVolumes()) {
+                if (volume.isValid() && volume.isReady())
+                    volumes << volume.rootPath();
+            }
+        }
+        const QString rest = path.mid(3);
+        for (const QString &root : std::as_const(volumes)) {
+            const QString candidate = QDir(root).filePath(rest);
+            const QFileInfo info(candidate);
+            // The same size too, so a different video with the same name on another stick is
+            // never taken for it.
+            if (candidate == path || !info.exists() || info.size() != m_sizes.value(path)
+                || m_originals.contains(info.absoluteFilePath()))
+                continue;
+            const QString found = info.absoluteFilePath();
+            m_originals[i] = found;
+            m_sizes.insert(found, m_sizes.take(path));
+            // Unfinished changes and their undo steps name the file too, as does what the engine
+            // reads (the same file, except for an iPhone photo's working copy).
+            const auto move = [&](Edit &edit) {
+                if (edit.sourcePath != path)
+                    return;
+                edit.sourcePath = found;
+                if (edit.mediaPath == path)
+                    edit.mediaPath = found;
+            };
+            const auto moveAll = [&](Edit &edit, QVector<Edit> &undo, QVector<Edit> &redo) {
+                move(edit);
+                for (Edit &step : undo)
+                    move(step);
+                for (Edit &step : redo)
+                    move(step);
+            };
+            if (m_sessions.contains(path)) {
+                Session session = m_sessions.take(path);
+                moveAll(session.edit, session.undo, session.redo);
+                m_sessions.insert(found, session);
+            }
+            if (m_savedEdits.contains(path)) {
+                Edit saved = m_savedEdits.take(path);
+                move(saved);
+                m_savedEdits.insert(found, saved);
+            }
+            if (m_savedPictures.contains(path))
+                m_savedPictures.insert(found, m_savedPictures.take(path));
+            if (m_edit.sourcePath == path) {
+                moveAll(m_edit, m_undo, m_redo);
+                move(m_dragStart);
+                openMoved = true;
+            }
+            ensureThumbnail(found);
+            anyMoved = true;
+            break;
+        }
+    }
+    if (anyMoved) {
+        saveLibrary();
+        emit libraryChanged();
+    }
+    // The open file was the one gone missing: show it from where it is now.
+    if (openMoved) {
+        m_previewXml.clear();
+        rebuildPreview(m_playhead);
+        emit changed();
+    }
 }
 
 void SimpleController::setDark(bool dark)
@@ -160,6 +264,8 @@ void SimpleController::setTab(const QString &tab)
     if (m_collagePicking && tab != QLatin1String("originals"))
         leaveCollage();
     m_tab = tab;
+    // A filter left on Photos made videos look gone from the other list.
+    m_filter = QStringLiteral("all");
     emit changed();
     emit libraryChanged();
 }
@@ -196,9 +302,13 @@ QVariantList SimpleController::items() const
                                                                        : QString());
         item[QStringLiteral("done")] = finished;
         item[QStringLiteral("missing")] = missing;
-        item[QStringLiteral("selected")] = path == m_edit.sourcePath;
+        item[QStringLiteral("selected")] = path == m_edit.sourcePath
+                                           || (m_collageActive && path == m_lastCollage);
         item[QStringLiteral("pickable")] = photo && !missing;
-        item[QStringLiteral("pick")] = m_collagePicks.indexOf(path) + 1; // 0 when not picked
+        // Its number in the collage, or 0 when it isn't in it
+        item[QStringLiteral("pick")] = (m_collageActive ? m_collageDesign.sources.indexOf(path)
+                                                        : m_collagePicks.indexOf(path))
+                                       + 1;
         result << item;
     }
     return result;
@@ -288,6 +398,7 @@ void SimpleController::addPaths(const QStringList &paths, bool openFirst)
             m_originals.prepend(path);
             m_justAdded.insert(path);
         }
+        m_sizes.insert(path, QFileInfo(path).size());
         ensureThumbnail(path);
     }
     if (!first.isEmpty()) {
@@ -344,10 +455,56 @@ void SimpleController::addUrls(const QList<QUrl> &urls)
         addPaths(paths);
 }
 
+void SimpleController::askToRemoveFromLibrary(const QString &path)
+{
+    if (!m_originals.contains(path))
+        return;
+    m_removePath = path;
+    m_dialog = QStringLiteral("removeFile");
+    emit dialogChanged();
+}
+
+void SimpleController::removeFromLibraryAnyway()
+{
+    const QString path = m_removePath;
+    m_removePath.clear();
+    dismissDialog();
+    removeFromLibrary(path);
+}
+
+void SimpleController::closeFile()
+{
+    if (m_collageActive || m_collagePicking) {
+        askToLeaveCollage();
+        return;
+    }
+    if (!hasFile() && !m_loading)
+        return;
+    // A file still opening is not wanted any more.
+    ++m_openGeneration;
+    m_loading = false;
+    stopWatchingCut(false);
+    pausePreview();
+    storeSession();
+    m_edit = Edit();
+    m_undo.clear();
+    m_redo.clear();
+    m_selection = Range();
+    m_selectedLabel = -1;
+    m_selectedHide = -1;
+    m_filmstrip.clear();
+    m_previewXml.clear();
+    MLT.close();
+    emit filmstripChanged();
+    emit changed();
+    emit libraryChanged();
+}
+
 void SimpleController::removeFromLibrary(const QString &path)
 {
     if (!m_originals.removeAll(path))
         return;
+    m_sizes.remove(path);
     saveLibrary();
     if (m_edit.sourcePath == path) {
         pausePreview();
@@ -357,6 +514,7 @@ void SimpleController::removeFromLibrary(const QString &path)
         m_redo.clear();
         m_selection = Range();
         m_selectedLabel = -1;
+        m_selectedHide = -1;
         m_filmstrip.clear();
         m_previewXml.clear();
         MLT.close();
@@ -401,6 +559,7 @@ void SimpleController::openFile(const QString &path)
                   true);
         return;
     }
+    stopWatchingCut(false);
     pausePreview();
     storeSession();
     const int generation = ++m_openGeneration;
@@ -437,6 +596,7 @@ void SimpleController::openFile(const QString &path)
                 self->m_lastCoalesceKey.clear();
                 self->m_selection = Range();
                 self->m_selectedLabel = -1;
+                self->m_selectedHide = self->m_edit.hides.isEmpty() ? -1 : 0;
                 self->m_tool = self->m_edit.isPhoto ? QStringLiteral("crop")
                                                     : QStringLiteral("trim");
                 self->m_filmstrip.clear();
@@ -487,6 +647,9 @@ void SimpleController::setTool(const QString &tool)
 {
     if (tool == m_tool || !hasFile())
         return;
+    // Watching the cut shows another edit, so the preview goes back to the real one.
+    const bool wasWatching = m_watchingCut;
+    stopWatchingCut(false);
     const bool wasCrop = m_tool == QLatin1String("crop");
     const bool wasText = m_tool == QLatin1String("text");
     m_tool = tool;
@@ -502,9 +665,11 @@ void SimpleController::setTool(const QString &tool)
         updateFrameThumb();
     if (isText && m_selectedLabel < 0 && !m_edit.labels.isEmpty())
         m_selectedLabel = 0;
+    if (tool == QLatin1String("hide") && m_selectedHide < 0 && !m_edit.hides.isEmpty())
+        m_selectedHide = 0;
     // Crop shows the whole picture with the box on top; other tools show the cropped result.
     // Text draws the labels live so they can be dragged, so they leave the baked overlay.
-    if (wasCrop != isCrop || wasText != isText)
+    if (wasWatching || wasCrop != isCrop || wasText != isText)
         rebuildPreview(m_playhead);
     emit changed();
 }
@@ -911,6 +1076,7 @@ QString SimpleController::advancedResource()
     if (!file.open(QIODevice::WriteOnly))
         return m_edit.sourcePath;
     options.photoPath = photoForEdit(m_edit);
+    options.hideMasks = writeHideMasks(m_edit);
     QString xml = compileXml(m_edit, options);
     file.write(xml.toUtf8());
     file.close();
@@ -970,17 +1136,23 @@ void SimpleController::togglePlay()
 {
     if (!hasFile() || m_edit.isPhoto)
         return;
+    if (m_watchingCut && m_playing) {
+        stopWatchingCut();
+        return;
+    }
     if (m_playing)
         MAIN.player()->pause();
     else
-        MAIN.player()->play(m_speed);
+        MAIN.player()->play(1.0); // the speed is in the preview itself
 }
 
 void SimpleController::cycleSpeed()
 {
-    m_speed = m_speed < 1.25 ? 1.5 : m_speed < 1.75 ? 2.0 : 1.0;
-    if (m_playing && hasFile() && !m_edit.isPhoto)
-        MAIN.player()->play(m_speed);
+    m_speed = m_speed < 1.25 ? 1.5 : m_speed < 1.75 ? 2.0 : m_speed < 2.5 ? 3.0 : 1.0;
+    // Watching faster is a different preview, made by Time Remap so every speed is smooth and
+    // voices keep their pitch. Playing carries on at the new speed.
+    if (hasFile() && !m_edit.isPhoto)
+        rebuildPreview(m_playhead);
     emit playingChanged();
 }
 
@@ -988,14 +1160,38 @@ void SimpleController::skipSeconds(double seconds)
 {
     if (!hasFile() || m_edit.isPhoto || !MLT.producer())
         return;
-    const int target = m_playhead + qRound(seconds * m_edit.fps());
-    seekSource(qBound(m_edit.trim.start, target, m_edit.trim.end - 1));
+    const int frames = qRound(seconds * m_edit.fps());
+    // In Cut out, Back moves the start of the red box earlier and Forward moves its end later,
+    // so the part can be widened without dragging its thin edge.
+    if (m_tool == QLatin1String("cut") && !m_selection.isEmpty()) {
+        if (seconds < 0)
+            setSelection(m_selection.start + frames, m_selection.end);
+        else
+            setSelection(m_selection.start, m_selection.end + frames);
+        return;
+    }
+    const bool wasPlaying = m_playing;
+    seekSource(qBound(m_edit.trim.start, m_playhead + frames, m_edit.trim.end - 1));
+    // Shotcut pauses after every jump; skipping while watching should keep playing.
+    if (wasPlaying)
+        playOn();
+}
+
+void SimpleController::playOn()
+{
+    // Straight to the engine. Shotcut's player starts again from the beginning when it thinks
+    // it is still at the end, which it can for a moment after a jump, as when the red box was
+    // last moved to the end of the video.
+    if (MLT.producer())
+        MLT.play(1.0);
 }
 
 void SimpleController::pausePreview()
 {
     if (MLT.producer() && m_playing)
         MAIN.player()->pause();
+    // Touching the strip or the red box while watching the cut goes back to the full video.
+    stopWatchingCut();
 }
 
 void SimpleController::seekSource(int sourceFrame)
@@ -1003,14 +1199,18 @@ void SimpleController::seekSource(int sourceFrame)
     if (!hasFile() || m_edit.isPhoto || !MLT.producer())
         return;
     sourceFrame = qBound(0, sourceFrame, m_edit.frames - 1);
-    MAIN.player()->seek(m_previewFullTime ? sourceFrame : m_edit.editedFromSource(sourceFrame));
+    MAIN.player()->seek(m_previewFullTime
+                            ? sourceFrame
+                            : shownEdit().previewFromSource(sourceFrame, m_previewSpeed));
 }
 
 void SimpleController::stepFrames(int count)
 {
     if (!hasFile() || m_edit.isPhoto || !MLT.producer())
         return;
-    const int position = m_previewFullTime ? m_playhead : m_edit.editedFromSource(m_playhead);
+    const int position = m_previewFullTime
+                             ? m_playhead
+                             : shownEdit().previewFromSource(m_playhead, m_previewSpeed);
     MAIN.player()->seek(qMax(0, position + count));
 }
 
@@ -1172,8 +1372,46 @@ void SimpleController::selectAnotherPart()
     emit changed();
 }
 
+void SimpleController::watchCut()
+{
+    if (!canRemoveSelection() || m_edit.isPhoto)
+        return;
+    const int lead = qRound(3 * m_edit.fps());
+    m_watchEdit = m_edit;
+    m_watchEdit.addCut(m_selection);
+    // A red box at the end leaves nothing after it to reach, so it stops at the last frame left.
+    const auto kept = m_watchEdit.kept();
+    const int lastKept = kept.isEmpty() ? m_edit.trim.start : kept.last().end - 1;
+    m_watchStop = qMin(lastKept, m_selection.end + lead);
+    const int from = qMax(m_edit.trim.start, m_selection.start - lead);
+    if (MLT.producer() && m_playing)
+        MAIN.player()->pause();
+    m_watchingCut = true;
+    m_watchPlayed = false;
+    // The preview is the same as Finish would save with the part removed, so what he sees is
+    // what he gets.
+    rebuildPreview(from < m_selection.start ? from : m_selection.end);
+    playOn();
+    emit changed();
+}
+
+void SimpleController::stopWatchingCut(bool rebuild)
+{
+    if (!m_watchingCut)
+        return;
+    m_watchingCut = false;
+    if (MLT.producer() && m_playing)
+        MAIN.player()->pause();
+    if (rebuild) {
+        // Back at the start of the red box, ready to remove it or move it.
+        rebuildPreview(m_selection.isEmpty() ? m_playhead : m_selection.start);
+    }
+    emit changed();
+}
+
 void SimpleController::removeSelection()
 {
+    stopWatchingCut(false);
     if (!canRemoveSelection())
         return;
     const Edit before = m_edit;
@@ -1194,6 +1432,298 @@ void SimpleController::restoreCut(int index)
         pushUndo(before);
         afterEdit(true);
     }
+}
+
+namespace {
+
+// Keeps the hidden parts in time order and gives the new place of the one at `index`.
+int sortHides(QVector<Hide> &hides, int index)
+{
+    if (index < 0 || index >= hides.size())
+        return index;
+    const Hide moved = hides.at(index);
+    std::stable_sort(hides.begin(), hides.end(), [](const Hide &a, const Hide &b) {
+        return a.time.start < b.time.start;
+    });
+    return int(hides.indexOf(moved));
+}
+
+} // namespace
+
+QVariantList SimpleController::hides() const
+{
+    QVariantList result;
+    for (int i = 0; i < m_edit.hides.size(); ++i) {
+        const Hide &hide = m_edit.hides.at(i);
+        QVariantMap item;
+        item[QStringLiteral("start")] = hide.time.start;
+        item[QStringLiteral("end")] = hide.time.end;
+        item[QStringLiteral("blur")] = hide.blur;
+        item[QStringLiteral("whole")] = hide.area == QRectF(0, 0, 1, 1);
+        item[QStringLiteral("label")]
+            = QStringLiteral("%1 → %2").arg(formatTime(hide.time.start / m_edit.fps(), true),
+                                            formatTime(hide.time.end / m_edit.fps(), true));
+        result << item;
+    }
+    return result;
+}
+
+QRectF SimpleController::hideArea() const
+{
+    if (m_selectedHide < 0 || m_selectedHide >= m_edit.hides.size())
+        return QRectF();
+    // From the whole turned picture to the picture as shown, after the crop.
+    const QRectF area = m_edit.hides.at(m_selectedHide).area;
+    const QRectF crop = m_edit.crop;
+    if (crop.width() <= 0 || crop.height() <= 0)
+        return area;
+    return QRectF((area.x() - crop.x()) / crop.width(),
+                  (area.y() - crop.y()) / crop.height(),
+                  area.width() / crop.width(),
+                  area.height() / crop.height());
+}
+
+QString SimpleController::hideStartText() const
+{
+    if (m_selectedHide < 0 || m_selectedHide >= m_edit.hides.size())
+        return QString();
+    return formatTime(m_edit.hides.at(m_selectedHide).time.start / m_edit.fps(), true);
+}
+
+QString SimpleController::hideEndText() const
+{
+    if (m_selectedHide < 0 || m_selectedHide >= m_edit.hides.size())
+        return QString();
+    return formatTime(m_edit.hides.at(m_selectedHide).time.end / m_edit.fps(), true);
+}
+
+void SimpleController::addHide()
+{
+    if (!hasFile() || m_edit.isPhoto)
+        return;
+    const Edit before = m_edit;
+    // Three seconds from where he is, which he then stretches to fit.
+    const int length = qMin(qRound(3 * m_edit.fps()), m_edit.trim.length());
+    int start = qBound(m_edit.trim.start, m_playhead, m_edit.trim.end - length);
+    Hide hide;
+    hide.time = Range{start, start + length};
+    m_edit.hides << hide;
+    m_selectedHide = sortHides(m_edit.hides, m_edit.hides.size() - 1);
+    pushUndo(before);
+    afterEdit(true);
+}
+
+void SimpleController::selectHide(int index)
+{
+    if (index < 0 || index >= m_edit.hides.size())
+        return;
+    m_selectedHide = index;
+    pausePreview();
+    seekSource(m_edit.hides.at(index).time.start);
+    emit changed();
+}
+
+void SimpleController::setHideTime(int start, int end)
+{
+    if (m_selectedHide < 0 || m_selectedHide >= m_edit.hides.size())
+        return;
+    if (!m_hideDragging) {
+        m_dragStart = m_edit;
+        m_hideDragging = true;
+        pausePreview();
+    }
+    start = qBound(m_edit.trim.start, start, m_edit.trim.end - 1);
+    end = qBound(start + 1, end, m_edit.trim.end);
+    Range &time = m_edit.hides[m_selectedHide].time;
+    const int previousStart = time.start;
+    if (time == Range{start, end})
+        return;
+    time = Range{start, end};
+    // Shows the edge being dragged. The position is kept now, not when the frame arrives, as
+    // letting go rebuilds the preview at it.
+    const int edge = start != previousStart ? start : end - 1;
+    seekSource(edge);
+    m_playhead = edge;
+    emit positionChanged();
+    emit changed();
+}
+
+void SimpleController::endHideTimeDrag()
+{
+    if (!m_hideDragging)
+        return;
+    m_hideDragging = false;
+    if (m_edit != m_dragStart) {
+        m_selectedHide = sortHides(m_edit.hides, m_selectedHide);
+        pushUndo(m_dragStart);
+        afterEdit(true);
+    }
+}
+
+bool SimpleController::setHideStartText(const QString &text)
+{
+    if (m_selectedHide < 0 || m_selectedHide >= m_edit.hides.size())
+        return false;
+    double seconds = 0;
+    const int frame = parseTime(text, &seconds) ? qRound(seconds * m_edit.fps()) : -1;
+    if (frame < m_edit.trim.start || frame >= m_edit.trim.end) {
+        showToast(QStringLiteral("That time isn't in this video."), true);
+        emit changed();
+        return false;
+    }
+    const Edit before = m_edit;
+    Range &time = m_edit.hides[m_selectedHide].time;
+    // Starting after the old end keeps it the same length.
+    const int end = time.end > frame ? time.end : qMin(m_edit.trim.end, frame + time.length());
+    time = Range{frame, end};
+    m_selectedHide = sortHides(m_edit.hides, m_selectedHide);
+    if (m_edit != before) {
+        pushUndo(before);
+        afterEdit(true);
+    }
+    seekSource(frame);
+    return true;
+}
+
+bool SimpleController::setHideEndText(const QString &text)
+{
+    if (m_selectedHide < 0 || m_selectedHide >= m_edit.hides.size())
+        return false;
+    double seconds = 0;
+    const int frame = parseTime(text, &seconds) ? qRound(seconds * m_edit.fps()) : -1;
+    if (frame <= m_edit.trim.start || frame > m_edit.trim.end) {
+        showToast(QStringLiteral("That time isn't in this video."), true);
+        emit changed();
+        return false;
+    }
+    const Edit before = m_edit;
+    Range &time = m_edit.hides[m_selectedHide].time;
+    const int start = time.start < frame ? time.start
+                                         : qMax(m_edit.trim.start, frame - time.length());
+    time = Range{start, frame};
+    m_selectedHide = sortHides(m_edit.hides, m_selectedHide);
+    if (m_edit != before) {
+        pushUndo(before);
+        afterEdit(true);
+    }
+    seekSource(frame - 1);
+    return true;
+}
+
+void SimpleController::setHideBlur(bool blur)
+{
+    if (m_selectedHide < 0 || m_selectedHide >= m_edit.hides.size()
+        || m_edit.hides.at(m_selectedHide).blur == blur)
+        return;
+    const Edit before = m_edit;
+    m_edit.hides[m_selectedHide].blur = blur;
+    pushUndo(before);
+    afterEdit(true);
+}
+
+void SimpleController::setHideArea(double x, double y, double width, double height)
+{
+    if (m_selectedHide < 0 || m_selectedHide >= m_edit.hides.size())
+        return;
+    if (!m_hideDragging) {
+        m_dragStart = m_edit;
+        m_hideDragging = true;
+    }
+    // From the picture as shown back to the whole turned picture, which is what is kept.
+    const QRectF crop = m_edit.crop;
+    QRectF area(crop.x() + x * crop.width(),
+                crop.y() + y * crop.height(),
+                width * crop.width(),
+                height * crop.height());
+    area = area.intersected(QRectF(0, 0, 1, 1));
+    if (area.width() < 0.02 || area.height() < 0.02)
+        return;
+    m_edit.hides[m_selectedHide].area = area;
+    emit changed();
+}
+
+void SimpleController::endHideAreaDrag()
+{
+    if (!m_hideDragging)
+        return;
+    m_hideDragging = false;
+    if (m_edit == m_dragStart)
+        return;
+    pushUndo(m_dragStart);
+    m_lastCoalesceKey.clear();
+    emit changed();
+    // The box is dragged on the picture, and a new preview reloads the picture's overlay, which
+    // must not happen while the overlay is still handling the release.
+    QTimer::singleShot(0, this, [this]() { rebuildPreview(m_playhead); });
+}
+
+void SimpleController::hideWholePicture()
+{
+    if (m_selectedHide < 0 || m_selectedHide >= m_edit.hides.size()
+        || m_edit.hides.at(m_selectedHide).area == QRectF(0, 0, 1, 1))
+        return;
+    const Edit before = m_edit;
+    m_edit.hides[m_selectedHide].area = QRectF(0, 0, 1, 1);
+    pushUndo(before);
+    afterEdit(true);
+}
+
+void SimpleController::removeHide(int index)
+{
+    if (index < 0 || index >= m_edit.hides.size())
+        return;
+    const Edit before = m_edit;
+    m_edit.hides.removeAt(index);
+    if (m_selectedHide >= m_edit.hides.size())
+        m_selectedHide = m_edit.hides.size() - 1;
+    pushUndo(before);
+    afterEdit(true);
+}
+
+void SimpleController::changePicture(const Edit &before, const QString &coalesceKey)
+{
+    if (m_edit == before)
+        return;
+    pushUndo(before, coalesceKey);
+    rebuildPreview(m_playhead);
+    emit changed();
+}
+
+void SimpleController::setBrightness(int brightness)
+{
+    const Edit before = m_edit;
+    m_edit.brightness = qBound(-100, brightness, 100);
+    changePicture(before, QStringLiteral("brightness"));
+}
+
+void SimpleController::setCleanUp(bool on)
+{
+    if (m_edit.isPhoto)
+        return;
+    const Edit before = m_edit;
+    m_edit.cleanUp = on;
+    changePicture(before, QString());
+}
+
+void SimpleController::setVolume(int percent)
+{
+    const Edit before = m_edit;
+    m_edit.volume = qBound(100, percent, 400);
+    changePicture(before, QStringLiteral("volume"));
+}
+
+void SimpleController::setClearVoices(bool on)
+{
+    const Edit before = m_edit;
+    m_edit.clearVoices = on;
+    changePicture(before, QString());
+}
+
+void SimpleController::setRemoveStatic(bool on)
+{
+    const Edit before = m_edit;
+    m_edit.removeStatic = on;
+    changePicture(before, QString());
 }
 
 void SimpleController::pickCropShape(const QString &shape)
@@ -1246,6 +1776,8 @@ void SimpleController::flip()
 
 void SimpleController::pushUndo(const Edit &before, const QString &coalesceKey)
 {
+    // A change while watching the cut shows the full video again when the preview is rebuilt.
+    m_watchingCut = false;
     // Typing a word is one undo, not one per letter.
     if (coalesceKey.isEmpty() || coalesceKey != m_lastCoalesceKey)
         m_undo.append(before);
@@ -1273,11 +1805,14 @@ void SimpleController::undo()
     }
     if (m_undo.isEmpty())
         return;
+    // The preview is rebuilt below from the real edit, not the one being watched.
+    stopWatchingCut(false);
     m_redo.append(m_edit);
     m_edit = m_undo.takeLast();
     m_lastCoalesceKey.clear();
     m_selection = Range();
     m_selectedLabel = qMin(m_selectedLabel, m_edit.labels.size() - 1);
+    m_selectedHide = qMin(m_selectedHide, m_edit.hides.size() - 1);
     rebuildPreview(m_playhead);
     emit changed();
 }
@@ -1294,11 +1829,14 @@ void SimpleController::redo()
     }
     if (m_redo.isEmpty())
         return;
+    // The preview is rebuilt below from the real edit, not the one being watched.
+    stopWatchingCut(false);
     m_undo.append(m_edit);
     m_edit = m_redo.takeLast();
     m_lastCoalesceKey.clear();
     m_selection = Range();
     m_selectedLabel = qMin(m_selectedLabel, m_edit.labels.size() - 1);
+    m_selectedHide = qMin(m_selectedHide, m_edit.hides.size() - 1);
     rebuildPreview(m_playhead);
     emit changed();
 }
@@ -1314,8 +1852,11 @@ void SimpleController::rebuildPreview(int sourceFrame)
     CompileOptions options;
     options.applyTime = !m_previewFullTime;
     options.applyCrop = !cropTool;
+    options.speed = m_previewFullTime || m_edit.isPhoto ? 1.0 : m_speed;
 
-    Edit shown = m_edit;
+    const Edit &edit = shownEdit();
+    options.hideMasks = writeHideMasks(edit);
+    Edit shown = edit;
     if (cropTool) {
         shown.crop = QRectF(0, 0, 1, 1);
         shown.cropShape = QStringLiteral("original");
@@ -1324,18 +1865,19 @@ void SimpleController::rebuildPreview(int sourceFrame)
         shown.labels.clear();
     if (!cropTool)
         options.captionImage = writeCaptionImage(shown);
-    options.photoPath = photoForEdit(m_edit);
-    const QString xml = compileXml(m_edit, options);
+    options.photoPath = photoForEdit(edit);
+    const QString xml = compileXml(edit, options);
 
     const int position = (m_edit.isPhoto || m_previewFullTime)
                              ? qMax(0, sourceFrame)
-                             : m_edit.editedFromSource(sourceFrame);
+                             : edit.previewFromSource(sourceFrame, options.speed);
     // Nothing visible changed, such as switching to Text with no text yet, or undoing a change
     // to words the Text tool draws itself. Reloading would only cost time, more so from a USB
     // stick, so the preview just moves to the frame.
     const QSize frame = options.applyCrop ? m_edit.outputSize() : m_edit.rotatedSize();
     const QString previewKey = QStringLiteral("%1x%2|").arg(frame.width()).arg(frame.height())
                                + xml;
+    m_previewSpeed = options.speed;
     if (previewKey == m_previewXml && MLT.producer() && MLT.producer()->is_valid()) {
         if (!m_edit.isPhoto && sourceFrame != m_playhead)
             MAIN.player()->seek(position);
@@ -1378,7 +1920,7 @@ void SimpleController::rebuildPreview(int sourceFrame)
     MAIN.player()->seek(m_edit.isPhoto ? 0 : position);
     m_playing = false;
     if (wasPlaying && !m_edit.isPhoto)
-        MAIN.player()->play(m_speed);
+        playOn();
     emit positionChanged();
     emit playingChanged();
     emit changed();
@@ -1389,7 +1931,18 @@ void SimpleController::onFrameDisplayed(const SharedFrame &frame)
     if (!hasFile() || m_edit.isPhoto || !MLT.producer())
         return;
     const int position = frame.get_position();
-    const int source = m_previewFullTime ? position : m_edit.sourceFromEdited(position);
+    const int source = m_previewFullTime ? position
+                                         : shownEdit().sourceFromPreview(position, m_previewSpeed);
+    // Watching the cut stops a few seconds after the join, or at the end of the video, where
+    // the player has already paused itself. Frames shown before it started playing don't count.
+    if (m_watchingCut && m_playing)
+        m_watchPlayed = true;
+    if (m_watchingCut && m_watchPlayed
+        && (source >= m_watchStop || position >= MLT.producer()->get_length() - 1)) {
+        m_watchPlayed = false;
+        QTimer::singleShot(0, this, [this]() { stopWatchingCut(); });
+        return;
+    }
     if (source != m_playhead) {
         m_playhead = source;
         emit positionChanged();
@@ -1526,9 +2079,13 @@ void SimpleController::finish()
         m_saving = true;
         m_saveProgress = 0;
         emit savingChanged();
-        const QSize size = collageSize(2400);
+        const QSize size = savedCollageSize();
+        // A print size carries its dots per inch, so it prints at that size.
+        const double dpi = m_collageDesign.shape == QLatin1String("size")
+                               ? size.width() / qMax(1.0, m_collageDesign.sizeW)
+                               : 0;
         QStringList files;
-        for (const Collage::Photo &photo : m_collagePhotos)
+        for (const Collage::Photo &photo : std::as_const(m_collageDesign.photos))
             files << photo.path;
         if (!filesStillThere(files)) {
             m_saving = false;
@@ -1548,7 +2105,7 @@ void SimpleController::finish()
                 stickers.insert(item.sticker, stickerImage(item.sticker));
         }
         QPointer<SimpleController> self(this);
-        (void) QtConcurrent::run([self, files, layout, crops, size, style, items, stickers]() {
+        (void) QtConcurrent::run([self, files, layout, crops, size, style, items, stickers, dpi]() {
             QImage image
                 = renderCollage(layout, crops, size, style, [&](int photo, const QSize &needed) {
                       return photo >= 0 && photo < files.size()
@@ -1565,6 +2122,10 @@ void SimpleController::finish()
                                             QStringLiteral("Collage %1")
                                                 .arg(QDate::currentDate().toString(Qt::ISODate)),
                                             QStringLiteral("jpg"));
+            if (dpi > 0) {
+                image.setDotsPerMeterX(qRound(dpi / 0.0254));
+                image.setDotsPerMeterY(qRound(dpi / 0.0254));
+            }
             const bool ok = !image.isNull() && image.save(path, "JPG", 92);
             if (!self)
                 return;
@@ -1577,7 +2138,11 @@ void SimpleController::finish()
                     emit self->savingChanged();
                     if (ok) {
                         self->m_collageUnsaved = false;
-                        self->afterSaved(path, QStringLiteral("Collage saved to Finished"));
+                        // Shown in Finished, marked, so it is plain that it saved. The collage
+                        // stays open to keep working on.
+                        self->m_lastCollage = path;
+                        self->afterSaved(path, QStringLiteral("Collage saved to Finished."));
+                        self->setTab(QStringLiteral("finished"));
                     } else {
                         self->showToast(QStringLiteral(
                                             "Sorry, the collage didn't save. Please try again."),
@@ -1666,13 +2231,14 @@ void SimpleController::startVideoExport(bool allowHardware)
 
     CompileOptions options;
     options.captionImage = writeCaptionImage(edit);
+    options.hideMasks = writeHideMasks(edit);
     options.target = QDir::toNativeSeparators(m_exportPartial);
     if (allowHardware)
         options.videoCodec = QStringLiteral("h264_qsv");
     // Like Shotcut's "Parallel processing": a few threads prepare frames at once, which is most
     // of the time a save takes. One core is left for the rest of the laptop.
     const int cores = QThread::idealThreadCount();
-    options.realTime = cores > 2 ? -qMin(cores - 1, 4) : -1;
+    options.realTime = cores > 2 && !edit.needsFramesInOrder() ? -qMin(cores - 1, 4) : -1;
 
     auto *job = new MeltJob(QFileInfo(m_exportTarget).fileName(),
                             compileXml(edit, options),
@@ -1831,7 +2397,24 @@ void SimpleController::startCollage()
 
 void SimpleController::toggleCollagePick(const QString &path)
 {
-    if (!m_collagePicking || !isPhotoPath(path))
+    if (!isPhotoPath(path))
+        return;
+    // With the collage open, a tap adds the photo or takes it out again.
+    if (m_collageActive) {
+        const int index = int(m_collageDesign.sources.indexOf(path));
+        if (index >= 0) {
+            m_collageSelected = -1;
+            for (int i = 0; i < int(m_collageDesign.layout.size()); ++i) {
+                if (m_collageDesign.layout[size_t(i)].photo == index)
+                    m_collageSelected = i;
+            }
+            removeCollagePhoto();
+        } else {
+            addCollagePhoto(path);
+        }
+        return;
+    }
+    if (!m_collagePicking)
         return;
     if (!m_collagePicks.removeOne(path))
         m_collagePicks << path;
@@ -1841,7 +2424,7 @@ void SimpleController::toggleCollagePick(const QString &path)
 
 void SimpleController::makeCollage()
 {
-    if (m_collagePicks.size() < 2 || m_collageMaking)
+    if (m_collagePicks.isEmpty() || m_collageMaking)
         return;
     // Reading big phone photos, and turning iPhone photos into ones BUGS! can read, takes a
     // while, so it happens off the screen's thread.
@@ -1852,6 +2435,7 @@ void SimpleController::makeCollage()
     QPointer<SimpleController> self(this);
     (void) QtConcurrent::run([self, picks, generation]() {
         std::vector<Collage::Photo> photos;
+        QStringList sources;
         QHash<QString, QImage> thumbs;
         QStringList unreadable;
         for (const auto &path : picks) {
@@ -1862,6 +2446,7 @@ void SimpleController::makeCollage()
                 continue;
             }
             photos.push_back(Collage::Photo{readable, size.width(), size.height()});
+            sources << path;
             // The preview reads them at this size; see drawCollagePreview().
             thumbs.insert(readable, loadPhotoToCover(readable, QSize(1200, 1200)));
         }
@@ -1869,16 +2454,17 @@ void SimpleController::makeCollage()
             return;
         QMetaObject::invokeMethod(
             self.data(),
-            [self, photos, thumbs, unreadable, generation]() {
+            [self, photos, sources, thumbs, unreadable, generation]() {
                 if (!self || generation != self->m_collageMakeGeneration)
                     return;
-                self->collagePhotosRead(photos, thumbs, unreadable);
+                self->collagePhotosRead(photos, sources, thumbs, unreadable);
             },
             Qt::QueuedConnection);
     });
 }
 
 void SimpleController::collagePhotosRead(const std::vector<Collage::Photo> &photos,
+                                         const QStringList &sources,
                                          const QHash<QString, QImage> &thumbs,
                                          const QStringList &unreadable)
 {
@@ -1888,8 +2474,8 @@ void SimpleController::collagePhotosRead(const std::vector<Collage::Photo> &phot
         emit changed();
         return;
     }
-    if (photos.size() < 2) {
-        showToast(QStringLiteral("BUGS! couldn't open enough of those photos."), true);
+    if (photos.empty()) {
+        showToast(QStringLiteral("BUGS! couldn't open those photos."), true);
         emit changed();
         return;
     }
@@ -1898,7 +2484,8 @@ void SimpleController::collagePhotosRead(const std::vector<Collage::Photo> &phot
                       .arg(unreadable.join(QStringLiteral(", ")),
                            unreadable.size() == 1 ? QStringLiteral("it") : QStringLiteral("them")),
                   true);
-    m_collagePhotos.assign(photos.begin(), photos.end());
+    m_collageDesign.photos = QVector<Collage::Photo>(photos.begin(), photos.end());
+    m_collageDesign.sources = sources;
     m_collageThumbs = thumbs;
     m_collagePicking = false;
     m_collageActive = true;
@@ -1907,7 +2494,10 @@ void SimpleController::collagePhotosRead(const std::vector<Collage::Photo> &phot
     m_collageDesign.seed = 1;
     m_collageDesign.hero = -1;
     m_collageDesign.items.clear();
-    m_collageDesign.crops = QVector<Collage::PhotoCrop>(int(m_collagePhotos.size()));
+    m_collageDesign.outline.clear();
+    m_collageDesign.backdrop.clear();
+    m_lastCollage.clear();
+    m_collageDesign.crops = QVector<Collage::PhotoCrop>(int(m_collageDesign.photos.size()));
     m_collageDesign.layout = buildCollageLayout(m_collageDesign);
     m_collageSelected = -1;
     m_collageSelectedItem = -1;
@@ -1922,6 +2512,7 @@ void SimpleController::collagePhotosRead(const std::vector<Collage::Photo> &phot
 void SimpleController::leaveCollage()
 {
     m_collagePicking = false;
+    m_lastCollage.clear();
     // Photos still being read for a collage are no longer wanted.
     m_collageMaking = false;
     ++m_collageMakeGeneration;
@@ -1937,33 +2528,48 @@ void SimpleController::leaveCollage()
     m_collageDesign.hero = -1;
     m_collageLayouts.clear();
     m_collagePhotoGesture = false;
-    m_collagePhotos.clear();
+    m_collageDesign.photos.clear();
+    m_collageDesign.sources.clear();
+    ++m_collageAddGeneration;
+    m_collageAdding = 0;
     m_collageThumbs.clear();
     m_collageSelected = -1;
     emit changed();
     emit libraryChanged();
 }
 
+double SimpleController::ratioOf(const CollageDesign &design)
+{
+    if (design.shape == QLatin1String("story"))
+        return 16.0 / 9.0;
+    if (design.shape == QLatin1String("wide"))
+        return 9.0 / 16.0;
+    if (design.shape == QLatin1String("portrait"))
+        return 5.0 / 4.0;
+    if (design.shape == QLatin1String("size") && design.sizeW > 0 && design.sizeH > 0)
+        return design.sizeH / design.sizeW;
+    return 1.0;
+}
+
 QSize SimpleController::collageSize(int longSide) const
 {
-    if (m_collageDesign.shape == QLatin1String("story"))
-        return QSize(longSide * 9 / 16, longSide);
-    if (m_collageDesign.shape == QLatin1String("wide"))
-        return QSize(longSide, longSide * 9 / 16);
-    if (m_collageDesign.shape == QLatin1String("portrait"))
-        return QSize(longSide * 4 / 5, longSide);
-    return QSize(longSide, longSide);
+    const double ratio = collageRatio();
+    if (ratio >= 1.0)
+        return QSize(qMax(1, qRound(longSide / ratio)), longSide);
+    return QSize(longSide, qMax(1, qRound(longSide * ratio)));
+}
+
+QSize SimpleController::savedCollageSize() const
+{
+    if (m_collageDesign.shape != QLatin1String("size"))
+        return collageSize(2400);
+    const double inches = qMax(m_collageDesign.sizeW, m_collageDesign.sizeH);
+    return collageSize(qBound(2400, qRound(300 * inches), 4800));
 }
 
 double SimpleController::collageRatio() const
 {
-    if (m_collageDesign.shape == QLatin1String("story"))
-        return 16.0 / 9.0;
-    if (m_collageDesign.shape == QLatin1String("wide"))
-        return 9.0 / 16.0;
-    if (m_collageDesign.shape == QLatin1String("portrait"))
-        return 5.0 / 4.0;
-    return 1.0;
+    return ratioOf(m_collageDesign);
 }
 
 double SimpleController::collageAspect() const
@@ -1973,29 +2579,23 @@ double SimpleController::collageAspect() const
 
 Collage::Layout SimpleController::buildCollageLayout(const CollageDesign &design) const
 {
-    const int n = int(m_collagePhotos.size());
+    const int n = int(design.photos.size());
     if (n == 0)
         return {};
-    double ratio = 1.0;
-    if (design.shape == QLatin1String("story"))
-        ratio = 16.0 / 9.0;
-    else if (design.shape == QLatin1String("wide"))
-        ratio = 9.0 / 16.0;
-    else if (design.shape == QLatin1String("portrait"))
-        ratio = 5.0 / 4.0;
+    const double ratio = ratioOf(design);
     if (design.layoutStyle == QLatin1String("grid"))
         return Collage::makeGridLayout(n, ratio, design.seed);
     if (design.layoutStyle == QLatin1String("mosaic")) {
         std::vector<double> aspects;
         std::vector<double> weights;
         for (int i = 0; i < n; ++i) {
-            aspects.push_back(m_collagePhotos[size_t(i)].ratio());
+            aspects.push_back(design.photos.at(i).ratio());
             weights.push_back(i == design.hero ? 3.0 : 1.0);
         }
         return Collage::makeMosaicLayout(aspects, weights, ratio, design.seed);
     }
     // PhotoCollage's columns. Its photos are copied so laying out never touches the real ones.
-    std::vector<Collage::Photo> copies(m_collagePhotos.begin(), m_collagePhotos.end());
+    std::vector<Collage::Photo> copies(design.photos.begin(), design.photos.end());
     std::vector<Collage::Photo *> pointers;
     for (auto &photo : copies)
         pointers.push_back(&photo);
@@ -2054,9 +2654,9 @@ void SimpleController::drawCollagePreview()
     const CollageStyle style = collageStyle();
     const QImage image = renderCollage(
         m_collageDesign.layout, m_collageDesign.crops, size, style, [&](int photo, const QSize &) {
-            if (photo < 0 || photo >= int(m_collagePhotos.size()))
+            if (photo < 0 || photo >= m_collageDesign.photos.size())
                 return QImage();
-            const QString path = m_collagePhotos[size_t(photo)].path;
+            const QString path = m_collageDesign.photos.at(photo).path;
             auto it = m_collageThumbs.find(path);
             if (it == m_collageThumbs.end())
                 it = m_collageThumbs.insert(path, loadPhotoToCover(path, QSize(1600, 1600)));
@@ -2094,6 +2694,126 @@ void SimpleController::setCollageShape(const QString &shape)
     design.layout = buildCollageLayout(design);
     m_collageSelected = -1;
     changeCollageDesign(design);
+}
+
+void SimpleController::setCollageSize(double widthInches, double heightInches)
+{
+    if (!m_collageActive || widthInches < 1 || heightInches < 1 || widthInches > 60
+        || heightInches > 60)
+        return;
+    CollageDesign design = m_collageDesign;
+    design.shape = QStringLiteral("size");
+    design.sizeW = widthInches;
+    design.sizeH = heightInches;
+    design.layout = buildCollageLayout(design);
+    m_collageSelected = -1;
+    changeCollageDesign(design);
+}
+
+void SimpleController::setCollageOutline(const QString &outline)
+{
+    if (!m_collageActive || outline == m_collageDesign.outline)
+        return;
+    CollageDesign design = m_collageDesign;
+    design.outline = outline;
+    changeCollageDesign(design);
+}
+
+void SimpleController::setCollageBackdrop(const QString &stickerId)
+{
+    if (!m_collageActive || stickerId == m_collageDesign.backdrop)
+        return;
+    CollageDesign design = m_collageDesign;
+    design.backdrop = stickerId;
+    // Photos edge to edge would hide it, so leave some room round them.
+    if (!stickerId.isEmpty() && design.spacing < 0.06)
+        design.spacing = 0.06;
+    changeCollageDesign(design);
+}
+
+QString SimpleController::collageBackdropUrl() const
+{
+    if (m_collageDesign.backdrop.isEmpty())
+        return QString();
+    QDir dir = QmlUtilities::qmlDir();
+    dir.cd(QStringLiteral("views/simple/stickers"));
+    return QUrl::fromLocalFile(dir.filePath(m_collageDesign.backdrop + QStringLiteral(".png")))
+        .toString();
+}
+
+void SimpleController::removeCollagePhoto()
+{
+    if (!m_collageActive || m_collageSelected < 0
+        || m_collageSelected >= int(m_collageDesign.layout.size()))
+        return;
+    if (m_collageDesign.photos.size() <= 1) {
+        showToast(QStringLiteral("A collage needs at least one photo."), true);
+        return;
+    }
+    const int photo = m_collageDesign.layout[size_t(m_collageSelected)].photo;
+    if (photo < 0 || photo >= m_collageDesign.photos.size())
+        return;
+    CollageDesign design = m_collageDesign;
+    design.photos.removeAt(photo);
+    if (photo < design.sources.size())
+        design.sources.removeAt(photo);
+    if (photo < design.crops.size())
+        design.crops.removeAt(photo);
+    if (design.hero == photo)
+        design.hero = -1;
+    else if (design.hero > photo)
+        --design.hero;
+    design.layout = buildCollageLayout(design);
+    m_collageSelected = -1;
+    changeCollageDesign(design);
+    emit libraryChanged();
+}
+
+void SimpleController::addCollagePhoto(const QString &path)
+{
+    if (!m_collageActive || m_collageDesign.sources.contains(path))
+        return;
+    ++m_collageAdding;
+    emit changed();
+    const int generation = m_collageAddGeneration;
+    QPointer<SimpleController> self(this);
+    (void) QtConcurrent::run([self, path, generation]() {
+        QSize size;
+        const QString readable = uprightPhotoPath(path, &size);
+        QImage thumb;
+        if (!readable.isEmpty() && !size.isEmpty())
+            thumb = loadPhotoToCover(readable, QSize(1200, 1200));
+        if (!self)
+            return;
+        QMetaObject::invokeMethod(
+            self.data(),
+            [self, path, readable, size, thumb, generation]() {
+                if (!self || generation != self->m_collageAddGeneration)
+                    return;
+                self->m_collageAdding = qMax(0, self->m_collageAdding - 1);
+                if (readable.isEmpty() || size.isEmpty() || thumb.isNull()) {
+                    self->showToast(QStringLiteral("BUGS! couldn't open %1.")
+                                        .arg(QFileInfo(path).fileName()),
+                                    true);
+                    emit self->changed();
+                    return;
+                }
+                if (!self->m_collageActive || self->m_collageDesign.sources.contains(path)) {
+                    emit self->changed();
+                    return;
+                }
+                self->m_collageThumbs.insert(readable, thumb);
+                CollageDesign design = self->m_collageDesign;
+                design.photos << Collage::Photo{readable, size.width(), size.height()};
+                design.sources << path;
+                design.crops << Collage::PhotoCrop();
+                design.layout = self->buildCollageLayout(design);
+                self->m_collageSelected = -1;
+                self->changeCollageDesign(design);
+                emit self->libraryChanged();
+            },
+            Qt::QueuedConnection);
+    });
 }
 
 void SimpleController::setCollageLayout(const QString &style)
@@ -2168,7 +2888,7 @@ void SimpleController::panCollagePhoto(double dx, double dy)
         return;
     const Collage::Slot slot = m_collageDesign.layout[size_t(m_collageSelected)];
     const int photo = slot.photo;
-    if (photo < 0 || photo >= m_collageDesign.crops.size() || photo >= int(m_collagePhotos.size()))
+    if (photo < 0 || photo >= m_collageDesign.crops.size() || photo >= m_collageDesign.photos.size())
         return;
     if (!m_collagePhotoGesture) {
         m_collageGestureStart = m_collageDesign;
@@ -2176,7 +2896,7 @@ void SimpleController::panCollagePhoto(double dx, double dy)
     }
     // How much of the photo the frame shows, as fractions of it, so the photo follows the
     // pointer exactly.
-    const Collage::Photo &p = m_collagePhotos[size_t(photo)];
+    const Collage::Photo &p = m_collageDesign.photos.at(photo);
     const QSize page = collageSize(1200);
     const QRectF shown = collageSourceRect(QSize(p.w, p.h),
                                            QSizeF(slot.rect.width() * page.width(),
@@ -2216,6 +2936,9 @@ CollageStyle SimpleController::collageStyle() const
     style.border = m_collageDesign.spacing;
     style.radius = m_collageDesign.corners;
     style.borderColor = QColor(m_collageDesign.background);
+    style.outline = m_collageDesign.outline;
+    if (!m_collageDesign.backdrop.isEmpty())
+        style.backdrop = stickerImage(m_collageDesign.backdrop);
     return style;
 }
 
@@ -2250,6 +2973,8 @@ void SimpleController::applyCollageDesign(const CollageDesign &design)
     const bool lookChanged = !design.sameLook(m_collageDesign);
     const bool layoutChanged = design.layout != m_collageDesign.layout
                                || design.hero != m_collageDesign.hero;
+    // Which photos are in it shows as numbers on the Originals tiles.
+    const bool photosChanged = design.sources != m_collageDesign.sources;
     m_collageDesign = design;
     m_collageSelectedItem = qMin(m_collageSelectedItem, int(design.items.size()) - 1);
     // The frames moved, so the selected one would now mark another photo.
@@ -2261,6 +2986,8 @@ void SimpleController::applyCollageDesign(const CollageDesign &design)
     if (lookChanged)
         drawCollagePreview();
     emit changed();
+    if (photosChanged)
+        emit libraryChanged();
 }
 
 void SimpleController::pushCollageUndo(const CollageDesign &before, const QString &coalesceKey)
@@ -2280,7 +3007,7 @@ void SimpleController::collageItemsChanged()
 
 void SimpleController::setCollageSpacing(double spacing)
 {
-    spacing = qBound(0.0, spacing, 0.06);
+    spacing = qBound(0.0, spacing, 0.15);
     if (!m_collageActive || qFuzzyCompare(spacing + 1, m_collageDesign.spacing + 1))
         return;
     CollageDesign design = m_collageDesign;

@@ -34,7 +34,9 @@ bool Edit::operator==(const Edit &o) const
     return sourcePath == o.sourcePath && trim == o.trim && cuts == o.cuts && rotation == o.rotation
            && flipped == o.flipped && crop == o.crop && cropShape == o.cropShape
            && captionName == o.captionName && captionSecond == o.captionSecond
-           && captionStyle == o.captionStyle && labels == o.labels;
+           && captionStyle == o.captionStyle && labels == o.labels && hides == o.hides
+           && brightness == o.brightness && cleanUp == o.cleanUp && volume == o.volume
+           && clearVoices == o.clearVoices && removeStatic == o.removeStatic;
 }
 
 void Edit::reset()
@@ -49,6 +51,12 @@ void Edit::reset()
     captionSecond.clear();
     captionStyle = CaptionStyle::Bar;
     labels.clear();
+    hides.clear();
+    brightness = 0;
+    cleanUp = false;
+    volume = 100;
+    clearVoices = false;
+    removeStatic = false;
 }
 
 bool Edit::hasTimeChanges() const
@@ -59,7 +67,8 @@ bool Edit::hasTimeChanges() const
 bool Edit::hasChanges() const
 {
     return hasTimeChanges() || rotation != 0 || flipped || crop != QRectF(0, 0, 1, 1)
-           || hasOverlay();
+           || hasOverlay() || (!isPhoto && !hides.isEmpty()) || hasPictureFixes()
+           || hasSoundChanges();
 }
 
 bool Edit::hasLabels() const
@@ -226,6 +235,77 @@ int Edit::sourceFromEdited(int editedFrame) const
         remaining -= range.length();
     }
     return ranges.isEmpty() ? trim.start : ranges.last().end - 1;
+}
+
+namespace {
+
+// Each kept part's first and last frame in Time Remap's time, as compileXml() lays them out.
+struct SpeedPart
+{
+    Range source;
+    int in{0};
+    int out{-1}; // inclusive; out < in when the part is too short to show at this speed
+    int offset{0};
+};
+
+QVector<SpeedPart> speedParts(const Edit &edit, double speed)
+{
+    QVector<SpeedPart> parts;
+    int offset = 0;
+    for (const auto &range : edit.kept()) {
+        SpeedPart part;
+        part.source = range;
+        part.in = int(std::ceil(range.start / speed));
+        part.out = int(std::ceil(range.end / speed)) - 1;
+        part.offset = offset;
+        if (part.out >= part.in) {
+            offset += part.out - part.in + 1;
+            parts << part;
+        }
+    }
+    return parts;
+}
+
+} // namespace
+
+int Edit::previewFromSource(int sourceFrame, double speed) const
+{
+    if (speed == 1.0)
+        return editedFromSource(sourceFrame);
+    const auto parts = speedParts(*this, speed);
+    int last = 0;
+    for (const auto &part : parts) {
+        if (sourceFrame < part.source.start)
+            return part.offset; // inside a removed part: the first frame after it
+        const int q = qBound(part.in, int(std::floor(sourceFrame / speed)), part.out);
+        if (part.source.contains(sourceFrame))
+            return part.offset + q - part.in;
+        last = part.offset + part.out - part.in;
+    }
+    return last;
+}
+
+int Edit::sourceFromPreview(int previewFrame, double speed) const
+{
+    if (speed == 1.0)
+        return sourceFromEdited(previewFrame);
+    const auto parts = speedParts(*this, speed);
+    for (const auto &part : parts) {
+        const int length = part.out - part.in + 1;
+        if (previewFrame < part.offset + length) {
+            const int q = part.in + qMax(0, previewFrame - part.offset);
+            return qBound(part.source.start, int(std::lround(q * speed)), part.source.end - 1);
+        }
+    }
+    return parts.isEmpty() ? trim.start : parts.last().source.end - 1;
+}
+
+int Edit::previewLength(double speed) const
+{
+    if (speed == 1.0)
+        return keptFrames();
+    const auto parts = speedParts(*this, speed);
+    return parts.isEmpty() ? 0 : parts.last().offset + parts.last().out - parts.last().in + 1;
 }
 
 bool Edit::setTrim(int start, int end)
@@ -551,12 +631,21 @@ QString compileXml(const Edit &edit, const CompileOptions &options)
         xml.writeAttribute(QStringLiteral("real_time"), QString::number(options.realTime));
     }
 
-    const int lastFrame = qMax(0, edit.frames - 1);
-    xml.writeStartElement(QStringLiteral("producer"));
+    // Watching faster: Time Remap on the source, as Shotcut's own Time Remap filter does, so each
+    // frame shown is the right one and voices can keep their pitch. The kept parts are then
+    // measured in its time.
+    const bool remap = options.speed > 0 && options.speed != 1.0 && options.applyTime
+                       && !edit.isPhoto;
+    const double speed = remap ? options.speed : 1.0;
+    const int sourceLength = remap ? int(std::ceil(edit.frames / speed)) : edit.frames;
+    // Sound changes are links on the source, which may hold back a little sound to work on, as
+    // a noise filter does; MLT's plain filters must hand each frame's sound straight back.
+    const bool sound = edit.hasSoundChanges();
+    xml.writeStartElement(remap || sound ? QStringLiteral("chain") : QStringLiteral("producer"));
     xml.writeAttribute(QStringLiteral("id"), QStringLiteral("source"));
     xml.writeAttribute(QStringLiteral("in"), QStringLiteral("0"));
-    xml.writeAttribute(QStringLiteral("out"), QString::number(lastFrame));
-    writeProperty(xml, QStringLiteral("length"), QString::number(edit.frames));
+    xml.writeAttribute(QStringLiteral("out"), QString::number(qMax(0, sourceLength - 1)));
+    writeProperty(xml, QStringLiteral("length"), QString::number(sourceLength));
     const bool turnedPhoto = edit.isPhoto && !options.photoPath.isEmpty();
     writeProperty(xml, QStringLiteral("resource"), turnedPhoto ? options.photoPath : edit.mediaPath);
     if (edit.isPhoto) {
@@ -571,45 +660,182 @@ QString compileXml(const Edit &edit, const CompileOptions &options)
         if (!graph.isEmpty())
             writeProperty(xml, QStringLiteral("filtergraph"), graph);
     }
+    const auto link = [&](const QString &service,
+                          const QVector<QPair<QString, QString>> &properties) {
+        xml.writeStartElement(QStringLiteral("link"));
+        writeProperty(xml, QStringLiteral("mlt_service"), service);
+        for (const auto &property : properties)
+            writeProperty(xml, property.first, property.second);
+        xml.writeEndElement();
+    };
+    if (sound) {
+        // Static first, so the rest does not make the hiss louder too. Hiss is usually around
+        // -45 dB: a fixed floor just above it takes off about 24 dB and leaves talking alone,
+        // where FFmpeg's own noise tracking hardly took anything off in tests.
+        if (edit.removeStatic)
+            link(QStringLiteral("avfilter.afftdn"),
+                 {{QStringLiteral("av.nr"), QStringLiteral("24")},
+                  {QStringLiteral("av.nf"), QStringLiteral("-38")}});
+        if (edit.clearVoices) {
+            // Less rumble, more of the range where words are understood, and quiet words
+            // brought up nearer the loud ones.
+            link(QStringLiteral("avfilter.highpass"),
+                 {{QStringLiteral("av.f"), QStringLiteral("100")}});
+            link(QStringLiteral("avfilter.equalizer"),
+                 {{QStringLiteral("av.f"), QStringLiteral("3000")},
+                  {QStringLiteral("av.width_type"), QStringLiteral("o")},
+                  {QStringLiteral("av.width"), QStringLiteral("1.5")},
+                  {QStringLiteral("av.g"), QStringLiteral("4")}});
+            link(QStringLiteral("avfilter.acompressor"),
+                 {{QStringLiteral("av.threshold"), QStringLiteral("0.1")},
+                  {QStringLiteral("av.ratio"), QStringLiteral("3")},
+                  {QStringLiteral("av.attack"), QStringLiteral("10")},
+                  {QStringLiteral("av.release"), QStringLiteral("200")},
+                  {QStringLiteral("av.makeup"), QStringLiteral("2")}});
+        }
+        if (edit.volume != 100)
+            link(QStringLiteral("avfilter.volume"),
+                 {{QStringLiteral("av.volume"),
+                   QString::number(qBound(0, edit.volume, 800) / 100.0, 'f', 6)}});
+        // Louder never crackles: peaks are held just under the top.
+        if (edit.volume > 100 || edit.clearVoices)
+            link(QStringLiteral("avfilter.alimiter"),
+                 {{QStringLiteral("av.limit"), QStringLiteral("0.95")},
+                  {QStringLiteral("av.level"), QStringLiteral("0")}});
+    }
+    if (remap) {
+        xml.writeStartElement(QStringLiteral("link"));
+        writeProperty(xml, QStringLiteral("mlt_service"), QStringLiteral("timeremap"));
+        writeProperty(xml,
+                      QStringLiteral("speed_map"),
+                      QStringLiteral("0=") + QString::number(speed, 'g', 6));
+        writeProperty(xml, QStringLiteral("image_mode"), QStringLiteral("nearest"));
+        writeProperty(xml, QStringLiteral("pitch"), QStringLiteral("1"));
+        xml.writeEndElement();
+    }
     xml.writeEndElement();
 
     xml.writeStartElement(QStringLiteral("playlist"));
     xml.writeAttribute(QStringLiteral("id"), QStringLiteral("main"));
+    const bool timed = options.applyTime && !edit.isPhoto;
     QVector<Range> ranges;
-    if (options.applyTime && !edit.isPhoto)
+    if (timed)
         ranges = edit.kept();
     else
         ranges << Range{0, edit.frames};
     for (const auto &range : ranges) {
+        const int in = remap ? int(std::ceil(range.start / speed)) : range.start;
+        const int out = remap ? int(std::ceil(range.end / speed)) - 1 : range.end - 1;
+        if (out < in)
+            continue;
         xml.writeEmptyElement(QStringLiteral("entry"));
         xml.writeAttribute(QStringLiteral("producer"), QStringLiteral("source"));
-        xml.writeAttribute(QStringLiteral("in"), QString::number(range.start));
-        xml.writeAttribute(QStringLiteral("out"), QString::number(range.end - 1));
+        xml.writeAttribute(QStringLiteral("in"), QString::number(in));
+        xml.writeAttribute(QStringLiteral("out"), QString::number(out));
+    }
+    const auto filter = [&](const QString &service,
+                            const QVector<QPair<QString, QString>> &properties,
+                            int in = -1,
+                            int out = -1) {
+        xml.writeStartElement(QStringLiteral("filter"));
+        if (in >= 0) {
+            xml.writeAttribute(QStringLiteral("in"), QString::number(in));
+            xml.writeAttribute(QStringLiteral("out"), QString::number(out));
+        }
+        writeProperty(xml, QStringLiteral("mlt_service"), service);
+        for (const auto &property : properties)
+            writeProperty(xml, property.first, property.second);
+        xml.writeEndElement();
+    };
+    const auto number = [](double value) { return QString::number(value, 'f', 6); };
+
+    // An old tape: a median of each frame and its neighbours takes out the streaks and specks
+    // that last a moment, then a light denoise smooths the snow. The median needs the next
+    // frame, so the picture runs one frame (a thirtieth of a second) behind the sound.
+    if (edit.cleanUp && !edit.isPhoto) {
+        filter(QStringLiteral("avfilter.tmedian"),
+               {{QStringLiteral("av.radius"), QStringLiteral("1")}});
+        filter(QStringLiteral("avfilter.hqdn3d"), {});
+    }
+    // Lighter lifts the dark parts most, so faces in shadow show without washing out the sky.
+    if (edit.brightness != 0) {
+        const double amount = qBound(-100, edit.brightness, 100) / 100.0;
+        filter(QStringLiteral("avfilter.eq"),
+               {{QStringLiteral("av.gamma"), number(std::pow(2.0, amount))},
+                {QStringLiteral("av.brightness"), number(amount * 0.05)}});
+    }
+    // Hidden parts, on the whole turned picture before the crop, so they stay on what they
+    // cover. Sizes are fractions of the frame, so the smaller preview matches the saved file.
+    if (!edit.isPhoto) {
+        const auto keptRanges = timed ? edit.kept() : QVector<Range>{Range{0, edit.frames}};
+        for (int i = 0; i < edit.hides.size(); ++i) {
+            const Hide &hide = edit.hides.at(i);
+            int first = -1;
+            int last = -1;
+            for (const auto &range : keptRanges) {
+                const int a = qMax(range.start, hide.time.start);
+                const int b = qMin(range.end, hide.time.end);
+                if (b <= a)
+                    continue;
+                if (first < 0)
+                    first = a;
+                last = b - 1;
+            }
+            if (first < 0)
+                continue;
+            const int in = timed ? edit.previewFromSource(first, speed) : first;
+            const int out = timed ? edit.previewFromSource(last, speed) : last;
+            const QRectF area = hide.area.intersected(QRectF(0, 0, 1, 1));
+            const QString mask = i < options.hideMasks.size() ? options.hideMasks.at(i) : QString();
+            if (hide.blur && !mask.isEmpty()) {
+                // Shotcut's Mask: Simple Shape and Blur, with the shape drawn by BUGS!.
+                filter(QStringLiteral("mask_start"),
+                       {{QStringLiteral("filter"), QStringLiteral("shape")},
+                        {QStringLiteral("filter.resource"), mask},
+                        {QStringLiteral("filter.mix"), QStringLiteral("50")},
+                        {QStringLiteral("filter.softness"), QStringLiteral("0")},
+                        {QStringLiteral("filter.invert"), QStringLiteral("0")},
+                        {QStringLiteral("filter.use_luminance"), QStringLiteral("1")},
+                        {QStringLiteral("filter.use_mix"), QStringLiteral("1")},
+                        {QStringLiteral("filter.audio_match"), QStringLiteral("0")},
+                        {QStringLiteral("filter.alpha_operation"), QStringLiteral("overwrite")}},
+                       in,
+                       out);
+                filter(QStringLiteral("box_blur"),
+                       {{QStringLiteral("hradius"), QStringLiteral("40")},
+                        {QStringLiteral("vradius"), QStringLiteral("40")}},
+                       in,
+                       out);
+                filter(QStringLiteral("mask_apply"), {}, in, out);
+            } else {
+                filter(QStringLiteral("avfilter.drawbox"),
+                       {{QStringLiteral("av.x"), QStringLiteral("iw*") + number(area.x())},
+                        {QStringLiteral("av.y"), QStringLiteral("ih*") + number(area.y())},
+                        {QStringLiteral("av.w"), QStringLiteral("iw*") + number(area.width())},
+                        {QStringLiteral("av.h"), QStringLiteral("ih*") + number(area.height())},
+                        {QStringLiteral("av.color"), QStringLiteral("black")},
+                        {QStringLiteral("av.t"), QStringLiteral("fill")}},
+                       in,
+                       out);
+            }
+        }
     }
     if (isCropped) {
-        xml.writeStartElement(QStringLiteral("filter"));
-        writeProperty(xml, QStringLiteral("mlt_service"), QStringLiteral("crop"));
-        writeProperty(xml, QStringLiteral("left"), QString::number(cropRect.left()));
-        writeProperty(xml, QStringLiteral("top"), QString::number(cropRect.top()));
-        writeProperty(xml,
-                      QStringLiteral("right"),
-                      QString::number(rotated.width() - cropRect.left() - cropRect.width()));
-        writeProperty(xml,
-                      QStringLiteral("bottom"),
-                      QString::number(rotated.height() - cropRect.top() - cropRect.height()));
-        xml.writeEndElement();
+        filter(QStringLiteral("crop"),
+               {{QStringLiteral("left"), QString::number(cropRect.left())},
+                {QStringLiteral("top"), QString::number(cropRect.top())},
+                {QStringLiteral("right"),
+                 QString::number(rotated.width() - cropRect.left() - cropRect.width())},
+                {QStringLiteral("bottom"),
+                 QString::number(rotated.height() - cropRect.top() - cropRect.height())}});
     }
     if (!options.captionImage.isEmpty()) {
-        xml.writeStartElement(QStringLiteral("filter"));
-        writeProperty(xml, QStringLiteral("mlt_service"), QStringLiteral("watermark"));
-        writeProperty(xml, QStringLiteral("resource"), options.captionImage);
-        writeProperty(xml,
-                      QStringLiteral("composite.geometry"),
-                      QStringLiteral("0%/0%:100%x100%:100"));
-        writeProperty(xml, QStringLiteral("composite.progressive"), QStringLiteral("1"));
-        writeProperty(xml, QStringLiteral("composite.distort"), QStringLiteral("1"));
-        writeProperty(xml, QStringLiteral("producer.force_reload"), QStringLiteral("0"));
-        xml.writeEndElement();
+        filter(QStringLiteral("watermark"),
+               {{QStringLiteral("resource"), options.captionImage},
+                {QStringLiteral("composite.geometry"), QStringLiteral("0%/0%:100%x100%:100")},
+                {QStringLiteral("composite.progressive"), QStringLiteral("1")},
+                {QStringLiteral("composite.distort"), QStringLiteral("1")},
+                {QStringLiteral("producer.force_reload"), QStringLiteral("0")}});
     }
     xml.writeEndElement(); // playlist
     xml.writeEndElement(); // mlt

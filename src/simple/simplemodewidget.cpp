@@ -50,7 +50,7 @@ const int kOptionsWidth = 300;
 // so the video and tools keep enough room.
 const int kNarrowWindow = 1100;
 const int kNarrowSideWidth = 240;
-const int kControlsHeight = 178;
+const int kControlsHeight = 190; // room above the strip for the playhead's handle
 
 QDir simpleQmlDir()
 {
@@ -170,6 +170,10 @@ QQuickWidget *SimpleModeWidget::addView(const QString &fileName)
     }
     // Keeps keyboard focus on the page unless a text box wants it.
     view->setFocusPolicy(Qt::ClickFocus);
+    // A finger works like the mouse. Taken as touch, a tap never put the cursor in a time box,
+    // because only a click gives the panel the keyboard, and sliders could not be dragged on
+    // Levi's touch screen.
+    view->setAttribute(Qt::WA_AcceptTouchEvents, false);
     m_views << view;
     return view;
 }
@@ -229,6 +233,9 @@ void SimpleModeWidget::enter(QWidget *videoWidget)
     video->setClearColor(QColor(0x0B, 0x0C, 0x0E));
     video->quickWindow()->setColor(QColor(0x0B, 0x0C, 0x0E));
     m_videoWidget->installEventFilter(this);
+    // As for the other views: a finger drags the crop box and the words like the mouse does.
+    m_videoAcceptedTouch = video->testAttribute(Qt::WA_AcceptTouchEvents);
+    video->setAttribute(Qt::WA_AcceptTouchEvents, false);
 
     qApp->installEventFilter(this);
     show();
@@ -249,6 +256,7 @@ void SimpleModeWidget::leave()
     m_previewLayout->removeWidget(m_videoWidget);
 
     auto *video = qobject_cast<Mlt::VideoWidget *>(m_videoWidget);
+    video->setAttribute(Qt::WA_AcceptTouchEvents, m_videoAcceptedTouch);
     video->setPersistentVui(QUrl());
     video->setClearColor(palette().window().color());
     m_videoWidget = nullptr;

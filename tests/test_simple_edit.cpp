@@ -276,6 +276,97 @@ private slots:
         QCOMPARE(num, 30);
     }
 
+    // Watching faster: Time Remap shows source frame round(q * speed) for each kept part, which
+    // starts at ceil(start / speed).
+    void fasterPreviewPositionsMapBothWays()
+    {
+        Edit edit = video();
+        edit.setTrim(30, 270);
+        edit.addCut(Range{100, 130});
+        for (const double speed : {1.5, 2.0, 3.0}) {
+            QCOMPARE(edit.previewFromSource(30, speed), 0);
+            QCOMPARE(edit.sourceFromPreview(0, speed), 30);
+            // Every preview frame maps to a kept source frame, and back to itself.
+            const int length = edit.previewLength(speed);
+            QVERIFY(qAbs(length - edit.keptFrames() / speed) <= 2);
+            int last = -1;
+            for (int q = 0; q < length; ++q) {
+                const int source = edit.sourceFromPreview(q, speed);
+                QVERIFY(source >= 30 && source < 270);
+                QVERIFY(source < 100 || source >= 130);
+                QVERIFY(source > last);
+                last = source;
+                QCOMPARE(edit.previewFromSource(source, speed), q);
+            }
+            // Inside the removed part lands just after it.
+            QCOMPARE(edit.previewFromSource(115, speed), edit.previewFromSource(130, speed));
+        }
+        // Normal speed is the plain edited time.
+        QCOMPARE(edit.previewFromSource(130, 1.0), edit.editedFromSource(130));
+        QCOMPARE(edit.previewLength(1.0), edit.keptFrames());
+    }
+
+    void fasterPreviewUsesTimeRemapWithPitch()
+    {
+        Edit edit = video();
+        edit.setTrim(30, 270);
+        CompileOptions options;
+        options.speed = 2.0;
+        const QString xml = compileXml(edit, options);
+        QVERIFY(xml.contains(QStringLiteral("<chain id=\"source\"")));
+        QVERIFY(xml.contains(QStringLiteral("timeremap")));
+        QVERIFY(xml.contains(QStringLiteral("<property name=\"pitch\">1</property>")));
+        QVERIFY(xml.contains(QStringLiteral("in=\"15\" out=\"134\"")));
+        // Saving never speeds up.
+        options.target = QStringLiteral("/out/x.mp4");
+        options.speed = 1.0;
+        QVERIFY(!compileXml(edit, options).contains(QStringLiteral("timeremap")));
+    }
+
+    void newChangesCountAndCompile()
+    {
+        Edit edit = video();
+        QVERIFY(!edit.hasChanges());
+        Hide hide;
+        hide.time = Range{60, 90};
+        hide.area = QRectF(0.25, 0, 0.5, 1);
+        edit.hides << hide;
+        QVERIFY(edit.hasChanges());
+        QString xml = compileXml(edit, CompileOptions());
+        QVERIFY(xml.contains(QStringLiteral("avfilter.drawbox")));
+        QVERIFY(xml.contains(QStringLiteral("iw*0.250000")));
+        QVERIFY(xml.contains(QStringLiteral("in=\"60\" out=\"89\"")));
+        // Blur needs its mask; without one it still hides, in black.
+        edit.hides[0].blur = true;
+        CompileOptions withMask;
+        withMask.hideMasks << QStringLiteral("/cache/hide.png");
+        xml = compileXml(edit, withMask);
+        QVERIFY(xml.contains(QStringLiteral("mask_start")));
+        QVERIFY(xml.contains(QStringLiteral("box_blur")));
+        QVERIFY(compileXml(edit, CompileOptions()).contains(QStringLiteral("avfilter.drawbox")));
+
+        Edit sound = video();
+        sound.volume = 200;
+        QVERIFY(sound.hasChanges());
+        QVERIFY(compileXml(sound, CompileOptions()).contains(QStringLiteral("avfilter.alimiter")));
+        sound.hasAudio = false;
+        QVERIFY(!sound.hasChanges());
+
+        Edit look = video();
+        look.brightness = 40;
+        look.cleanUp = true;
+        QVERIFY(look.hasChanges());
+        xml = compileXml(look, CompileOptions());
+        QVERIFY(xml.contains(QStringLiteral("avfilter.eq")));
+        QVERIFY(xml.contains(QStringLiteral("avfilter.tmedian")));
+        // Saving a cleaned-up tape uses one thread, so its frames stay in order.
+        QVERIFY(look.needsFramesInOrder());
+        look.cleanUp = false;
+        QVERIFY(!look.needsFramesInOrder());
+        look.reset();
+        QVERIFY(!look.hasChanges());
+    }
+
     void xmlDescribesTheEdit()
     {
         Edit edit = video();

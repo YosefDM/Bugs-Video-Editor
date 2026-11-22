@@ -52,7 +52,7 @@ Rectangle {
 
             Text {
                 Layout.fillWidth: true
-                text: simple.collageActive ? "Collage of " + simple.collageCells.length + " photos"
+                text: simple.collageActive ? (simple.collageCells.length === 1 ? "Collage of 1 photo" : "Collage of " + simple.collageCells.length + " photos")
                       : simple.collagePicking ? "Pick photos for your collage"
                       : simple.hasFile ? "Editing: " + simple.fileName : "Pick a video or photo to start"
                 color: root.t.text
@@ -61,6 +61,15 @@ Rectangle {
                 font.weight: Font.DemiBold
                 elide: Text.ElideMiddle
             }
+        }
+
+        // Clears the screen to start afresh. The lists stay as they are.
+        ActionButton {
+            visible: simple.hasFile || simple.collageActive || simple.collagePicking
+            icon: "close"
+            text: "Close"
+            enabled: !simple.saving
+            onClicked: simple.closeFile()
         }
 
         IconButton {

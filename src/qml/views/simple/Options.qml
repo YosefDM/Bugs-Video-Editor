@@ -128,6 +128,195 @@ Rectangle {
         }
     }
 
+    // The approved stickers: a row of groups, then a window onto the group, about four rows
+    // tall, that scrolls on its own. Only the rows on screen are made.
+    component StickerBrowser: ColumnLayout {
+        id: browser
+
+        property int category: 0
+        signal picked(string id)
+
+        Layout.fillWidth: true
+        spacing: 10
+
+        Flow {
+            Layout.fillWidth: true
+            spacing: 6
+
+            Repeater {
+                model: simple.stickerCategories
+
+                delegate: Rectangle {
+                    required property var modelData
+                    required property int index
+                    readonly property bool selected: browser.category === index
+
+                    width: categoryName.implicitWidth + 20
+                    height: 28
+                    radius: 14
+                    color: selected ? root.t.strong : root.t.chip
+                    Accessible.role: Accessible.Button
+                    Accessible.name: modelData.title
+
+                    Text {
+                        id: categoryName
+                        anchors.centerIn: parent
+                        text: modelData.title
+                        color: parent.selected ? root.t.onStrong : root.t.text
+                        font.family: "Inter"
+                        font.pixelSize: 12
+                        font.weight: Font.DemiBold
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: browser.category = index
+                    }
+                }
+            }
+        }
+
+        // A window onto the group, about four rows tall, that scrolls on its own: with
+        // hundreds of stickers in a group, the options below would otherwise be a long
+        // way down. Only the rows on screen are made.
+        Rectangle {
+            Layout.fillWidth: true
+            Layout.preferredHeight: stickerGrid.cellHeight * 4 + 12
+            radius: 10
+            color: root.t.drop
+            border.width: 1
+            border.color: root.t.softBorder
+            clip: true
+
+            GridView {
+                id: stickerGrid
+
+                anchors.fill: parent
+                anchors.margins: 6
+                anchors.rightMargin: 14
+                cellWidth: Math.floor(width / 5)
+                cellHeight: cellWidth
+                boundsBehavior: Flickable.StopAtBounds
+                model: simple.stickerCategories.length > 0
+                       ? simple.stickerCategories[browser.category].stickers : []
+
+                ScrollBar.vertical: ScrollBar {
+                    parent: stickerGrid.parent
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.right: parent.right
+                    anchors.margins: 2
+                    policy: ScrollBar.AlwaysOn
+                }
+
+                delegate: Rectangle {
+                    required property var modelData
+
+                    width: stickerGrid.cellWidth
+                    height: stickerGrid.cellHeight
+                    radius: 10
+                    color: stickerArea.containsMouse ? root.t.accentSoft : "transparent"
+                    Accessible.role: Accessible.Button
+                    Accessible.name: "Add sticker: " + modelData.name
+
+                    Image {
+                        anchors.fill: parent
+                        anchors.margins: 5
+                        source: modelData.url
+                        sourceSize.width: 96
+                        sourceSize.height: 96
+                        fillMode: Image.PreserveAspectFit
+                        asynchronous: true
+                    }
+
+                    MouseArea {
+                        id: stickerArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: browser.picked(modelData.id)
+                    }
+                }
+            }
+        }
+    }
+
+    // A plain on/off choice with its name and a line saying what it does.
+    component Switch: Rectangle {
+        id: sw
+
+        property string title
+        property string body
+        property bool checked: false
+        signal toggled(bool on)
+
+        Layout.fillWidth: true
+        Layout.preferredHeight: switchText.implicitHeight + 24
+        radius: 12
+        color: checked ? root.t.accentSoft : root.t.drop
+        border.width: 1.5
+        border.color: checked ? root.t.accent : root.t.softBorder
+        Accessible.role: Accessible.CheckBox
+        Accessible.name: title
+        Accessible.checked: checked
+
+        ColumnLayout {
+            id: switchText
+
+            anchors.left: parent.left
+            anchors.right: knob.left
+            anchors.verticalCenter: parent.verticalCenter
+            anchors.leftMargin: 12
+            anchors.rightMargin: 10
+            spacing: 3
+
+            Text {
+                text: sw.title
+                color: root.t.text
+                font.family: "Inter"
+                font.pixelSize: 14
+                font.weight: Font.DemiBold
+            }
+
+            Text {
+                Layout.fillWidth: true
+                text: sw.body
+                wrapMode: Text.WordWrap
+                color: root.t.muted
+                font.family: "Inter"
+                font.pixelSize: 12
+            }
+        }
+
+        Rectangle {
+            id: knob
+
+            anchors.right: parent.right
+            anchors.rightMargin: 12
+            anchors.verticalCenter: parent.verticalCenter
+            width: 44
+            height: 26
+            radius: 13
+            color: sw.checked ? root.t.accent : root.t.softBorder
+
+            Rectangle {
+                x: sw.checked ? parent.width - width - 3 : 3
+                anchors.verticalCenter: parent.verticalCenter
+                width: 20
+                height: 20
+                radius: 10
+                color: "#FFFFFF"
+            }
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            cursorShape: Qt.PointingHandCursor
+            onClicked: sw.toggled(!sw.checked)
+        }
+    }
+
     // On a small screen a tool's options need all the height: the note gives way, and the
     // scroll bar stays visible so it is clear there is more below.
     readonly property bool roomForNote: options.implicitHeight + note.implicitHeight + 28 <= height
@@ -160,7 +349,7 @@ Rectangle {
                 Layout.leftMargin: 18
                 Layout.rightMargin: 18
                 title: "Make a collage"
-                body: "Tap the photos you want on the left. Pick at least two, then press Make collage."
+                body: "Tap the photos you want on the left. One is enough. Then press Make collage."
             }
 
             // Nothing open yet
@@ -185,7 +374,8 @@ Rectangle {
                 readonly property int selected: simple.collageSelectedItem
                 readonly property var item: selected >= 0 && selected < simple.collageItems.length
                                             ? simple.collageItems[selected] : null
-                property int stickerCategory: 0
+                // Choosing a sticker to go behind the photos
+                property bool pickingBackdrop: false
 
                 // The words box may still have the keyboard from the text selected before, so it
                 // is filled in by hand when the selection changes.
@@ -199,7 +389,7 @@ Rectangle {
 
                 Heading {
                     title: "Collage"
-                    body: "Add words and stickers, then drag them into place. Tap a photo to zoom or move it, or tap two photos to swap them."
+                    body: "Tap photos on the left to add them or take them out. Tap a photo here to zoom or move it, or two to swap them." + (simple.collageAdding ? " Adding…" : "")
                 }
 
                 // The photo tapped on the collage, at the top so it shows without scrolling.
@@ -273,6 +463,14 @@ Rectangle {
                             primary: !simple.collagePhotoIsBig
                             onClicked: simple.setCollagePhotoBig(!simple.collagePhotoIsBig)
                         }
+
+                        ActionButton {
+                            Layout.fillWidth: true
+                            icon: "trash"
+                            text: "Take this photo out"
+                            enabled: simple.collageCells.length > 1
+                            onClicked: simple.removeCollagePhoto()
+                        }
                     }
                 }
 
@@ -344,106 +542,8 @@ Rectangle {
                     font.pixelSize: 13
                 }
 
-                Flow {
-                    Layout.fillWidth: true
-                    spacing: 6
-
-                    Repeater {
-                        model: simple.stickerCategories
-
-                        delegate: Rectangle {
-                            required property var modelData
-                            required property int index
-                            readonly property bool selected: collagePanel.stickerCategory === index
-
-                            width: categoryName.implicitWidth + 20
-                            height: 28
-                            radius: 14
-                            color: selected ? root.t.strong : root.t.chip
-                            Accessible.role: Accessible.Button
-                            Accessible.name: modelData.title
-
-                            Text {
-                                id: categoryName
-                                anchors.centerIn: parent
-                                text: modelData.title
-                                color: parent.selected ? root.t.onStrong : root.t.text
-                                font.family: "Inter"
-                                font.pixelSize: 12
-                                font.weight: Font.DemiBold
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: collagePanel.stickerCategory = index
-                            }
-                        }
-                    }
-                }
-
-                // A window onto the group, about four rows tall, that scrolls on its own: with
-                // hundreds of stickers in a group, the options below would otherwise be a long
-                // way down. Only the rows on screen are made.
-                Rectangle {
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: stickerGrid.cellHeight * 4 + 12
-                    radius: 10
-                    color: root.t.drop
-                    border.width: 1
-                    border.color: root.t.softBorder
-                    clip: true
-
-                    GridView {
-                        id: stickerGrid
-
-                        anchors.fill: parent
-                        anchors.margins: 6
-                        anchors.rightMargin: 14
-                        cellWidth: Math.floor(width / 5)
-                        cellHeight: cellWidth
-                        boundsBehavior: Flickable.StopAtBounds
-                        model: simple.stickerCategories.length > 0
-                               ? simple.stickerCategories[collagePanel.stickerCategory].stickers : []
-
-                        ScrollBar.vertical: ScrollBar {
-                            parent: stickerGrid.parent
-                            anchors.top: parent.top
-                            anchors.bottom: parent.bottom
-                            anchors.right: parent.right
-                            anchors.margins: 2
-                            policy: ScrollBar.AlwaysOn
-                        }
-
-                        delegate: Rectangle {
-                            required property var modelData
-
-                            width: stickerGrid.cellWidth
-                            height: stickerGrid.cellHeight
-                            radius: 10
-                            color: stickerArea.containsMouse ? root.t.accentSoft : "transparent"
-                            Accessible.role: Accessible.Button
-                            Accessible.name: "Add sticker: " + modelData.name
-
-                            Image {
-                                anchors.fill: parent
-                                anchors.margins: 5
-                                source: modelData.url
-                                sourceSize.width: 96
-                                sourceSize.height: 96
-                                fillMode: Image.PreserveAspectFit
-                                asynchronous: true
-                            }
-
-                            MouseArea {
-                                id: stickerArea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: simple.addSticker(modelData.id)
-                            }
-                        }
-                    }
+                StickerBrowser {
+                    onPicked: (id) => simple.addSticker(id)
                 }
 
                 // The selected text or sticker, under the stickers so picking a sticker
@@ -719,7 +819,7 @@ Rectangle {
                 }
 
                 Text {
-                    text: "Shape"
+                    text: "Size"
                     color: root.t.text2
                     font.family: "Inter"
                     font.pixelSize: 13
@@ -733,16 +833,23 @@ Rectangle {
                     spacing: 8
 
                     Repeater {
+                        // Screen shapes, then print sizes in inches.
                         model: [
                             { id: "square", label: "Square", w: 22, h: 22 },
                             { id: "story", label: "Story", w: 14, h: 24 },
                             { id: "wide", label: "Wide", w: 32, h: 18 },
-                            { id: "portrait", label: "4:5", w: 18, h: 22 }
+                            { id: "portrait", label: "4:5", w: 18, h: 22 },
+                            { id: "size", sw: 4, sh: 6, label: "4 × 6", w: 16, h: 24 },
+                            { id: "size", sw: 6, sh: 4, label: "6 × 4", w: 24, h: 16 },
+                            { id: "size", sw: 5, sh: 7, label: "5 × 7", w: 17, h: 24 },
+                            { id: "size", sw: 8, sh: 10, label: "8 × 10", w: 19, h: 24 }
                         ]
 
                         delegate: Rectangle {
                             required property var modelData
                             readonly property bool selected: simple.collageShape === modelData.id
+                                                             && (modelData.id !== "size"
+                                                                 || (simple.collageSizeW === modelData.sw && simple.collageSizeH === modelData.sh))
 
                             width: (collageShapes.width - 8) / 2
                             height: 48
@@ -780,7 +887,113 @@ Rectangle {
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: simple.setCollageShape(modelData.id)
+                                onClicked: modelData.id === "size" ? simple.setCollageSize(modelData.sw, modelData.sh)
+                                                                   : simple.setCollageShape(modelData.id)
+                            }
+                        }
+                    }
+                }
+
+                // Any size he types, in inches.
+                Text {
+                    Layout.fillWidth: true
+                    text: "Or type a size, in inches"
+                    color: root.t.muted
+                    font.family: "Inter"
+                    font.pixelSize: 12
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8
+
+                    Field {
+                        id: sizeWField
+                        title: "Wide"
+                        onCommitted: {
+                            const w = parseFloat(text.replace(",", "."));
+                            if (w >= 1 && w <= 60)
+                                simple.setCollageSize(w, simple.collageShape === "size" ? simple.collageSizeH : Math.max(1, w));
+                            text = Qt.binding(() => simple.collageShape === "size" ? String(simple.collageSizeW) : "");
+                        }
+                        Binding on text {
+                            value: simple.collageShape === "size" ? String(simple.collageSizeW) : ""
+                            when: !sizeWField.input.activeFocus
+                        }
+                    }
+
+                    Text {
+                        Layout.alignment: Qt.AlignBottom
+                        Layout.bottomMargin: 10
+                        text: "×"
+                        color: root.t.text2
+                        font.family: "Inter"
+                        font.pixelSize: 16
+                    }
+
+                    Field {
+                        id: sizeHField
+                        title: "High"
+                        onCommitted: {
+                            const h = parseFloat(text.replace(",", "."));
+                            if (h >= 1 && h <= 60)
+                                simple.setCollageSize(simple.collageShape === "size" ? simple.collageSizeW : Math.max(1, h), h);
+                            text = Qt.binding(() => simple.collageShape === "size" ? String(simple.collageSizeH) : "");
+                        }
+                        Binding on text {
+                            value: simple.collageShape === "size" ? String(simple.collageSizeH) : ""
+                            when: !sizeHField.input.activeFocus
+                        }
+                    }
+                }
+
+                Text {
+                    text: "Cut into a shape"
+                    color: root.t.text2
+                    font.family: "Inter"
+                    font.pixelSize: 13
+                }
+
+                Row {
+                    id: outlineRow
+
+                    Layout.fillWidth: true
+                    spacing: 6
+
+                    Repeater {
+                        model: [
+                            { id: "", label: "None" },
+                            { id: "heart", label: "Heart" },
+                            { id: "circle", label: "Circle" },
+                            { id: "star", label: "Star" }
+                        ]
+
+                        delegate: Rectangle {
+                            required property var modelData
+                            readonly property bool selected: simple.collageOutline === modelData.id
+
+                            width: (outlineRow.width - 18) / 4
+                            height: 40
+                            radius: 10
+                            color: selected ? root.t.accentSoft : "transparent"
+                            border.width: 1.5
+                            border.color: selected ? root.t.accent : root.t.softBorder
+                            Accessible.role: Accessible.Button
+                            Accessible.name: modelData.label
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: modelData.label
+                                color: root.t.text
+                                font.family: "Inter"
+                                font.pixelSize: 12
+                                font.weight: Font.DemiBold
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: simple.setCollageOutline(modelData.id)
                             }
                         }
                     }
@@ -797,7 +1010,7 @@ Rectangle {
                 // Look
                 LookSlider {
                     title: "Space between photos"
-                    to: 0.06
+                    to: 0.15
                     value: simple.collageSpacing
                     onMoved: (value) => simple.setCollageSpacing(value)
                 }
@@ -855,6 +1068,107 @@ Rectangle {
                                 onClicked: simple.setCollageBackground(modelData)
                             }
                         }
+                    }
+                }
+
+                // A sticker behind the photos, such as a big heart
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 10
+
+                    Rectangle {
+                        Layout.preferredWidth: 48
+                        Layout.preferredHeight: 48
+                        radius: 10
+                        color: root.t.drop
+                        border.width: 1
+                        border.color: root.t.softBorder
+
+                        Image {
+                            anchors.fill: parent
+                            anchors.margins: 5
+                            visible: simple.collageBackdropUrl.length > 0
+                            source: simple.collageBackdropUrl
+                            sourceSize.width: 96
+                            fillMode: Image.PreserveAspectFit
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            visible: simple.collageBackdropUrl.length === 0
+                            text: "None"
+                            color: root.t.muted
+                            font.family: "Inter"
+                            font.pixelSize: 11
+                        }
+                    }
+
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 4
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: "Sticker behind the photos"
+                            wrapMode: Text.WordWrap
+                            color: root.t.text2
+                            font.family: "Inter"
+                            font.pixelSize: 13
+                        }
+
+                        RowLayout {
+                            spacing: 12
+
+                            Text {
+                                text: collagePanel.pickingBackdrop ? "Cancel"
+                                      : simple.collageBackdrop.length > 0 ? "Change" : "Choose one"
+                                color: root.t.accent
+                                font.family: "Inter"
+                                font.pixelSize: 12
+                                font.underline: true
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    anchors.margins: -8
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: collagePanel.pickingBackdrop = !collagePanel.pickingBackdrop
+                                }
+                            }
+
+                            Text {
+                                visible: simple.collageBackdrop.length > 0 && !collagePanel.pickingBackdrop
+                                text: "Take it away"
+                                color: root.t.danger
+                                font.family: "Inter"
+                                font.pixelSize: 12
+                                font.underline: true
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    anchors.margins: -8
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: simple.setCollageBackdrop("")
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Text {
+                    visible: collagePanel.pickingBackdrop
+                    Layout.fillWidth: true
+                    text: "Tap a sticker to put it behind the photos, as big as fits. It shows in the space between and round them, and round a shape."
+                    wrapMode: Text.WordWrap
+                    color: root.t.muted
+                    font.family: "Inter"
+                    font.pixelSize: 12
+                }
+
+                StickerBrowser {
+                    visible: collagePanel.pickingBackdrop
+                    onPicked: (id) => {
+                        simple.setCollageBackdrop(id);
+                        collagePanel.pickingBackdrop = false;
                     }
                 }
 
@@ -1023,6 +1337,26 @@ Rectangle {
                     }
                 }
 
+                Text {
+                    Layout.fillWidth: true
+                    text: "Back 10 moves the start of the red box earlier, and Forward 30 moves its end later."
+                    wrapMode: Text.WordWrap
+                    color: root.t.muted
+                    font.family: "Inter"
+                    font.pixelSize: 12
+                }
+
+                // Plays from a few seconds before the red box to a few after, jumping over it,
+                // so he can check the join before anything goes.
+                ActionButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 44
+                    icon: simple.watchingCut ? "pause" : "eye"
+                    text: simple.watchingCut ? "Stop watching" : "Watch it without this part"
+                    enabled: simple.canRemoveSelection
+                    onClicked: simple.watchingCut ? simple.stopWatchingCut() : simple.watchCut()
+                }
+
                 ActionButton {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 46
@@ -1084,6 +1418,345 @@ Rectangle {
                                 }
                             }
                         }
+                    }
+                }
+            }
+
+
+            // Hide part of the picture for a while
+            ColumnLayout {
+                id: hidePanel
+
+                readonly property bool any: simple.selectedHide >= 0 && simple.selectedHide < simple.hides.length
+                readonly property var hide: any ? simple.hides[simple.selectedHide] : null
+
+                visible: root.editing && simple.tool === "hide"
+                Layout.fillWidth: true
+                Layout.leftMargin: 18
+                Layout.rightMargin: 18
+                spacing: 12
+
+                Heading {
+                    title: "Hide part of the video"
+                    body: "Black out or blur the picture for a few seconds. The sound keeps playing."
+                }
+
+                ActionButton {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 44
+                    icon: "plus"
+                    text: simple.hides.length > 0 ? "Hide another part" : "Hide a part"
+                    primary: simple.hides.length === 0
+                    onClicked: simple.addHide()
+                }
+
+                Rectangle {
+                    visible: hidePanel.any
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: hideColumn.implicitHeight + 24
+                    radius: 12
+                    color: root.t.drop
+                    border.width: 1
+                    border.color: "#8A4FD8"
+
+                    ColumnLayout {
+                        id: hideColumn
+
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.top: parent.top
+                        anchors.margins: 12
+                        spacing: 10
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: "Drag the purple part on the strip to choose the seconds, or type them."
+                            wrapMode: Text.WordWrap
+                            color: root.t.muted
+                            font.family: "Inter"
+                            font.pixelSize: 12
+                        }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 10
+
+                            Field {
+                                id: hideStartField
+                                title: "From"
+                                onCommitted: {
+                                    if (text !== simple.hideStartText)
+                                        simple.setHideStartText(text);
+                                    text = Qt.binding(() => simple.hideStartText);
+                                }
+                                Binding on text {
+                                    value: simple.hideStartText
+                                    when: !hideStartField.input.activeFocus
+                                }
+                            }
+
+                            Field {
+                                id: hideEndField
+                                title: "To"
+                                onCommitted: {
+                                    if (text !== simple.hideEndText)
+                                        simple.setHideEndText(text);
+                                    text = Qt.binding(() => simple.hideEndText);
+                                }
+                                Binding on text {
+                                    value: simple.hideEndText
+                                    when: !hideEndField.input.activeFocus
+                                }
+                            }
+                        }
+
+                        Text {
+                            text: "How"
+                            color: root.t.text2
+                            font.family: "Inter"
+                            font.pixelSize: 13
+                        }
+
+                        Row {
+                            id: hideHow
+
+                            Layout.fillWidth: true
+                            spacing: 8
+
+                            Repeater {
+                                model: [
+                                    { blur: false, label: "Black", hint: "Gone completely" },
+                                    { blur: true, label: "Blur", hint: "Smudged" }
+                                ]
+
+                                delegate: Rectangle {
+                                    required property var modelData
+                                    readonly property bool selected: hidePanel.hide !== null && hidePanel.hide.blur === modelData.blur
+
+                                    width: (hideHow.width - 8) / 2
+                                    height: 58
+                                    radius: 10
+                                    color: selected ? root.t.accentSoft : "transparent"
+                                    border.width: 1.5
+                                    border.color: selected ? root.t.accent : root.t.softBorder
+                                    Accessible.role: Accessible.Button
+                                    Accessible.name: modelData.label
+
+                                    Column {
+                                        anchors.centerIn: parent
+                                        spacing: 3
+
+                                        Text {
+                                            anchors.horizontalCenter: parent.horizontalCenter
+                                            text: modelData.label
+                                            color: root.t.text
+                                            font.family: "Inter"
+                                            font.pixelSize: 14
+                                            font.weight: Font.DemiBold
+                                        }
+
+                                        Text {
+                                            anchors.horizontalCenter: parent.horizontalCenter
+                                            text: modelData.hint
+                                            color: root.t.muted
+                                            font.family: "Inter"
+                                            font.pixelSize: 11
+                                        }
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: simple.setHideBlur(modelData.blur)
+                                    }
+                                }
+                            }
+                        }
+
+                        Text {
+                            Layout.fillWidth: true
+                            text: hidePanel.hide && hidePanel.hide.whole
+                                  ? "It covers the whole picture. To hide only part of it, drag the corners of the purple box on the picture."
+                                  : "Drag the purple box on the picture over what to hide, and its corners to size it."
+                            wrapMode: Text.WordWrap
+                            color: root.t.muted
+                            font.family: "Inter"
+                            font.pixelSize: 12
+                        }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 8
+
+                            ActionButton {
+                                Layout.fillWidth: true
+                                text: "Whole picture"
+                                fontSize: 12
+                                enabled: hidePanel.hide !== null && !hidePanel.hide.whole
+                                onClicked: simple.hideWholePicture()
+                            }
+
+                            ActionButton {
+                                Layout.fillWidth: true
+                                icon: "trash"
+                                text: "Remove"
+                                fontSize: 12
+                                onClicked: simple.removeHide(simple.selectedHide)
+                            }
+                        }
+                    }
+                }
+
+                ColumnLayout {
+                    visible: simple.hides.length > 1
+                    Layout.fillWidth: true
+                    spacing: 6
+
+                    Text {
+                        text: "Hidden parts"
+                        color: root.t.muted
+                        font.family: "Inter"
+                        font.pixelSize: 12
+                    }
+
+                    Repeater {
+                        model: simple.hides
+
+                        delegate: Rectangle {
+                            required property var modelData
+                            required property int index
+                            readonly property bool selected: index === simple.selectedHide
+
+                            Layout.fillWidth: true
+                            Layout.preferredHeight: 36
+                            radius: 8
+                            color: selected ? root.t.accentSoft : "transparent"
+                            border.width: 1
+                            border.color: selected ? root.t.accent : root.t.softBorder
+
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.left: parent.left
+                                anchors.leftMargin: 10
+                                text: modelData.label + " · " + (modelData.blur ? "Blur" : "Black")
+                                color: root.t.text2
+                                font.family: "Inter"
+                                font.pixelSize: 13
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: simple.selectHide(index)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Picture: lighter, and cleaning up an old tape
+            ColumnLayout {
+                visible: root.editing && simple.tool === "look"
+                Layout.fillWidth: true
+                Layout.leftMargin: 18
+                Layout.rightMargin: 18
+                spacing: 14
+
+                Heading {
+                    title: simple.isPhoto ? "Lighter or darker" : "Picture"
+                    body: simple.isPhoto ? "Make a dark photo lighter, or a bright one darker."
+                                         : "Make a dark video lighter, or clean up an old tape."
+                }
+
+                LookSlider {
+                    title: simple.brightness === 0 ? "Light: as it was"
+                           : simple.brightness > 0 ? "Light: " + simple.brightness + "% lighter"
+                           : "Light: " + -simple.brightness + "% darker"
+                    from: -100
+                    to: 100
+                    value: simple.brightness
+                    onMoved: (value) => simple.setBrightness(Math.round(value))
+                }
+
+                RowLayout {
+                    Layout.fillWidth: true
+
+                    Text {
+                        text: "Darker"
+                        color: root.t.muted
+                        font.family: "Inter"
+                        font.pixelSize: 11
+                    }
+
+                    Item {
+                        Layout.fillWidth: true
+                    }
+
+                    Text {
+                        text: "Lighter"
+                        color: root.t.muted
+                        font.family: "Inter"
+                        font.pixelSize: 11
+                    }
+                }
+
+                ActionButton {
+                    Layout.fillWidth: true
+                    text: "Back to as it was"
+                    fontSize: 12
+                    enabled: simple.brightness !== 0
+                    onClicked: simple.setBrightness(0)
+                }
+
+                Switch {
+                    visible: !simple.isPhoto
+                    title: "Clean up an old tape"
+                    body: "For a video of a VCR tape: takes out most of the lines that flash up and down, the snow and the fuzzy noise."
+                    checked: simple.cleanUp
+                    onToggled: (on) => simple.setCleanUp(on)
+                }
+            }
+
+            // Sound
+            ColumnLayout {
+                visible: root.editing && simple.tool === "sound"
+                Layout.fillWidth: true
+                Layout.leftMargin: 18
+                Layout.rightMargin: 18
+                spacing: 14
+
+                Heading {
+                    title: "Sound"
+                    body: simple.hasAudio ? "Make it louder and clearer. Play it to hear the difference."
+                                          : "This video has no sound."
+                }
+
+                ColumnLayout {
+                    visible: simple.hasAudio
+                    Layout.fillWidth: true
+                    spacing: 14
+
+                    LookSlider {
+                        title: simple.volume === 100 ? "Volume: as it was"
+                               : "Volume: " + (simple.volume / 100).toFixed(1).replace(".0", "") + " times louder"
+                        from: 100
+                        to: 400
+                        value: simple.volume
+                        onMoved: (value) => simple.setVolume(Math.round(value / 10) * 10)
+                    }
+
+                    Switch {
+                        title: "Clearer voices"
+                        body: "Less rumble, crisper words, and quiet talking brought up nearer the loud parts."
+                        checked: simple.clearVoices
+                        onToggled: (on) => simple.setClearVoices(on)
+                    }
+
+                    Switch {
+                        title: "Take out static"
+                        body: "Quietens hiss, hum and crackle in the background."
+                        checked: simple.removeStatic
+                        onToggled: (on) => simple.setRemoveStatic(on)
                     }
                 }
             }

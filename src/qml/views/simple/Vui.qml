@@ -212,6 +212,107 @@ Shotcut.VuiBase {
         }
     }
 
+    // The part being hidden, in Hide. Drawn over the preview, which already shows it blacked out
+    // or blurred, so its place and size can be changed at any moment of the video.
+    Item {
+        id: hideLayer
+
+        readonly property rect area: simple.hideArea
+        readonly property real ax: area.x * width
+        readonly property real ay: area.y * height
+        readonly property real aw: area.width * width
+        readonly property real ah: area.height * height
+
+        visible: simple.hasFile && simple.tool === "hide" && simple.selectedHide >= 0
+        x: root.frameX
+        y: root.frameY
+        width: root.frameW
+        height: root.frameH
+        clip: true
+
+        Rectangle {
+            id: hideBox
+
+            x: hideLayer.ax
+            y: hideLayer.ay
+            width: hideLayer.aw
+            height: hideLayer.ah
+            color: "#268A4FD8"
+            border.width: 3
+            border.color: "#B48BFF"
+
+            MouseArea {
+                property point grab
+                property rect start
+
+                anchors.fill: parent
+                cursorShape: Qt.SizeAllCursor
+                onPressed: (mouse) => {
+                    grab = mapToItem(hideLayer, mouse.x, mouse.y);
+                    start = simple.hideArea;
+                }
+                onPositionChanged: (mouse) => {
+                    if (!pressed)
+                        return;
+                    var at = mapToItem(hideLayer, mouse.x, mouse.y);
+                    var x = start.x + (at.x - grab.x) / hideLayer.width;
+                    var y = start.y + (at.y - grab.y) / hideLayer.height;
+                    x = Math.max(-start.width + 0.05, Math.min(0.95, x));
+                    y = Math.max(-start.height + 0.05, Math.min(0.95, y));
+                    simple.setHideArea(x, y, start.width, start.height);
+                }
+                onReleased: simple.endHideAreaDrag()
+            }
+        }
+
+        Repeater {
+            model: [
+                { xSide: 0, ySide: 0 },
+                { xSide: 1, ySide: 0 },
+                { xSide: 0, ySide: 1 },
+                { xSide: 1, ySide: 1 }
+            ]
+
+            delegate: Rectangle {
+                id: hideCorner
+
+                required property var modelData
+
+                // Inside the box, so a whole-picture box still has corners to grab.
+                x: hideLayer.ax + (modelData.xSide ? hideLayer.aw - width : 0)
+                y: hideLayer.ay + (modelData.ySide ? hideLayer.ah - height : 0)
+                width: 26
+                height: 26
+                radius: 6
+                color: "#B48BFF"
+                border.width: 2
+                border.color: "#FFFFFF"
+
+                MouseArea {
+                    anchors.fill: parent
+                    anchors.margins: -8
+                    cursorShape: hideCorner.modelData.xSide === hideCorner.modelData.ySide ? Qt.SizeFDiagCursor : Qt.SizeBDiagCursor
+                    onPositionChanged: (mouse) => {
+                        if (!pressed)
+                            return;
+                        var at = mapToItem(hideLayer, mouse.x, mouse.y);
+                        var r = simple.hideArea;
+                        var anchorX = hideCorner.modelData.xSide ? r.x : r.x + r.width;
+                        var anchorY = hideCorner.modelData.ySide ? r.y : r.y + r.height;
+                        var px = Math.max(0, Math.min(1, at.x / hideLayer.width));
+                        var py = Math.max(0, Math.min(1, at.y / hideLayer.height));
+                        var w = Math.max(0.05, hideCorner.modelData.xSide ? px - anchorX : anchorX - px);
+                        var h = Math.max(0.05, hideCorner.modelData.ySide ? py - anchorY : anchorY - py);
+                        simple.setHideArea(hideCorner.modelData.xSide ? anchorX : anchorX - w,
+                                           hideCorner.modelData.ySide ? anchorY : anchorY - h,
+                                           w, h);
+                    }
+                    onReleased: simple.endHideAreaDrag()
+                }
+            }
+        }
+    }
+
     // Text labels, drawn live while the Text tool is open so they can be dragged. Same font,
     // size and shadow as drawLabels() in simplemedia.cpp, which draws them into the saved file.
     Item {
