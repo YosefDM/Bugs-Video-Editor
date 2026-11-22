@@ -17,13 +17,20 @@ Rectangle {
         id: skip
 
         property int seconds
+        // In Cut out they stretch the red box instead: Back moves its start earlier, Forward
+        // its end later.
+        readonly property bool movesBox: simple.tool === "cut" && simple.hasSelection
 
         Layout.preferredWidth: 40
         Layout.preferredHeight: 40
         radius: 20
         color: skipArea.containsMouse ? root.t.chip : "transparent"
+        border.width: movesBox ? 1.5 : 0
+        border.color: "#E5484D"
         Accessible.role: Accessible.Button
-        Accessible.name: seconds < 0 ? "Back " + -seconds + " seconds" : "Forward " + seconds + " seconds"
+        Accessible.name: movesBox ? (seconds < 0 ? "Move the start of the red box " + -seconds + " seconds earlier"
+                                                 : "Move the end of the red box " + seconds + " seconds later")
+                                  : seconds < 0 ? "Back " + -seconds + " seconds" : "Forward " + seconds + " seconds"
 
         Icon {
             anchors.centerIn: parent
@@ -202,11 +209,15 @@ Rectangle {
 
             readonly property var tools: simple.isPhoto
                 ? [{ id: "crop", label: "Crop", icon: "crop" },
+                   { id: "look", label: "Lighter", icon: "sun" },
                    { id: "caption", label: "Caption", icon: "caption" },
                    { id: "text", label: "Text", icon: "text" }]
                 : [{ id: "trim", label: "Trim", icon: "trim" },
                    { id: "cut", label: "Cut out", icon: "cut" },
+                   { id: "hide", label: "Hide", icon: "hide" },
                    { id: "crop", label: "Crop", icon: "crop" },
+                   { id: "look", label: "Picture", icon: "magic" },
+                   { id: "sound", label: "Sound", icon: "sound" },
                    { id: "caption", label: "Caption", icon: "caption" },
                    { id: "text", label: "Text", icon: "text" },
                    { id: "frame", label: "Save picture", icon: "frame" }]

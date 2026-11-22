@@ -19,7 +19,8 @@ Rectangle {
         width: parent.width - 64
         horizontalAlignment: Text.AlignHCenter
         text: simple.collageMaking ? "Making your collage…"
-              : simple.collagePickCount < 2 ? "Tap the photos for your collage on the left."
+              : simple.collagePickCount === 0 ? "Tap the photos for your collage on the left."
+              : simple.collagePickCount === 1 ? "1 photo picked. Pick more, or press Make collage on the left."
               : simple.collagePickCount + " photos picked. Press Make collage on the left."
         wrapMode: Text.WordWrap
         color: "#9A9EA8"

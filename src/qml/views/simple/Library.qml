@@ -8,6 +8,8 @@ Rectangle {
 
     readonly property var t: Theme.colors(simple.dark)
     readonly property bool onOriginals: simple.tab === "originals"
+    // Taps on Originals add photos to the open collage or take them out.
+    readonly property bool addsToCollage: simple.collageActive && onOriginals
 
     color: t.panel
 
@@ -176,8 +178,9 @@ Rectangle {
 
                 Text {
                     Layout.fillWidth: true
-                    text: simple.collagePickCount < 2
-                          ? "Tap the photos for your collage. Pick at least two."
+                    text: simple.collagePickCount === 0
+                          ? "Tap the photos for your collage. One is enough."
+                          : simple.collagePickCount === 1 ? "1 photo picked. Tap more, or make it."
                           : simple.collagePickCount + " photos picked. Tap more, or make it."
                     wrapMode: Text.WordWrap
                     color: root.t.text
@@ -199,7 +202,7 @@ Rectangle {
                         Layout.fillWidth: true
                         text: simple.collageMaking ? "Making…" : "Make collage"
                         primary: true
-                        enabled: simple.collagePickCount >= 2 && !simple.collageMaking
+                        enabled: simple.collagePickCount >= 1 && !simple.collageMaking
                         onClicked: simple.makeCollage()
                     }
                 }
@@ -302,7 +305,7 @@ Rectangle {
                             source: cell.modelData.thumb
                             fillMode: Image.PreserveAspectCrop
                             asynchronous: true
-                            opacity: cell.modelData.missing || (simple.collagePicking && !cell.modelData.pickable) ? 0.3 : 1
+                            opacity: cell.modelData.missing || ((simple.collagePicking || root.addsToCollage) && !cell.modelData.pickable) ? 0.3 : 1
                         }
 
                         Rectangle {
@@ -366,7 +369,7 @@ Rectangle {
 
                         // Takes it off this list only. The file itself stays where it is.
                         Rectangle {
-                            visible: !cell.modelData.done && cellMouse.containsMouse && !simple.collagePicking
+                            visible: !cell.modelData.done && cellMouse.containsMouse && !simple.collagePicking && !simple.collageActive
                             anchors.right: parent.right
                             anchors.top: parent.top
                             anchors.margins: 6
@@ -386,7 +389,7 @@ Rectangle {
 
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: simple.removeFromLibrary(cell.modelData.path)
+                                onClicked: simple.askToRemoveFromLibrary(cell.modelData.path)
                             }
                         }
                     }
@@ -408,8 +411,11 @@ Rectangle {
                     z: -1
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: simple.collagePicking ? simple.toggleCollagePick(cell.modelData.path)
-                                                     : simple.openFile(cell.modelData.path)
+                    // With a collage open, a photo in Originals goes in or comes out of it. In
+                    // Finished a tap opens the file, such as the collage just saved.
+                    onClicked: simple.collagePicking || (root.addsToCollage && cell.modelData.pickable)
+                               ? simple.toggleCollagePick(cell.modelData.path)
+                               : simple.openFile(cell.modelData.path)
                 }
             }
         }

@@ -23,6 +23,7 @@
 #include "simplemedia.h"
 
 #include <QElapsedTimer>
+#include <QFileInfo>
 #include <QFileSystemWatcher>
 #include <QHash>
 #include <QImage>
@@ -71,6 +72,16 @@ class SimpleController : public QObject
     Q_PROPERTY(bool collageMaking READ collageMaking NOTIFY changed)
     Q_PROPERTY(bool collageActive READ collageActive NOTIFY changed)
     Q_PROPERTY(QString collageShape READ collageShape NOTIFY changed)
+    // For a print or custom size (collageShape "size"): width and height in inches
+    Q_PROPERTY(double collageSizeW READ collageSizeW NOTIFY changed)
+    Q_PROPERTY(double collageSizeH READ collageSizeH NOTIFY changed)
+    // The photos cut into a shape: heart, circle, star or empty
+    Q_PROPERTY(QString collageOutline READ collageOutline NOTIFY changed)
+    // The sticker behind the photos, and its picture for the panel; empty for none
+    Q_PROPERTY(QString collageBackdrop READ collageBackdrop NOTIFY changed)
+    Q_PROPERTY(QString collageBackdropUrl READ collageBackdropUrl NOTIFY changed)
+    // Photos being read to add to the open collage
+    Q_PROPERTY(bool collageAdding READ collageAdding NOTIFY changed)
     // columns, mosaic or grid, and each one's picture for the picker: [{id, title, cells}]
     Q_PROPERTY(QString collageLayout READ collageLayout NOTIFY changed)
     Q_PROPERTY(QVariantList collageLayouts READ collageLayouts NOTIFY changed)
@@ -115,8 +126,27 @@ class SimpleController : public QObject
     Q_PROPERTY(int playhead READ playhead NOTIFY positionChanged)
     Q_PROPERTY(QString positionText READ positionText NOTIFY positionChanged)
     Q_PROPERTY(bool playing READ playing NOTIFY playingChanged)
-    // How fast the preview plays: 1, 1.5 or 2. The saved video is always normal speed.
+    // How fast the preview plays: 1, 1.5, 2 or 3. The saved video is always normal speed.
     Q_PROPERTY(double speed READ speed NOTIFY playingChanged)
+    // Cut out: playing a few seconds either side of the red box, jumping over it, before it goes.
+    Q_PROPERTY(bool watchingCut READ watchingCut NOTIFY changed)
+    // Hide: parts of the picture blacked out or blurred for a while, by start time. The selected
+    // one's area is in fractions of the picture as shown, after any crop.
+    Q_PROPERTY(QVariantList hides READ hides NOTIFY changed)
+    Q_PROPERTY(int selectedHide READ selectedHide NOTIFY changed)
+    Q_PROPERTY(QRectF hideArea READ hideArea NOTIFY changed)
+    Q_PROPERTY(QString hideStartText READ hideStartText NOTIFY changed)
+    Q_PROPERTY(QString hideEndText READ hideEndText NOTIFY changed)
+    // Picture: -100 darker to 100 lighter, and cleaning up an old tape
+    Q_PROPERTY(int brightness READ brightness NOTIFY changed)
+    Q_PROPERTY(bool cleanUp READ cleanUp NOTIFY changed)
+    // Sound
+    Q_PROPERTY(bool hasAudio READ hasAudio NOTIFY changed)
+    Q_PROPERTY(int volume READ volume NOTIFY changed)
+    Q_PROPERTY(bool clearVoices READ clearVoices NOTIFY changed)
+    Q_PROPERTY(bool removeStatic READ removeStatic NOTIFY changed)
+    // The file the "take it off the list?" question is about
+    Q_PROPERTY(QString removeName READ removeName NOTIFY dialogChanged)
     // Crop, in fractions of the rotated picture
     Q_PROPERTY(QRectF cropRect READ cropRect NOTIFY changed)
     Q_PROPERTY(QString cropShape READ cropShape NOTIFY changed)
@@ -173,6 +203,12 @@ public:
     bool collageMaking() const { return m_collageMaking; }
     bool collageActive() const { return m_collageActive; }
     QString collageShape() const { return m_collageDesign.shape; }
+    double collageSizeW() const { return m_collageDesign.sizeW; }
+    double collageSizeH() const { return m_collageDesign.sizeH; }
+    QString collageOutline() const { return m_collageDesign.outline; }
+    QString collageBackdrop() const { return m_collageDesign.backdrop; }
+    QString collageBackdropUrl() const;
+    bool collageAdding() const { return m_collageAdding > 0; }
     QString collageLayout() const { return m_collageDesign.layoutStyle; }
     QVariantList collageLayouts() const { return m_collageLayouts; }
     double collagePhotoZoom() const;
@@ -214,6 +250,20 @@ public:
     bool playing() const { return m_playing; }
     double speed() const { return m_speed; }
 
+    bool watchingCut() const { return m_watchingCut; }
+    QVariantList hides() const;
+    int selectedHide() const { return m_selectedHide; }
+    QRectF hideArea() const;
+    QString hideStartText() const;
+    QString hideEndText() const;
+    int brightness() const { return m_edit.brightness; }
+    bool cleanUp() const { return m_edit.cleanUp; }
+    bool hasAudio() const { return m_edit.hasAudio; }
+    int volume() const { return m_edit.volume; }
+    bool clearVoices() const { return m_edit.clearVoices; }
+    bool removeStatic() const { return m_edit.removeStatic; }
+    QString removeName() const { return QFileInfo(m_removePath).fileName(); }
+
     QRectF cropRect() const { return m_edit.crop; }
     QString cropShape() const { return m_edit.cropShape; }
     double cropAspect() const;
@@ -253,7 +303,13 @@ public slots:
     void addPaths(const QStringList &paths, bool openFirst = true);
     void addUrls(const QList<QUrl> &urls);
     void openFile(const QString &path);
+    // Asks first, then takes a file off the Originals list. The file itself stays where it is.
+    void askToRemoveFromLibrary(const QString &path);
+    void removeFromLibraryAnyway();
     void removeFromLibrary(const QString &path);
+    // Closes the open video, photo or collage, leaving an empty screen. The lists stay as they
+    // are, and changes not yet finished come back when the file is opened again.
+    void closeFile();
     void showFinishedFolder();
 
     void togglePlay();
@@ -262,7 +318,7 @@ public slots:
     void stepFrames(int count);
     // Jumps back or forward, such as -10 or 30 seconds.
     void skipSeconds(double seconds);
-    // 1x, then 1.5x, then 2x, then back to 1x.
+    // 1x, then 1.5x, 2x, 3x and back to 1x.
     void cycleSpeed();
 
     void beginTrimDrag();
@@ -277,6 +333,8 @@ public slots:
     bool setSelectionStartText(const QString &text);
     bool setSelectionEndText(const QString &text);
     void selectAnotherPart();
+    void watchCut();
+    void stopWatchingCut(bool rebuild = true);
     void removeSelection();
     void restoreCut(int index);
 
@@ -285,6 +343,26 @@ public slots:
     void endCropDrag();
     void rotate();
     void flip();
+
+    void addHide();
+    void selectHide(int index);
+    // Dragging the hidden part's edges or middle on the strip, in source frames.
+    void setHideTime(int start, int end);
+    void endHideTimeDrag();
+    bool setHideStartText(const QString &text);
+    bool setHideEndText(const QString &text);
+    void setHideBlur(bool blur);
+    // Dragging its box on the picture, in fractions of the picture as shown.
+    void setHideArea(double x, double y, double width, double height);
+    void endHideAreaDrag();
+    void hideWholePicture();
+    void removeHide(int index);
+
+    void setBrightness(int brightness);
+    void setCleanUp(bool on);
+    void setVolume(int percent);
+    void setClearVoices(bool on);
+    void setRemoveStatic(bool on);
 
     void addLabel();
     void selectLabel(int index);
@@ -309,6 +387,12 @@ public slots:
     void makeCollage();
     void leaveCollage();
     void setCollageShape(const QString &shape);
+    // A print size such as 4 by 6 inches, or one he types. Either way round works.
+    void setCollageSize(double widthInches, double heightInches);
+    void setCollageOutline(const QString &outline);
+    void setCollageBackdrop(const QString &stickerId);
+    // Takes the selected photo out of the collage. One photo always stays.
+    void removeCollagePhoto();
     void setCollageSpacing(double spacing);
     void setCollageCorners(double corners);
     void setCollageBackground(const QString &color);
@@ -387,6 +471,8 @@ private:
     bool filesStillThere(const QStringList &paths);
     void pushUndo(const Simple::Edit &before, const QString &coalesceKey = QString());
     void afterEdit(bool rebuildPreview);
+    // Carries on playing from where the preview is now.
+    void playOn();
     void rebuildPreview(int sourceFrame);
     void updateFrameThumb();
     void onFrameDisplayed(const SharedFrame &frame);
@@ -438,6 +524,7 @@ private:
     int m_playhead{0};
     bool m_playing{false};
     double m_speed{1.0};
+    double m_previewSpeed{1.0}; // the speed the preview was made at
     QTimer m_captionTimer;
     int m_captionGeneration{0};
     int m_selectedLabel{-1};
@@ -454,18 +541,43 @@ private:
     QStringList m_picturesBeingSaved;            // paths taken, so two saves never share one
     QString m_dialog;
     QString m_openAfterCollage;
+    QString m_removePath;
+
+    // Watching the cut: the preview shows this edit, with the red box already taken out.
+    bool m_watchingCut{false};
+    Simple::Edit m_watchEdit;
+    int m_watchStop{0};
+    bool m_watchPlayed{false}; // it has started playing, so reaching the stop ends it
+    const Simple::Edit &shownEdit() const { return m_watchingCut ? m_watchEdit : m_edit; }
+    void changePicture(const Simple::Edit &before, const QString &coalesceKey);
+    int m_selectedHide{-1};
+    bool m_hideDragging{false};
+    // A USB stick can come back as another drive letter. Files gone missing are looked for on
+    // the other drives, by path and size.
+    void findMovedOriginals();
+    QHash<QString, qint64> m_sizes;
+    QString m_lastCollage; // the collage just saved, marked in Finished
 
     bool m_collagePicking{false};
     QStringList m_collagePicks;
     bool m_collageMaking{false};
     int m_collageMakeGeneration{0};
     bool m_collageActive{false};
-    bool m_collageUnsaved{false};               // changed since it was last saved
-    std::deque<Collage::Photo> m_collagePhotos; // .path is the readable file, upright
+    bool m_collageUnsaved{false}; // changed since it was last saved
+    int m_collageAdding{0};       // photos still being read to add
+    int m_collageAddGeneration{0};
+    // Reads a photo off the screen's thread, then puts it in the collage.
+    void addCollagePhoto(const QString &path);
     // Everything on the collage that undo covers.
     struct CollageDesign
     {
         QVector<Simple::CollageItem> items;
+        QVector<Collage::Photo> photos; // .path is the readable file, upright
+        QStringList sources;            // the files they came from, in the same order
+        QString backdrop;               // a sticker behind the photos, or empty
+        QString outline;                // heart, circle, star, or empty
+        double sizeW{4};                // inches, when shape is "size"
+        double sizeH{6};
         double spacing{0.012};
         double corners{0};
         QString background{QStringLiteral("#FFFFFF")};
@@ -480,7 +592,9 @@ private:
         {
             return spacing == o.spacing && corners == o.corners && background == o.background
                    && shape == o.shape && layoutStyle == o.layoutStyle && seed == o.seed
-                   && hero == o.hero && layout == o.layout && crops == o.crops;
+                   && hero == o.hero && layout == o.layout && crops == o.crops && photos == o.photos
+                   && sources == o.sources && backdrop == o.backdrop && outline == o.outline
+                   && sizeW == o.sizeW && sizeH == o.sizeH;
         }
         bool operator==(const CollageDesign &o) const { return items == o.items && sameLook(o); }
         bool operator!=(const CollageDesign &o) const { return !(*this == o); }
@@ -513,10 +627,14 @@ private:
     void updateCollageLayoutChoices();
     bool m_collagePhotoGesture{false};
     void collagePhotosRead(const std::vector<Collage::Photo> &photos,
+                           const QStringList &sources,
                            const QHash<QString, QImage> &thumbs,
                            const QStringList &unreadable);
     void drawCollagePreview();
     QSize collageSize(int longSide) const;
+    // The saved size: a print size is about 300 dots per inch.
+    QSize savedCollageSize() const;
+    static double ratioOf(const CollageDesign &design);
     // Height / width of the chosen shape. Preview and save must use exactly the same value, or
     // they could get different layouts.
     double collageRatio() const;

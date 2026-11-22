@@ -83,6 +83,20 @@ struct CollageItem
     }
 };
 
+// A part of the picture hidden for a while, such as someone walking past during a speech. The
+// sound keeps playing. Black takes that part right out; blur smudges it.
+struct Hide
+{
+    Range time;              // source frames
+    QRectF area{0, 0, 1, 1}; // fraction of the turned picture, before any crop
+    bool blur{false};
+
+    bool operator==(const Hide &o) const
+    {
+        return time == o.time && area == o.area && blur == o.blur;
+    }
+};
+
 // Label text height as a fraction of the picture's shorter side.
 double labelFontFraction(int size);
 
@@ -129,6 +143,12 @@ struct Edit
     QString captionSecond;
     CaptionStyle captionStyle{CaptionStyle::Bar};
     QVector<TextLabel> labels;
+    QVector<Hide> hides; // by start time
+    int brightness{0};   // -100 darker to 100 lighter
+    bool cleanUp{false}; // an old tape: takes out streaks, snow and fuzz
+    int volume{100};     // percent; above 100 is louder, kept from crackling
+    bool clearVoices{false};
+    bool removeStatic{false};
 
     bool operator==(const Edit &o) const;
     bool operator!=(const Edit &o) const { return !(*this == o); }
@@ -141,6 +161,14 @@ struct Edit
     bool hasLabels() const;
     // Anything drawn over the picture: the caption and the labels.
     bool hasOverlay() const { return hasCaption() || hasLabels(); }
+    bool hasPictureFixes() const { return brightness != 0 || cleanUp; }
+    // Cleaning up a tape compares each frame with the next, so the frames must reach it one at a
+    // time and in order; saving on several threads at once mixed them up.
+    bool needsFramesInOrder() const { return cleanUp && !isPhoto; }
+    bool hasSoundChanges() const
+    {
+        return !isPhoto && hasAudio && (volume != 100 || clearVoices || removeStatic);
+    }
     bool isHdr() const;
 
     // Timeline
@@ -150,6 +178,11 @@ struct Edit
     int editedFromSource(int sourceFrame) const; // nearest kept frame when it was removed
     int sourceFromEdited(int editedFrame) const;
     bool setTrim(int start, int end);
+    // Where a source frame shows when the preview plays at `speed`, as Time Remap lays the kept
+    // parts out: each starts at ceil(start / speed). The inverse gives the nearest source frame.
+    int previewFromSource(int sourceFrame, double speed) const;
+    int sourceFromPreview(int previewFrame, double speed) const;
+    int previewLength(double speed) const;
     // Returns false when removing the range would leave nothing, or nothing would change.
     bool addCut(const Range &range);
     void removeCutAt(int index);
@@ -192,6 +225,11 @@ struct CompileOptions
     QString photoPath;    // a photo already turned and flipped, from photoForEdit(); empty for none
     QString target;       // when set, adds the encoder settings that save to this file
     QString videoCodec{QStringLiteral("libx264")};
+    // Preview only: watching faster. Voices keep their pitch where MLT has Rubber Band.
+    double speed{1.0};
+    // Blur and black-out need a mask picture each, the size of the turned picture, made by
+    // writeHideMask(). Indexed like Edit::hides; empty for black ones.
+    QStringList hideMasks;
     int threads{0};
     // MLT's real_time: -1 processes one frame at a time; -N uses N threads, as Shotcut's export
     // does with "Parallel processing".

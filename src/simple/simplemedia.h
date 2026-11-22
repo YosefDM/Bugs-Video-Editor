@@ -25,6 +25,7 @@
 
 #include <QImage>
 #include <QPainter>
+#include <QPainterPath>
 #include <QSizeF>
 #include <QString>
 #include <QStringList>
@@ -59,6 +60,11 @@ QImage renderCaption(const Edit &edit, const QSize &frame);
 // Writes it into the cache and returns the path, or an empty string when there is no caption.
 QString writeCaptionImage(const Edit &edit);
 
+// For each hidden part that blurs, a picture the shape of the turned video, white except for a
+// black box where the blur goes, as Shotcut's shape mask reads it. Black-out parts need none and
+// get an empty string. Written into the cache; safe to call from a worker thread.
+QStringList writeHideMasks(const Edit &edit);
+
 // A photo with Levi's rotation and flip already applied, made by Qt as a lossless copy in the cache,
 // because the engine's photo reader cannot turn a picture. Returns the plain media path when the
 // photo is not turned or flipped. Safe to call from a worker thread.
@@ -78,7 +84,13 @@ struct CollageStyle
     double border{0}; // fraction of the collage's shorter side
     double radius{0}; // rounded photo corners, fraction of the collage's shorter side
     QColor borderColor{Qt::white};
+    // A sticker drawn as big as fits behind the photos, showing between and around them.
+    QImage backdrop;
+    // The photos together cut into a shape: "heart", "circle", "star", or empty for none.
+    QString outline;
 };
+// The outline shape's path on a page `size` big, kept `margin` pixels in from the edge.
+QPainterPath collageOutline(const QString &outline, const QSize &size, double margin);
 // Draws a collage at `size`: each photo covers its frame, cropped and zoomed by its PhotoCrop,
 // with the spacing, rounded corners and background from `style`. `image(photo, needed)` returns a
 // photo's picture; `needed` is the smallest size that keeps it sharp, and any size works.

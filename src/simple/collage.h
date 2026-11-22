@@ -51,6 +51,11 @@ struct Photo
 
     double ratio() const { return double(h) / double(w); }
     void move(double x, double y);
+    bool operator==(const Photo &o) const
+    {
+        return path == o.path && w == o.w && h == o.h && offsetW == o.offsetW
+               && offsetH == o.offsetH;
+    }
 };
 
 class Column;

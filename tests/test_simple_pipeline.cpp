@@ -33,12 +33,14 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QProcess>
+#include <QRegularExpression>
 #include <QStandardPaths>
 #include <QTemporaryDir>
 #include <QTransform>
 #include <QtTest/QtTest>
 
 #include <deque>
+#include <memory>
 
 using namespace Simple;
 
@@ -170,6 +172,59 @@ double difference(const QImage &a, const QImage &b)
     return double(total) / count;
 }
 
+// Average brightness, 0 to 255, of part of a picture.
+double brightnessOf(const QImage &image, const QRect &area)
+{
+    qint64 total = 0;
+    qint64 count = 0;
+    for (int y = area.top(); y <= area.bottom(); y += 2) {
+        for (int x = area.left(); x <= area.right(); x += 2) {
+            total += qGray(image.pixel(x, y));
+            ++count;
+        }
+    }
+    return count ? double(total) / count : 0;
+}
+
+// The loudness of the whole sound, in dB, as ffmpeg's volumedetect measures it.
+double meanVolume(const QString &path)
+{
+    QProcess process;
+    process.setProcessChannelMode(QProcess::MergedChannels);
+    process.start(QStringLiteral("ffmpeg"),
+                  {QStringLiteral("-hide_banner"),
+                   QStringLiteral("-i"),
+                   path,
+                   QStringLiteral("-af"),
+                   QStringLiteral("volumedetect"),
+                   QStringLiteral("-vn"),
+                   QStringLiteral("-f"),
+                   QStringLiteral("null"),
+                   QStringLiteral("-")});
+    process.waitForFinished(120000);
+    const QString output = QString::fromUtf8(process.readAll());
+    const QRegularExpression mean(QStringLiteral("mean_volume: (-?[0-9.]+) dB"));
+    const auto match = mean.match(output);
+    return match.hasMatch() ? match.captured(1).toDouble() : 0.0;
+}
+
+double audioDuration(const QString &path)
+{
+    QByteArray out;
+    run(QStringLiteral("ffprobe"),
+        {QStringLiteral("-v"),
+         QStringLiteral("error"),
+         QStringLiteral("-select_streams"),
+         QStringLiteral("a"),
+         QStringLiteral("-show_entries"),
+         QStringLiteral("stream=duration"),
+         QStringLiteral("-of"),
+         QStringLiteral("csv=p=0"),
+         path},
+        &out);
+    return out.trimmed().toDouble();
+}
+
 } // namespace
 
 class TestSimplePipeline : public QObject
@@ -189,11 +244,13 @@ class TestSimplePipeline : public QObject
 
     QString path(const QString &name) const { return m_dir.filePath(name); }
 
-    QString save(const Edit &edit, const QString &name)
+    QString save(const Edit &edit, const QString &name, int realTime = -1)
     {
         const QString target = path(name);
         CompileOptions options;
+        options.realTime = realTime;
         options.captionImage = writeCaptionImage(edit);
+        options.hideMasks = writeHideMasks(edit);
         options.target = target;
         const QString xmlPath = target + QStringLiteral(".mlt");
         QFile xml(xmlPath);
@@ -901,6 +958,281 @@ private slots:
         // Starts at the left edge, and all of the words fit: they reach well past the middle.
         QVERIFY2(left < 12, qPrintable(QString::number(left)));
         QVERIFY2(right > frame.width() / 2, qPrintable(QString::number(right)));
+    }
+
+    // Hide: the part goes black only where and when he chose, and the times follow a trim.
+    void hideBlacksOutItsPartAndTime()
+    {
+        Edit edit;
+        QVERIFY(openMedia(m_landscape, &edit));
+        QVERIFY(edit.setTrim(30, 300));
+        Hide hide;
+        hide.time = Range{90, 150}; // 3 to 5 seconds of the source; 2 to 4 of the result
+        hide.area = QRectF(0, 0, 0.5, 1);
+        edit.hides << hide;
+        const QString out = save(edit, QStringLiteral("hide.mp4"));
+        QVERIFY(!out.isEmpty());
+        const QRect left(20, 20, 600, 680);
+        const QRect right(660, 20, 600, 680);
+        const QImage during = frameFromFile(out, 3.0, m_dir.path());
+        const QImage source = frameFromFile(m_landscape, 4.0, m_dir.path());
+        QVERIFY2(brightnessOf(during, left) < 25,
+                 qPrintable(QString::number(brightnessOf(during, left))));
+        QVERIFY(qAbs(brightnessOf(during, right) - brightnessOf(source, right)) < 6);
+        const QImage before = frameFromFile(out, 1.0, m_dir.path());
+        QVERIFY(brightnessOf(before, left) > 60);
+        const QImage after = frameFromFile(out, 5.0, m_dir.path());
+        QVERIFY(brightnessOf(after, left) > 60);
+        // The sound plays on.
+        QVERIFY(qAbs(audioDuration(out) - 9.0) < 0.15);
+    }
+
+    void hideBlurSmudgesOnlyItsPart()
+    {
+        Edit edit;
+        QVERIFY(openMedia(m_landscape, &edit));
+        Hide hide;
+        hide.time = Range{60, 120};
+        hide.area = QRectF(0.5, 0, 0.5, 1);
+        hide.blur = true;
+        edit.hides << hide;
+        const QString out = save(edit, QStringLiteral("blur.mp4"));
+        QVERIFY(!out.isEmpty());
+        const QImage saved = frameFromFile(out, 3.0, m_dir.path());
+        const QImage source = frameFromFile(m_landscape, 3.0, m_dir.path());
+        const QImage leftSaved = saved.copy(0, 0, 620, 720);
+        const QImage leftSource = source.copy(0, 0, 620, 720);
+        const QImage rightSaved = saved.copy(680, 0, 600, 720);
+        const QImage rightSource = source.copy(680, 0, 600, 720);
+        QVERIFY2(difference(leftSaved, leftSource) < 6,
+                 qPrintable(QString::number(difference(leftSaved, leftSource))));
+        QVERIFY2(difference(rightSaved, rightSource) > 10,
+                 qPrintable(QString::number(difference(rightSaved, rightSource))));
+        // And the preview shows the same.
+        const QImage preview = renderFrame(edit, 90);
+        QVERIFY2(difference(preview, saved) < 6,
+                 qPrintable(QString::number(difference(preview, saved))));
+    }
+
+    void louderAndClearerKeepsTheLength()
+    {
+        Edit edit;
+        QVERIFY(openMedia(m_landscape, &edit));
+        edit.volume = 300;
+        edit.clearVoices = true;
+        edit.removeStatic = true;
+        QVERIFY(edit.hasChanges());
+        const QString out = save(edit, QStringLiteral("louder.mp4"));
+        QVERIFY(!out.isEmpty());
+        const double plain = meanVolume(m_landscape);
+        const double louder = meanVolume(out);
+        QVERIFY2(louder > plain + 6, qPrintable(QStringLiteral("%1 -> %2").arg(plain).arg(louder)));
+        QVERIFY2(qAbs(audioDuration(out) - 10.0) < 0.15,
+                 qPrintable(QString::number(audioDuration(out))));
+        QCOMPARE(probe(out).videoFrames, 300);
+    }
+
+    void staticIsTakenOut()
+    {
+        const QString noisy = path(QStringLiteral("noisy.mp4"));
+        QVERIFY(ffmpeg({"-f",
+                        "lavfi",
+                        "-i",
+                        "testsrc2=size=320x240:rate=30:duration=4",
+                        "-f",
+                        "lavfi",
+                        "-i",
+                        "anoisesrc=color=white:amplitude=0.012:duration=4",
+                        "-c:v",
+                        "libx264",
+                        "-preset",
+                        "ultrafast",
+                        "-pix_fmt",
+                        "yuv420p",
+                        "-c:a",
+                        "aac",
+                        noisy}));
+        Edit edit;
+        QVERIFY(openMedia(noisy, &edit));
+        edit.removeStatic = true;
+        const QString out = save(edit, QStringLiteral("quiet.mp4"));
+        QVERIFY(!out.isEmpty());
+        const double before = meanVolume(noisy);
+        const double after = meanVolume(out);
+        QVERIFY2(after < before - 12, qPrintable(QStringLiteral("%1 -> %2").arg(before).arg(after)));
+    }
+
+    void lighterAndCleanUpSave()
+    {
+        Edit edit;
+        QVERIFY(openMedia(m_landscape, &edit));
+        edit.brightness = 60;
+        edit.cleanUp = true;
+        const QString out = save(edit, QStringLiteral("lighter.mp4"));
+        QVERIFY(!out.isEmpty());
+        const Probe p = probe(out);
+        QCOMPARE(p.videoFrames, 300);
+        const QRect all(0, 0, 1280, 720);
+        const QImage saved = frameFromFile(out, 5.0, m_dir.path());
+        const QImage source = frameFromFile(m_landscape, 5.0, m_dir.path());
+        QVERIFY2(brightnessOf(saved, all) > brightnessOf(source, all) + 15,
+                 qPrintable(QStringLiteral("%1 -> %2")
+                                .arg(brightnessOf(source, all))
+                                .arg(brightnessOf(saved, all))));
+        // Lighter on a photo too.
+        Edit photo;
+        QVERIFY(openMedia(m_jpg, &photo));
+        photo.brightness = 60;
+        const QImage lighter = renderFrame(photo, 0);
+        Edit plainPhoto;
+        QVERIFY(openMedia(m_jpg, &plainPhoto));
+        const QImage plain = renderFrame(plainPhoto, 0);
+        QVERIFY(brightnessOf(lighter, lighter.rect()) > brightnessOf(plain, plain.rect()) + 15);
+    }
+
+    // Watching faster: each preview frame is the source frame the mapping says, cuts and all.
+    void fasterPreviewShowsTheRightFrames()
+    {
+        Edit edit;
+        QVERIFY(openMedia(m_landscape, &edit));
+        edit.setTrim(30, 300);
+        edit.addCut(Range{100, 160});
+        for (const double speed : {1.5, 3.0}) {
+            CompileOptions options;
+            options.speed = speed;
+            Mlt::Profile profile;
+            profile.set_width(1280);
+            profile.set_height(720);
+            profile.set_frame_rate(30, 1);
+            profile.set_progressive(1);
+            profile.set_sample_aspect(1, 1);
+            profile.set_display_aspect(16, 9);
+            profile.set_explicit(1);
+            Mlt::Producer producer(profile,
+                                   "xml-string",
+                                   compileXml(edit, options).toUtf8().constData());
+            QVERIFY(producer.is_valid());
+            QCOMPARE(producer.get_playtime(), edit.previewLength(speed));
+            for (const int preview : {0, 20, 30, 50}) {
+                const int source = edit.sourceFromPreview(preview, speed);
+                producer.seek(preview);
+                std::unique_ptr<Mlt::Frame> frame(producer.get_frame());
+                mlt_image_format format = mlt_image_rgba;
+                int w = 1280;
+                int h = 720;
+                const uint8_t *data = frame->get_image(format, w, h);
+                QVERIFY(data);
+                const QImage shown = QImage(data, w, h, QImage::Format_RGBA8888).copy();
+                const QImage expected = frameFromFile(m_landscape, source / 30.0, m_dir.path());
+                QVERIFY2(difference(shown.convertToFormat(QImage::Format_RGB32), expected) < 8,
+                         qPrintable(QStringLiteral("speed %1 preview %2 source %3")
+                                        .arg(speed)
+                                        .arg(preview)
+                                        .arg(source)));
+            }
+        }
+    }
+
+    void collageOfOnePhoto()
+    {
+        Collage::Photo photo{m_jpg, 2000, 1500};
+        std::vector<Collage::Photo *> pointers{&photo};
+        const auto page = Collage::makeGaplessPage(pointers, 1.0, 1);
+        QCOMPARE(Collage::layoutFromPage(*page, pointers).size(), size_t(1));
+        QCOMPARE(Collage::makeGridLayout(1, 1.5, 1).size(), size_t(1));
+        QCOMPARE(Collage::makeMosaicLayout({0.75}, {1.0}, 1.5, 1).size(), size_t(1));
+    }
+
+    // Cut into a heart, with a sticker behind: the photos show inside, the sticker and the
+    // background round it.
+    void collageHeartAndBackdrop()
+    {
+        QImage blue(QSize(800, 800), QImage::Format_RGB32);
+        blue.fill(Qt::blue);
+        const QString file = path(QStringLiteral("heartblue.png"));
+        QVERIFY(blue.save(file));
+        const Collage::Layout layout{Collage::Slot{QRectF(0, 0, 1, 1), 0}};
+        CollageStyle style;
+        style.borderColor = Qt::yellow;
+        style.outline = QStringLiteral("heart");
+        QImage red(QSize(100, 100), QImage::Format_ARGB32_Premultiplied);
+        red.fill(Qt::red);
+        style.backdrop = red;
+        const QSize size(1200, 800); // 6 by 4: the sticker fills the middle square
+        // With and without rounded corners: the photos' own rounding must not undo the heart.
+        for (const double corners : {0.0, 0.05}) {
+            style.radius = corners;
+            const QImage collage
+                = renderCollage(layout, {}, size, style, [&](int, const QSize &cover) {
+                      return loadPhotoToCover(file, cover);
+                  });
+            QCOMPARE(collage.pixelColor(600, 400), QColor(Qt::blue));  // inside the heart
+            QCOMPARE(collage.pixelColor(30, 400), QColor(Qt::yellow)); // beside the square
+            QCOMPARE(collage.pixelColor(215, 30),
+                     QColor(Qt::red)); // in the square, outside the heart
+        }
+    }
+
+    // Cleaning up a tape compares neighbouring frames, so it must get them in order. Saved the
+    // way the app saves, with as many threads as it would use, every frame is still in its place.
+    void cleanUpKeepsFramesInOrder()
+    {
+        const QString numbered = path(QStringLiteral("numbered.mp4"));
+        // Each frame's brightness is its number, so the order can be read back.
+        QVERIFY(ffmpeg({"-f",
+                        "lavfi",
+                        "-i",
+                        "color=gray:size=320x240:rate=30,format=yuv420p,geq=lum='N*2+10'"
+                        ":cb=128:cr=128",
+                        "-t",
+                        "4",
+                        "-c:v",
+                        "libx264",
+                        "-g",
+                        "30",
+                        "-bf",
+                        "2",
+                        "-crf",
+                        "1",
+                        numbered}));
+        Edit edit;
+        QVERIFY(openMedia(numbered, &edit));
+        edit.cleanUp = true;
+        QVERIFY(edit.needsFramesInOrder());
+        const QString out = save(edit,
+                                 QStringLiteral("inorder.mp4"),
+                                 edit.needsFramesInOrder() ? -1 : -4);
+        QVERIFY(!out.isEmpty());
+        QByteArray stats;
+        QVERIFY(run(
+            QStringLiteral("ffmpeg"),
+            {QStringLiteral("-v"),
+             QStringLiteral("error"),
+             QStringLiteral("-i"),
+             out,
+             QStringLiteral("-vf"),
+             QStringLiteral(
+                 "crop=40:40:200:100,signalstats,metadata=print:key=lavfi.signalstats.YAVG:file=-"),
+             QStringLiteral("-f"),
+             QStringLiteral("null"),
+             QStringLiteral("-")},
+            &stats));
+        QVector<int> numbers;
+        for (const QByteArray &line : stats.split('\n')) {
+            const int at = line.indexOf("YAVG=");
+            if (at >= 0)
+                numbers << qRound((line.mid(at + 5).toDouble() - 10) / 2);
+        }
+        QCOMPARE(numbers.size(), 120);
+        QVERIFY(numbers.last() - numbers.first() > 100);
+        // From the fourth frame on, none goes back to an earlier one. Frames out of order did, such
+        // as 33, 33, 31, 33 when saved on four threads.
+        for (int i = 4; i < numbers.size(); ++i)
+            QVERIFY2(numbers[i] >= numbers[i - 1],
+                     qPrintable(QStringLiteral("frame %1: %2 after %3")
+                                    .arg(i)
+                                    .arg(numbers[i])
+                                    .arg(numbers[i - 1])));
     }
 
     void thumbnailsWork()

@@ -16,7 +16,7 @@ sudo apt-get update -qq
 sudo apt-get install -y -qq --no-install-recommends \
     cmake ninja-build pkg-config nasm clang-format-14 python3-venv gdb \
     libx264-dev libx265-dev libzimg-dev libmp3lame-dev libvpx-dev libdav1d-dev libwebp-dev libopus-dev \
-    libfftw3-dev libxml2-dev libsdl2-dev libexif-dev libsamplerate0-dev frei0r-plugins-dev libarchive-dev \
+    libfftw3-dev libxml2-dev libsdl2-dev libexif-dev libsamplerate0-dev librubberband-dev frei0r-plugins-dev libarchive-dev \
     libgl-dev libegl-dev libglx-dev libopengl-dev libvulkan-dev libx11-dev libxkbcommon-dev \
     libxkbcommon-x11-0 libxcb-cursor0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 \
     libxcb-render-util0 libxcb-shape0 libxcb-sync1 libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 \
@@ -50,7 +50,7 @@ if [ ! -d "$HOME/mlt" ]; then
             -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$HOME/mlt" \
             -DCMAKE_PREFIX_PATH="$HOME/ffmpeg9;$QT" -DCMAKE_INSTALL_RPATH="$HOME/ffmpeg9/lib" \
             -DCMAKE_BUILD_RPATH="$HOME/ffmpeg9/lib" -DCLANG_FORMAT=OFF -DMOD_QT6=ON -DMOD_GLAXNIMATE_QT6=OFF \
-            -DMOD_MOVIT=OFF -DMOD_OPENCV=OFF -DMOD_RTAUDIO=OFF -DMOD_RUBBERBAND=OFF -DMOD_SOX=OFF \
+            -DMOD_MOVIT=OFF -DMOD_OPENCV=OFF -DMOD_RTAUDIO=OFF -DMOD_RUBBERBAND=ON -DMOD_SOX=OFF \
             -DMOD_VIDSTAB=OFF -DMOD_VORBIS=OFF -DMOD_XINE=OFF -DMOD_SPATIALAUDIO=OFF -DMOD_GDK=OFF \
             -DMOD_DECKLINK=OFF -DMOD_NDI=OFF -DMOD_JACKRACK=OFF -DUSE_LV2=OFF -DUSE_VST2=OFF -DUSE_LADSPA=OFF \
             -DMOD_PLACEBO=OFF -DMOD_OPENFX=OFF -DMOD_RNNOISE=OFF -DBUILD_TESTING=OFF &&
