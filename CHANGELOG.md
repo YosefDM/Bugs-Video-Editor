@@ -5,6 +5,9 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 
 ## Unreleased
 
+### Added
+- **Bugs mode**, on Levi's laptop only. During seder (Sunday to Thursday, 10 am to 1 pm and 4 to 6:30 pm), or once BUGS! has been in use for three hours in a day, real bugs crawl over the window and now and then a spider jumps out. Clicks go straight through them. **Turn off the bugs…** in the title-bar menu (right-click the title bar) asks for a code from Yosef: each day has its own, which turns them off for the rest of that day, and one turns them off for good.
+
 ## 1.1.0
 
 ### Added

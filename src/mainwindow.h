@@ -59,6 +59,7 @@ class ScreenCapture;
 class HdrPreviewWindow;
 
 class SimpleModeWidget;
+class BugsMode;
 class QToolButton;
 
 class MainWindow : public QMainWindow
@@ -240,6 +241,7 @@ private:
     ScreenCapture *m_screenCapture;
     HdrPreviewWindow *m_hdrPreviewWindow{nullptr};
     SimpleModeWidget *m_simpleMode{nullptr};
+    BugsMode *m_bugs{nullptr};
     bool m_simpleCloseConfirmed{false};
     QByteArray m_advancedState;
     QString m_combineProject;    // Advanced's project for the file Simple mode had open

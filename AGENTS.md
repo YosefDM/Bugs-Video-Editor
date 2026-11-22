@@ -11,6 +11,7 @@ BUGS! is a fork of Shotcut for one non-technical user, Levi. It opens into **Sim
 | `src/simple/simplemedia.*` | Opening files, thumbnails, filmstrip, caption picture, single-frame rendering |
 | `src/simple/simplecontroller.*` | All Simple mode state and actions, exposed to QML as `simple` |
 | `src/simple/simplemodewidget.*` | Lays out the views; borrows the video widget from the player |
+| `src/simple/bugsmode.*`, `bugsrules.*` | Bugs mode: on Levi's laptop only (by its Dell service tag), real bug photos crawl over the window during seder or after three hours a day; `Bugs.qml` moves them. Codes are kept only as hashes. `BUGS_SHOW_BUGS=1` (or `=fast`) shows them anywhere for testing |
 | `src/qml/views/simple/` | The screens. Colours and icons are in `Theme.js` |
 
 Rules that keep the product's promises:

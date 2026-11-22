@@ -65,6 +65,7 @@
 #include "screencapture/screencapture.h"
 #include "settings.h"
 #include "shotcut_mlt_properties.h"
+#include "simple/bugsmode.h"
 #include "simple/simplecontroller.h"
 #include "simple/simplemodewidget.h"
 #include "util.h"
@@ -334,6 +335,10 @@ void MainWindow::setupAndConnectUndoStack()
 void MainWindow::setupSimpleMode()
 {
     m_simpleMode = new SimpleModeWidget(this);
+    // During seder, or after three hours in a day, bugs crawl over the whole window, in Simple
+    // mode and Advanced alike.
+    m_bugs = new BugsMode(this);
+    new BugsOverlay(m_bugs, this);
     connect(m_simpleMode->controller(), &SimpleController::advancedRequested, this, [this]() {
         enterAdvancedMode();
     });
@@ -3708,6 +3713,8 @@ void MainWindow::showEvent(QShowEvent *event)
     }
 
     windowHandle()->installEventFilter(this);
+    if (m_bugs)
+        m_bugs->attachMenu();
 
 #ifndef SHOTCUT_NOUPGRADE
     if (!Settings.noUpgrade() && !qApp->property("noupgrade").toBool())
