@@ -186,6 +186,25 @@ double brightnessOf(const QImage &image, const QRect &area)
     return count ? double(total) / count : 0;
 }
 
+// How strongly a picture has thin lines along its rows: each pixel against the ones above and
+// below it, on average, in the top part only.
+double streakiness(const QImage &image, int rows)
+{
+    const QImage gray = image.convertToFormat(QImage::Format_Grayscale8);
+    qint64 total = 0;
+    qint64 count = 0;
+    for (int y = 1; y + 1 < qMin(rows, gray.height()); ++y) {
+        const uchar *up = gray.constScanLine(y - 1);
+        const uchar *line = gray.constScanLine(y);
+        const uchar *down = gray.constScanLine(y + 1);
+        for (int x = 0; x < gray.width(); ++x) {
+            total += qAbs(2 * line[x] - up[x] - down[x]);
+            ++count;
+        }
+    }
+    return count ? double(total) / count : 0;
+}
+
 // The loudness of the whole sound, in dB, as ffmpeg's volumedetect measures it.
 double meanVolume(const QString &path)
 {
@@ -251,6 +270,11 @@ class TestSimplePipeline : public QObject
         options.realTime = realTime;
         options.captionImage = writeCaptionImage(edit);
         options.hideMasks = writeHideMasks(edit);
+        // Finish waits for the tape to be looked through; here it is done first.
+        QVector<Range> glitches;
+        if (edit.cleanUp && !edit.isPhoto && !scannedTape(edit, &glitches))
+            scanTape(edit, &glitches);
+        addTapeCleanUp(edit, &options);
         options.target = target;
         const QString xmlPath = target + QStringLiteral(".mlt");
         QFile xml(xmlPath);
@@ -1173,17 +1197,76 @@ private slots:
         }
     }
 
-    // Cleaning up a tape compares neighbouring frames, so it must get them in order. Saved the
-    // way the app saves, with as many threads as it would use, every frame is still in its place.
-    void cleanUpKeepsFramesInOrder()
+    // An old tape: where it tore into lines, the saved video shows the picture from just
+    // before instead, and only there. A phone's player bar along the bottom does not count.
+    void tapeTearsAreHeld()
     {
-        const QString numbered = path(QStringLiteral("numbered.mp4"));
-        // Each frame's brightness is its number, so the order can be read back.
+        const QString tape = path(QStringLiteral("tape.mp4"));
         QVERIFY(ffmpeg({"-f",
                         "lavfi",
                         "-i",
-                        "color=gray:size=320x240:rate=30,format=yuv420p,geq=lum='N*2+10'"
+                        "color=gray:size=320x240:rate=30,format=yuv420p,geq=lum='if(gt(Y,215),"
+                        "if(between(Y,218,220),220,30),if(between(N,90,101),"
+                        "if(lt(mod(Y,4),2),230,25),128+60*sin((X+N*3)/40)*cos(Y/50)))'"
                         ":cb=128:cr=128",
+                        "-f",
+                        "lavfi",
+                        "-i",
+                        "sine=frequency=440:duration=6",
+                        "-t",
+                        "6",
+                        "-c:v",
+                        "libx264",
+                        "-crf",
+                        "10",
+                        "-g",
+                        "30",
+                        "-c:a",
+                        "aac",
+                        tape}));
+        Edit edit;
+        QVERIFY(openMedia(tape, &edit));
+        edit.cleanUp = true;
+        QVector<Range> glitches;
+        QVERIFY(!scannedTape(edit, &glitches));
+        QVERIFY(scanTape(edit, &glitches));
+        QCOMPARE(glitches.size(), 1);
+        const Range tear = glitches.first();
+        QVERIFY2(tear.start >= 87 && tear.start <= 90 && tear.end >= 102 && tear.end <= 104,
+                 qPrintable(QStringLiteral("%1 to %2").arg(tear.start).arg(tear.end)));
+        // Kept for next time.
+        QVector<Range> again;
+        QVERIFY(scannedTape(edit, &again));
+        QCOMPARE(again, glitches);
+
+        const QString out = save(edit, QStringLiteral("tape-clean.mp4"));
+        QVERIFY(!out.isEmpty());
+        QCOMPARE(probe(out).videoFrames, 180);
+        const double middle = 95.5 / 30.0;
+        const double torn = streakiness(frameFromFile(tape, middle, m_dir.path()), 200);
+        const double held = streakiness(frameFromFile(out, middle, m_dir.path()), 200);
+        const double later = streakiness(frameFromFile(out, 150.5 / 30.0, m_dir.path()), 200);
+        QVERIFY2(torn > 100 && held < 30 && later < 30,
+                 qPrintable(
+                     QStringLiteral("torn %1, held %2, later %3").arg(torn).arg(held).arg(later)));
+        // Outside the tear the picture keeps moving: it is not held.
+        const QImage a = frameFromFile(out, 40.5 / 30.0, m_dir.path());
+        const QImage b = frameFromFile(out, 60.5 / 30.0, m_dir.path());
+        QVERIFY(difference(a, b) > 5);
+    }
+
+    // Cleaning up a tape smooths each frame with the ones before it, so it must get them in
+    // order. Saved the way the app saves, with as many threads as it would use, every frame is
+    // still in its place.
+    void cleanUpKeepsFramesInOrder()
+    {
+        const QString numbered = path(QStringLiteral("numbered.mp4"));
+        // A bar that moves two pixels to the right each frame, so the order can be read back.
+        QVERIFY(ffmpeg({"-f",
+                        "lavfi",
+                        "-i",
+                        "color=black:size=320x240:rate=30,format=yuv420p,"
+                        "geq=lum='if(between(X,N*2+20,N*2+27),235,16)':cb=128:cr=128",
                         "-t",
                         "4",
                         "-c:v",
@@ -1203,36 +1286,43 @@ private slots:
                                  QStringLiteral("inorder.mp4"),
                                  edit.needsFramesInOrder() ? -1 : -4);
         QVERIFY(!out.isEmpty());
-        QByteArray stats;
-        QVERIFY(run(
-            QStringLiteral("ffmpeg"),
-            {QStringLiteral("-v"),
-             QStringLiteral("error"),
-             QStringLiteral("-i"),
-             out,
-             QStringLiteral("-vf"),
-             QStringLiteral(
-                 "crop=40:40:200:100,signalstats,metadata=print:key=lavfi.signalstats.YAVG:file=-"),
-             QStringLiteral("-f"),
-             QStringLiteral("null"),
-             QStringLiteral("-")},
-            &stats));
-        QVector<int> numbers;
-        for (const QByteArray &line : stats.split('\n')) {
-            const int at = line.indexOf("YAVG=");
-            if (at >= 0)
-                numbers << qRound((line.mid(at + 5).toDouble() - 10) / 2);
+        QByteArray frames;
+        QVERIFY(run(QStringLiteral("ffmpeg"),
+                    {QStringLiteral("-v"),
+                     QStringLiteral("error"),
+                     QStringLiteral("-i"),
+                     out,
+                     QStringLiteral("-f"),
+                     QStringLiteral("rawvideo"),
+                     QStringLiteral("-pix_fmt"),
+                     QStringLiteral("gray"),
+                     QStringLiteral("-")},
+                    &frames));
+        const int size = 320 * 240;
+        QCOMPARE(frames.size() / size, 120);
+        // Where the bar is in each frame, from the bright pixels across the middle row.
+        QVector<double> positions;
+        for (int i = 0; i < 120; ++i) {
+            const auto *row = reinterpret_cast<const uchar *>(frames.constData()) + i * size
+                              + 120 * 320;
+            double weight = 0;
+            double sum = 0;
+            for (int x = 0; x < 320; ++x) {
+                const int bright = qMax(0, row[x] - 128);
+                weight += bright;
+                sum += bright * x;
+            }
+            positions << (weight > 0 ? sum / weight : -1);
         }
-        QCOMPARE(numbers.size(), 120);
-        QVERIFY(numbers.last() - numbers.first() > 100);
-        // From the fourth frame on, none goes back to an earlier one. Frames out of order did, such
-        // as 33, 33, 31, 33 when saved on four threads.
-        for (int i = 4; i < numbers.size(); ++i)
-            QVERIFY2(numbers[i] >= numbers[i - 1],
+        QVERIFY(positions.last() - positions.first() > 200);
+        // From the fourth frame on, each is further right than the one before. Frames out of
+        // order went back, as when saved on four threads.
+        for (int i = 4; i < positions.size(); ++i)
+            QVERIFY2(positions[i] > positions[i - 1] + 1,
                      qPrintable(QStringLiteral("frame %1: %2 after %3")
                                     .arg(i)
-                                    .arg(numbers[i])
-                                    .arg(numbers[i - 1])));
+                                    .arg(positions[i])
+                                    .arg(positions[i - 1])));
     }
 
     void thumbnailsWork()

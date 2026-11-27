@@ -36,6 +36,7 @@
 #include <QUrl>
 #include <QVariantList>
 
+#include <atomic>
 #include <deque>
 #include <memory>
 
@@ -140,6 +141,8 @@ class SimpleController : public QObject
     // Picture: -100 darker to 100 lighter, and cleaning up an old tape
     Q_PROPERTY(int brightness READ brightness NOTIFY changed)
     Q_PROPERTY(bool cleanUp READ cleanUp NOTIFY changed)
+    // Clean up an old tape looks through the video once first: how far it is, or -1.
+    Q_PROPERTY(int tapeProgress READ tapeProgress NOTIFY tapeChanged)
     // Sound
     Q_PROPERTY(bool hasAudio READ hasAudio NOTIFY changed)
     Q_PROPERTY(int volume READ volume NOTIFY changed)
@@ -258,6 +261,7 @@ public:
     QString hideEndText() const;
     int brightness() const { return m_edit.brightness; }
     bool cleanUp() const { return m_edit.cleanUp; }
+    int tapeProgress() const { return m_tapeProgress; }
     bool hasAudio() const { return m_edit.hasAudio; }
     int volume() const { return m_edit.volume; }
     bool clearVoices() const { return m_edit.clearVoices; }
@@ -442,6 +446,7 @@ signals:
     void playingChanged();
     void toastChanged();
     void savingChanged();
+    void tapeChanged();
     void frameThumbChanged();
     void advancedRequested();
     void dialogChanged();
@@ -474,6 +479,10 @@ private:
     // Carries on playing from where the preview is now.
     void playOn();
     void rebuildPreview(int sourceFrame);
+    // Clean up an old tape: finds the torn parts and makes the held pictures, in the background.
+    void prepareTape(const Simple::Edit &edit);
+    void stopTape();
+    void onTapeReady(int generation, bool ok);
     void updateFrameThumb();
     void onFrameDisplayed(const SharedFrame &frame);
     void loadFilmstrip();
@@ -652,6 +661,13 @@ private:
     QString m_exportTarget;
     bool m_exportUsedHardware{false};
     bool m_exportCancelled{false};
+    // Finish waits while the tape is being got ready.
+    bool m_waitingForTape{false};
+    int m_tapeProgress{-1};
+    int m_tapeGeneration{0};
+    QString m_tapeKey;
+    std::shared_ptr<std::atomic_bool> m_tapeStop;
+    QSet<QString> m_tapeFailed;
     int m_hardwareEncoder{-1}; // -1 not checked yet, 0 no, 1 yes
 };
 

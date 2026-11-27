@@ -1711,9 +1711,20 @@ Rectangle {
                 Switch {
                     visible: !simple.isPhoto
                     title: "Clean up an old tape"
-                    body: "For a video of a VCR tape: takes out most of the lines that flash up and down, the snow and the fuzzy noise."
+                    body: "For a video of a VCR tape: where the picture tears into lines, shows the picture from just before instead, calms the fuzz and brings back the colours."
                     checked: simple.cleanUp
                     onToggled: (on) => simple.setCleanUp(on)
+                }
+
+                Text {
+                    // The first time, the whole video is looked through for the torn parts.
+                    visible: !simple.isPhoto && simple.cleanUp && simple.tapeProgress >= 0
+                    Layout.fillWidth: true
+                    text: "Looking through the video for torn parts… " + simple.tapeProgress + "%"
+                    color: root.t.muted
+                    font.family: "Inter"
+                    font.pixelSize: 12
+                    wrapMode: Text.WordWrap
                 }
             }
 

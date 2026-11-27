@@ -7,7 +7,7 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 
 ### Added
 - **Hide**: black out or blur the picture for a few seconds while the sound keeps playing, such as when the camera turns to the ladies during a speech. It covers the whole picture, or only a box drawn over the part to hide. Black takes that part right out.
-- **Picture**: make a video or photo lighter or darker, and **Clean up an old tape** for a video of a VCR tape, which takes out most of the lines that flash up and down, the snow and the fuzzy noise.
+- **Picture**: make a video or photo lighter or darker, and **Clean up an old tape** for a video of a VCR tape. Where the picture tears into lines, it shows the picture from just before instead while the sound plays on, and it calms the fuzz and brings back the colours. The first time, it looks through the video for the torn parts, with a progress line, and Finish waits for that.
 - **Sound**: up to 4 times louder without crackling, **Clearer voices**, and **Take out static** for hiss and hum.
 - Watching at **3×**. Voices keep their own pitch at every speed instead of sounding squeaky.
 - **Watch it without this part** in Cut out plays across the join before anything is removed.

@@ -498,6 +498,96 @@ QString safeFileName(const QString &name)
     return result.isEmpty() ? QStringLiteral("Untitled") : result;
 }
 
+namespace {
+
+// The median of each value and the ones around it, `window` wide.
+QVector<double> runningMedian(const QVector<double> &values, int window)
+{
+    QVector<double> result(values.size());
+    std::vector<double> part;
+    const int half = window / 2;
+    for (int i = 0; i < values.size(); ++i) {
+        const int from = qMax(0, i - half);
+        const int to = qMin(int(values.size()), i + half + 1);
+        part.assign(values.begin() + from, values.begin() + to);
+        std::nth_element(part.begin(), part.begin() + part.size() / 2, part.end());
+        result[i] = part[part.size() / 2];
+    }
+    return result;
+}
+
+double percentile(QVector<double> values, double fraction)
+{
+    if (values.isEmpty())
+        return 0;
+    const int index = qBound(0, int(fraction * (values.size() - 1)), int(values.size()) - 1);
+    std::nth_element(values.begin(), values.begin() + index, values.end());
+    return values[index];
+}
+
+} // namespace
+
+QVector<Range> tapeGlitches(const QVector<double> &acrossRows,
+                            const QVector<double> &acrossColumns,
+                            double fps)
+{
+    QVector<Range> result;
+    const int n = int(qMin(acrossRows.size(), acrossColumns.size()));
+    if (n < 3)
+        return result;
+    // Each frame against the two seconds around it, so something that is there all the time,
+    // such as a phone's player bar or the blur of a pan, does not count.
+    const int window = qMax(3, int(std::lround(fps * 2)) | 1);
+    QVector<double> scores[2];
+    QVector<double> local[2];
+    double spike[2];
+    for (int d = 0; d < 2; ++d) {
+        const QVector<double> &a = d == 0 ? acrossRows : acrossColumns;
+        const QVector<double> &b = d == 0 ? acrossColumns : acrossRows;
+        scores[d].resize(n);
+        for (int i = 0; i < n; ++i)
+            scores[d][i] = a[i] / qMax(b[i], 1.0);
+        local[d] = runningMedian(scores[d], window);
+        QVector<double> rise(n);
+        for (int i = 0; i < n; ++i)
+            rise[i] = scores[d][i] / qMax(local[d][i], 1e-6);
+        spike[d] = percentile(rise, 0.98);
+    }
+    const int d = spike[1] > spike[0] ? 1 : 0;
+    // Neither direction clearly stands out: not a torn tape.
+    if (spike[d] < spike[1 - d] * 1.25)
+        return result;
+    const double overall = percentile(scores[d], 0.5);
+    QVector<bool> torn(n);
+    for (int i = 0; i < n; ++i)
+        torn[i] = scores[d][i] > local[d][i] * 1.3 && scores[d][i] > overall * 1.25;
+    // One good frame inside a tear is part of it.
+    for (int i = 1; i + 1 < n; ++i) {
+        if (!torn[i] && torn[i - 1] && torn[i + 1])
+            torn[i] = true;
+    }
+    // Longer than a few seconds is something in the picture, not a tear.
+    const int longest = qMax(1, int(std::lround(fps * 3)));
+    for (int i = 0; i < n;) {
+        if (!torn[i]) {
+            ++i;
+            continue;
+        }
+        int j = i;
+        while (j < n && torn[j])
+            ++j;
+        if (j - i <= longest)
+            result << Range{qMax(0, i - 1), j};
+        i = j;
+    }
+    return result;
+}
+
+int holdFrame(const Range &glitch)
+{
+    return glitch.start > 0 ? glitch.start - 1 : glitch.end;
+}
+
 QString uniquePath(const QString &dir, const QString &baseName, const QString &extension)
 {
     const QDir folder(dir);
@@ -749,42 +839,81 @@ QString compileXml(const Edit &edit, const CompileOptions &options)
     };
     const auto number = [](double value) { return QString::number(value, 'f', 6); };
 
-    // An old tape: a median of each frame and its neighbours takes out the streaks and specks
-    // that last a moment, then a light denoise smooths the snow. The median needs the next
-    // frame, so the picture runs one frame (a thirtieth of a second) behind the sound.
+    // Where a stretch of source frames plays in this playlist: from its first kept frame to its
+    // last. False when all of it was trimmed or cut away.
+    const auto keptRanges = timed ? edit.kept() : QVector<Range>{Range{0, edit.frames}};
+    const auto playsAt = [&](const Range &time, int *in, int *out) {
+        int first = -1;
+        int last = -1;
+        for (const auto &range : keptRanges) {
+            const int a = qMax(range.start, time.start);
+            const int b = qMin(range.end, time.end);
+            if (b <= a)
+                continue;
+            if (first < 0)
+                first = a;
+            last = b - 1;
+        }
+        if (first < 0)
+            return false;
+        *in = timed ? edit.previewFromSource(first, speed) : first;
+        *out = timed ? edit.previewFromSource(last, speed) : last;
+        return true;
+    };
+
+    // An old tape. Where it tore up, the last good picture is laid over the torn frames, the way
+    // the caption is, while the sound plays on. Then a light denoise calms the snow, the
+    // contrast is stretched, the colours brought back up and the picture sharpened a little.
     if (edit.cleanUp && !edit.isPhoto) {
-        filter(QStringLiteral("avfilter.tmedian"),
-               {{QStringLiteral("av.radius"), QStringLiteral("1")}});
-        filter(QStringLiteral("avfilter.hqdn3d"), {});
+        for (int i = 0; i < options.glitches.size() && i < options.holdImages.size(); ++i) {
+            int in = 0;
+            int out = 0;
+            if (options.holdImages.at(i).isEmpty() || !playsAt(options.glitches.at(i), &in, &out))
+                continue;
+            filter(QStringLiteral("watermark"),
+                   {{QStringLiteral("resource"), options.holdImages.at(i)},
+                    {QStringLiteral("composite.geometry"), QStringLiteral("0%/0%:100%x100%:100")},
+                    {QStringLiteral("composite.progressive"), QStringLiteral("1")},
+                    {QStringLiteral("composite.distort"), QStringLiteral("1")},
+                    {QStringLiteral("producer.force_reload"), QStringLiteral("0")}},
+                   in,
+                   out);
+        }
+        filter(QStringLiteral("avfilter.hqdn3d"),
+               {{QStringLiteral("av.luma_spatial"), QStringLiteral("3")},
+                {QStringLiteral("av.chroma_spatial"), QStringLiteral("2")},
+                {QStringLiteral("av.luma_tmp"), QStringLiteral("4")},
+                {QStringLiteral("av.chroma_tmp"), QStringLiteral("3")}});
+        filter(QStringLiteral("avfilter.normalize"),
+               {{QStringLiteral("av.smoothing"), QStringLiteral("30")},
+                {QStringLiteral("av.independence"), QStringLiteral("0.8")},
+                {QStringLiteral("av.strength"), QStringLiteral("0.7")}});
     }
     // Lighter lifts the dark parts most, so faces in shadow show without washing out the sky.
-    if (edit.brightness != 0) {
-        const double amount = qBound(-100, edit.brightness, 100) / 100.0;
-        filter(QStringLiteral("avfilter.eq"),
-               {{QStringLiteral("av.gamma"), number(std::pow(2.0, amount))},
-                {QStringLiteral("av.brightness"), number(amount * 0.05)}});
+    const bool tape = edit.cleanUp && !edit.isPhoto;
+    if (edit.brightness != 0 || tape) {
+        QVector<QPair<QString, QString>> eq;
+        if (edit.brightness != 0) {
+            const double amount = qBound(-100, edit.brightness, 100) / 100.0;
+            eq << qMakePair(QStringLiteral("av.gamma"), number(std::pow(2.0, amount)))
+               << qMakePair(QStringLiteral("av.brightness"), number(amount * 0.05));
+        }
+        if (tape)
+            eq << qMakePair(QStringLiteral("av.saturation"), QStringLiteral("1.15"));
+        filter(QStringLiteral("avfilter.eq"), eq);
     }
+    if (tape)
+        filter(QStringLiteral("avfilter.cas"),
+               {{QStringLiteral("av.strength"), QStringLiteral("0.6")}});
     // Hidden parts, on the whole turned picture before the crop, so they stay on what they
     // cover. Sizes are fractions of the frame, so the smaller preview matches the saved file.
     if (!edit.isPhoto) {
-        const auto keptRanges = timed ? edit.kept() : QVector<Range>{Range{0, edit.frames}};
         for (int i = 0; i < edit.hides.size(); ++i) {
             const Hide &hide = edit.hides.at(i);
-            int first = -1;
-            int last = -1;
-            for (const auto &range : keptRanges) {
-                const int a = qMax(range.start, hide.time.start);
-                const int b = qMin(range.end, hide.time.end);
-                if (b <= a)
-                    continue;
-                if (first < 0)
-                    first = a;
-                last = b - 1;
-            }
-            if (first < 0)
+            int in = 0;
+            int out = 0;
+            if (!playsAt(hide.time, &in, &out))
                 continue;
-            const int in = timed ? edit.previewFromSource(first, speed) : first;
-            const int out = timed ? edit.previewFromSource(last, speed) : last;
             const QRectF area = hide.area.intersected(QRectF(0, 0, 1, 1));
             const QString mask = i < options.hideMasks.size() ? options.hideMasks.at(i) : QString();
             if (hide.blur && !mask.isEmpty()) {

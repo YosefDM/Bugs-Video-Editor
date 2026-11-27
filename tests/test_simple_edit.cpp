@@ -22,6 +22,8 @@
 #include <QTemporaryDir>
 #include <QtTest/QtTest>
 
+#include <cmath>
+
 using namespace Simple;
 
 class TestSimpleEdit : public QObject
@@ -358,13 +360,62 @@ private slots:
         QVERIFY(look.hasChanges());
         xml = compileXml(look, CompileOptions());
         QVERIFY(xml.contains(QStringLiteral("avfilter.eq")));
-        QVERIFY(xml.contains(QStringLiteral("avfilter.tmedian")));
+        QVERIFY(xml.contains(QStringLiteral("avfilter.normalize")));
+        // A torn stretch is covered by its held picture, where it plays after the cut.
+        look.addCut(Range{20, 40});
+        CompileOptions held;
+        held.glitches << Range{99, 110};
+        held.holdImages << QStringLiteral("/cache/hold.jpg");
+        xml = compileXml(look, held);
+        QVERIFY(xml.contains(QStringLiteral("/cache/hold.jpg")));
+        QVERIFY(xml.contains(QStringLiteral("in=\"79\" out=\"89\"")));
         // Saving a cleaned-up tape uses one thread, so its frames stay in order.
         QVERIFY(look.needsFramesInOrder());
         look.cleanUp = false;
         QVERIFY(!look.needsFramesInOrder());
         look.reset();
         QVERIFY(!look.hasChanges());
+    }
+
+    // Scores per frame as the scan measures them: a little busy across both, and a tear that
+    // fills the picture with lines along the rows for frames 100 to 109.
+    void tapeTearsAreFound()
+    {
+        QVector<double> rows(300);
+        QVector<double> columns(300);
+        for (int i = 0; i < 300; ++i) {
+            rows[i] = 4.0 + 0.3 * std::sin(i * 0.9);
+            columns[i] = 5.0 + 0.3 * std::cos(i * 0.7);
+        }
+        QVector<double> torn = rows;
+        for (int i = 100; i < 110; ++i)
+            torn[i] = 14.0;
+        // A torn frame inside the tear that came out clean still counts.
+        torn[105] = rows[105];
+        const QVector<Range> found = tapeGlitches(torn, columns, 30.0);
+        QCOMPARE(found.size(), 1);
+        // One frame early, as the first torn frame is often only partly torn.
+        QCOMPARE(found.first(), (Range{99, 110}));
+        QCOMPARE(holdFrame(found.first()), 98);
+        QCOMPARE(holdFrame(Range{0, 6}), 6);
+        // Lines the other way, as a tape filmed on its side, are found the same.
+        QCOMPARE(tapeGlitches(columns, torn, 30.0), found);
+
+        // Busier in both directions at once, as a cut to a busy picture, is not a tear.
+        QVector<double> busyColumns = columns;
+        for (int i = 100; i < 110; ++i)
+            busyColumns[i] = columns[i] * 3.5;
+        QVector<double> busyRows = rows;
+        for (int i = 100; i < 110; ++i)
+            busyRows[i] = rows[i] * 3.5;
+        QVERIFY(tapeGlitches(busyRows, busyColumns, 30.0).isEmpty());
+        // Lines that stay for many seconds are part of the picture.
+        QVector<double> lasting = rows;
+        for (int i = 60; i < 220; ++i)
+            lasting[i] = 14.0;
+        QVERIFY(tapeGlitches(lasting, columns, 30.0).isEmpty());
+        // A video with no tears has nothing found.
+        QVERIFY(tapeGlitches(rows, columns, 30.0).isEmpty());
     }
 
     void xmlDescribesTheEdit()

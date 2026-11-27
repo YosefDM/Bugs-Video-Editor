@@ -486,6 +486,8 @@ void SimpleController::closeFile()
     stopWatchingCut(false);
     pausePreview();
     storeSession();
+    if (!m_waitingForTape)
+        stopTape();
     m_edit = Edit();
     m_undo.clear();
     m_redo.clear();
@@ -1077,6 +1079,7 @@ QString SimpleController::advancedResource()
         return m_edit.sourcePath;
     options.photoPath = photoForEdit(m_edit);
     options.hideMasks = writeHideMasks(m_edit);
+    addTapeCleanUp(m_edit, &options);
     QString xml = compileXml(m_edit, options);
     file.write(xml.toUtf8());
     file.close();
@@ -1841,6 +1844,98 @@ void SimpleController::redo()
     emit changed();
 }
 
+void SimpleController::prepareTape(const Edit &edit)
+{
+    // The held pictures depend on the turn and flip, so those make a different job.
+    const QString key = QStringLiteral("%1|%2|%3|%4")
+                            .arg(edit.mediaPath)
+                            .arg(edit.frames)
+                            .arg(edit.rotation)
+                            .arg(edit.flipped);
+    if ((m_tapeStop && key == m_tapeKey) || m_tapeFailed.contains(key))
+        return;
+    stopTape();
+    m_tapeKey = key;
+    auto stop = std::make_shared<std::atomic_bool>(false);
+    m_tapeStop = stop;
+    const int generation = ++m_tapeGeneration;
+    m_tapeProgress = 0;
+    emit tapeChanged();
+    QPointer<SimpleController> self(this);
+    (void) QtConcurrent::run([self, edit, stop, generation]() {
+        QVector<Range> glitches;
+        int shown = 0;
+        const auto progress = [&](double fraction) {
+            const int percent = qBound(0, int(fraction * 100), 99);
+            if (percent != shown && self) {
+                shown = percent;
+                QMetaObject::invokeMethod(
+                    self.data(),
+                    [self, generation, percent]() {
+                        if (self && generation == self->m_tapeGeneration) {
+                            self->m_tapeProgress = percent;
+                            emit self->tapeChanged();
+                        }
+                    },
+                    Qt::QueuedConnection);
+            }
+            return !stop->load();
+        };
+        bool ok = scannedTape(edit, &glitches) || scanTape(edit, &glitches, progress);
+        if (ok && !stop->load())
+            writeHoldImages(edit, glitches);
+        ok = ok && !stop->load();
+        if (!self)
+            return;
+        QMetaObject::invokeMethod(
+            self.data(),
+            [self, generation, ok]() {
+                if (self)
+                    self->onTapeReady(generation, ok);
+            },
+            Qt::QueuedConnection);
+    });
+}
+
+void SimpleController::stopTape()
+{
+    if (!m_tapeStop)
+        return;
+    m_tapeStop->store(true);
+    m_tapeStop.reset();
+    m_tapeKey.clear();
+    ++m_tapeGeneration;
+    m_tapeProgress = -1;
+    emit tapeChanged();
+}
+
+void SimpleController::onTapeReady(int generation, bool ok)
+{
+    if (generation != m_tapeGeneration)
+        return;
+    // A video that could not be looked through is not tried again until BUGS! restarts; it
+    // saves with the rest of the clean-up.
+    if (!ok)
+        m_tapeFailed.insert(m_tapeKey);
+    m_tapeStop.reset();
+    m_tapeKey.clear();
+    m_tapeProgress = -1;
+    emit tapeChanged();
+    if (m_waitingForTape) {
+        CompileOptions tape;
+        if (!addTapeCleanUp(m_exportEdit, &tape, false)) {
+            prepareTape(m_exportEdit);
+            if (m_tapeStop)
+                return;
+        }
+        m_waitingForTape = false;
+        m_saving = false;
+        startVideoExport(m_hardwareEncoder == 1);
+    }
+    if (hasFile())
+        rebuildPreview(m_playhead);
+}
+
 void SimpleController::rebuildPreview(int sourceFrame)
 {
     if (!m_active || !hasFile())
@@ -1866,6 +1961,12 @@ void SimpleController::rebuildPreview(int sourceFrame)
     if (!cropTool)
         options.captionImage = writeCaptionImage(shown);
     options.photoPath = photoForEdit(edit);
+    // The torn parts of an old tape are held once they have been found, which happens in the
+    // background the first time; until then the preview shows the rest of the clean-up.
+    if (!addTapeCleanUp(edit, &options, false))
+        prepareTape(edit);
+    else if (!m_waitingForTape)
+        stopTape();
     const QString xml = compileXml(edit, options);
 
     const int position = (m_edit.isPhoto || m_previewFullTime)
@@ -2162,6 +2263,18 @@ void SimpleController::finish()
     pausePreview();
     if (!m_edit.isPhoto) {
         m_exportEdit = m_edit;
+        // An old tape is looked through before it can be saved. Finish shows Saving and waits.
+        CompileOptions tape;
+        if (!addTapeCleanUp(m_exportEdit, &tape, false)) {
+            prepareTape(m_exportEdit);
+            if (m_tapeStop) {
+                m_waitingForTape = true;
+                m_saving = true;
+                m_saveProgress = 0;
+                emit savingChanged();
+                return;
+            }
+        }
         startVideoExport(m_hardwareEncoder == 1);
         return;
     }
@@ -2232,6 +2345,7 @@ void SimpleController::startVideoExport(bool allowHardware)
     CompileOptions options;
     options.captionImage = writeCaptionImage(edit);
     options.hideMasks = writeHideMasks(edit);
+    addTapeCleanUp(edit, &options);
     options.target = QDir::toNativeSeparators(m_exportPartial);
     if (allowHardware)
         options.videoCodec = QStringLiteral("h264_qsv");
@@ -2379,6 +2493,13 @@ void SimpleController::finishExportFailed()
 
 void SimpleController::cancelFinish()
 {
+    if (m_waitingForTape) {
+        m_waitingForTape = false;
+        m_saving = false;
+        emit savingChanged();
+        showToast(QStringLiteral("Stopped. Nothing was saved."));
+        return;
+    }
     if (!m_saving || !m_job)
         return;
     m_exportCancelled = true;

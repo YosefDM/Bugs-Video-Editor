@@ -145,7 +145,7 @@ struct Edit
     QVector<TextLabel> labels;
     QVector<Hide> hides; // by start time
     int brightness{0};   // -100 darker to 100 lighter
-    bool cleanUp{false}; // an old tape: takes out streaks, snow and fuzz
+    bool cleanUp{false}; // an old tape: holds a clean picture over tears, and livens the colours
     int volume{100};     // percent; above 100 is louder, kept from crackling
     bool clearVoices{false};
     bool removeStatic{false};
@@ -162,8 +162,8 @@ struct Edit
     // Anything drawn over the picture: the caption and the labels.
     bool hasOverlay() const { return hasCaption() || hasLabels(); }
     bool hasPictureFixes() const { return brightness != 0 || cleanUp; }
-    // Cleaning up a tape compares each frame with the next, so the frames must reach it one at a
-    // time and in order; saving on several threads at once mixed them up.
+    // Cleaning up a tape calms the fuzz and evens the light using the frames before, so the
+    // frames must reach it one at a time and in order; saving on several threads mixed them up.
     bool needsFramesInOrder() const { return cleanUp && !isPhoto; }
     bool hasSoundChanges() const
     {
@@ -209,6 +209,18 @@ bool parseTime(const QString &text, double *seconds);
 // "6 seconds", "1 second", "1 minute 5 seconds"
 QString formatDuration(double seconds);
 
+// Finds where an old tape tore up, from two scores per frame: how strongly the frame has thin
+// lines across its rows, and across its columns. A tear fills the picture with streaks along the
+// tape's lines for a few frames. They keep one direction through a whole video, so the direction
+// that spikes harder is used; when neither clearly does, as in a video that isn't of a tape,
+// nothing is found. Each stretch starts a frame early, as the first torn frame is often only
+// partly torn.
+QVector<Range> tapeGlitches(const QVector<double> &acrossRows,
+                            const QVector<double> &acrossColumns,
+                            double fps);
+// The good frame shown over a torn stretch: the one before it, or after it at the very start.
+int holdFrame(const Range &glitch);
+
 // A path in dir that does not exist yet, so an existing file can never be overwritten.
 QString uniquePath(const QString &dir, const QString &baseName, const QString &extension);
 // Removes characters Windows does not allow in a file name.
@@ -228,8 +240,12 @@ struct CompileOptions
     // Preview only: watching faster. Voices keep their pitch where MLT has Rubber Band.
     double speed{1.0};
     // Blur and black-out need a mask picture each, the size of the turned picture, made by
-    // writeHideMask(). Indexed like Edit::hides; empty for black ones.
+    // writeHideMasks(). Indexed like Edit::hides; empty for black ones.
     QStringList hideMasks;
+    // Clean up an old tape: where the tape tore, in source frames (tapeGlitches()), and for each
+    // a picture of the last good frame (holdFrame()) to show instead, while the sound plays on.
+    QVector<Range> glitches;
+    QStringList holdImages;
     int threads{0};
     // MLT's real_time: -1 processes one frame at a time; -N uses N threads, as Shotcut's export
     // does with "Parallel processing".

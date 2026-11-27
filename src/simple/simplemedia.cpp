@@ -613,12 +613,193 @@ QStringList writeHideMasks(const Edit &edit)
     return masks;
 }
 
+namespace {
+
+// Where a file's scan is kept: by its path, size and time, so a changed file is scanned again.
+QString tapeScanFile(const Edit &edit)
+{
+    const QFileInfo info(edit.mediaPath);
+    const QString key = QStringLiteral("%1|%2|%3")
+                            .arg(info.absoluteFilePath())
+                            .arg(info.size())
+                            .arg(info.lastModified().toMSecsSinceEpoch());
+    const QString name = QString::fromLatin1(
+        QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex().left(24));
+    return QDir(cacheDir()).filePath(QStringLiteral("tape-") + name + QStringLiteral(".txt"));
+}
+
+// The video as the file holds it: no turn, crop, cut or anything else of Levi's.
+Edit plainSource(const Edit &edit)
+{
+    Edit plain = edit;
+    plain.reset();
+    return plain;
+}
+
+} // namespace
+
+bool scannedTape(const Edit &edit, QVector<Range> *glitches)
+{
+    QFile file(tapeScanFile(edit));
+    if (!file.open(QIODevice::ReadOnly))
+        return false;
+    glitches->clear();
+    const QString text = QString::fromLatin1(file.readAll()).trimmed();
+    for (const QString &part : text.split(QLatin1Char(' '), Qt::SkipEmptyParts)) {
+        const QStringList ends = part.split(QLatin1Char(':'));
+        if (ends.size() == 2)
+            *glitches << Range{ends.at(0).toInt(), ends.at(1).toInt()};
+    }
+    return true;
+}
+
+bool scanTape(const Edit &edit,
+              QVector<Range> *glitches,
+              const std::function<bool(double)> &progress)
+{
+    if (edit.isPhoto || edit.frames <= 0)
+        return false;
+    // Small pictures are enough to see streaks, and quick to look at.
+    const Edit plain = plainSource(edit);
+    const QSize turned = plain.rotatedSize();
+    const QSize scaled = turned.scaled(192, 192, Qt::KeepAspectRatio);
+    const QSize size(qMax(16, scaled.width() & ~1), qMax(16, scaled.height() & ~1));
+    CompileOptions options;
+    options.applyTime = false;
+    options.applyCrop = false;
+    Mlt::Profile profile;
+    setProfileFor(profile, plain, size);
+    Mlt::Producer producer(profile, "xml-string", compileXml(plain, options).toUtf8().constData());
+    if (!producer.is_valid())
+        return false;
+    QVector<double> rows(edit.frames);
+    QVector<double> columns(edit.frames);
+    for (int i = 0; i < edit.frames; ++i) {
+        producer.seek(i);
+        std::unique_ptr<Mlt::Frame> frame(producer.get_frame());
+        const QImage image = frame && frame->is_valid()
+                                 ? frameImage(*frame, size.width(), size.height(), "bilinear")
+                                       .convertToFormat(QImage::Format_Grayscale8)
+                                 : QImage();
+        double across[2] = {0, 0};
+        if (!image.isNull()) {
+            // How sharply each pixel stands out from the ones above and below it, and from the
+            // ones beside it: thin lines show up in one and not the other.
+            qint64 sums[2] = {0, 0};
+            qint64 count = 0;
+            for (int y = 1; y + 1 < image.height(); ++y) {
+                const uchar *up = image.constScanLine(y - 1);
+                const uchar *line = image.constScanLine(y);
+                const uchar *down = image.constScanLine(y + 1);
+                for (int x = 1; x + 1 < image.width(); ++x) {
+                    sums[0] += qAbs(2 * line[x] - up[x] - down[x]);
+                    sums[1] += qAbs(2 * line[x] - line[x - 1] - line[x + 1]);
+                    ++count;
+                }
+            }
+            if (count) {
+                across[0] = double(sums[0]) / count;
+                across[1] = double(sums[1]) / count;
+            }
+        }
+        rows[i] = across[0];
+        columns[i] = across[1];
+        if (progress && (i % 25 == 0) && !progress(double(i) / edit.frames))
+            return false;
+    }
+    *glitches = tapeGlitches(rows, columns, edit.fps());
+    QStringList parts;
+    for (const Range &range : std::as_const(*glitches))
+        parts << QStringLiteral("%1:%2").arg(range.start).arg(range.end);
+    QSaveFile file(tapeScanFile(edit));
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(parts.join(QLatin1Char(' ')).toLatin1() + '\n');
+        file.commit();
+    }
+    return true;
+}
+
+QStringList writeHoldImages(const Edit &edit, const QVector<Range> &glitches, bool make)
+{
+    QStringList images;
+    if (glitches.isEmpty())
+        return images;
+    // The picture as it comes from the file with Levi's turn and flip: what the playlist's
+    // filters, the first of which lays these over the torn frames, start from.
+    Edit turned = plainSource(edit);
+    turned.rotation = edit.rotation;
+    turned.flipped = edit.flipped;
+    const QSize size = turned.rotatedSize();
+    std::unique_ptr<Mlt::Profile> profile;
+    std::unique_ptr<Mlt::Producer> producer;
+    for (const Range &glitch : glitches) {
+        const int frameNumber = qBound(0, holdFrame(glitch), qMax(0, edit.frames - 1));
+        // By the file's scan, which changes with its size and date, so a changed file at the
+        // same place never shows an old picture.
+        const QString key = QStringLiteral("%1|%2|%3|%4|%5x%6")
+                                .arg(tapeScanFile(edit))
+                                .arg(frameNumber)
+                                .arg((edit.baseRotation + edit.rotation) % 360)
+                                .arg(edit.flipped)
+                                .arg(size.width())
+                                .arg(size.height());
+        const QString name = QString::fromLatin1(
+            QCryptographicHash::hash(key.toUtf8(), QCryptographicHash::Sha1).toHex().left(24));
+        const QString target
+            = QDir(cacheDir()).filePath(QStringLiteral("hold-") + name + QStringLiteral(".jpg"));
+        if (!QFileInfo::exists(target)) {
+            if (!make) {
+                images << QString();
+                continue;
+            }
+            if (!producer) {
+                CompileOptions options;
+                options.applyTime = false;
+                options.applyCrop = false;
+                profile = std::make_unique<Mlt::Profile>();
+                setProfileFor(*profile, turned, size);
+                producer = std::make_unique<Mlt::Producer>(
+                    *profile, "xml-string", compileXml(turned, options).toUtf8().constData());
+            }
+            QImage image;
+            if (producer->is_valid()) {
+                producer->seek(frameNumber);
+                std::unique_ptr<Mlt::Frame> frame(producer->get_frame());
+                if (frame && frame->is_valid())
+                    image = frameImage(*frame, size.width(), size.height(), "bicubic");
+            }
+            QSaveFile file(target);
+            if (image.isNull() || !file.open(QIODevice::WriteOnly)
+                || !image.convertToFormat(QImage::Format_RGB32).save(&file, "JPG", 95)
+                || !file.commit()) {
+                images << QString();
+                continue;
+            }
+        }
+        images << target;
+    }
+    return images;
+}
+
+bool addTapeCleanUp(const Edit &edit, CompileOptions *options, bool make)
+{
+    if (!edit.cleanUp || edit.isPhoto)
+        return true;
+    QVector<Range> glitches;
+    if (!scannedTape(edit, &glitches))
+        return false;
+    options->glitches = glitches;
+    options->holdImages = writeHoldImages(edit, glitches, make);
+    return make || !options->holdImages.contains(QString());
+}
+
 QImage renderFrame(const Edit &edit, int editedFrame)
 {
     CompileOptions options;
     options.captionImage = writeCaptionImage(edit);
     options.photoPath = photoForEdit(edit);
     options.hideMasks = writeHideMasks(edit);
+    addTapeCleanUp(edit, &options);
     const QString xml = compileXml(edit, options);
     const QSize size = edit.outputSize();
     Mlt::Profile profile;

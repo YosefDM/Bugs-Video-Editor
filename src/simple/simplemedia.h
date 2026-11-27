@@ -65,6 +65,22 @@ QString writeCaptionImage(const Edit &edit);
 // get an empty string. Written into the cache; safe to call from a worker thread.
 QStringList writeHideMasks(const Edit &edit);
 
+// Clean up an old tape. Looks through the whole video for where the tape tore up (see
+// tapeGlitches()) and saves what it found in the cache for next time. progress(fraction)
+// returns false to stop, and then this returns false. Safe to call from a worker thread.
+bool scanTape(const Edit &edit,
+              QVector<Range> *glitches,
+              const std::function<bool(double)> &progress = nullptr);
+// What an earlier scan found for this file. False when it has not been scanned.
+bool scannedTape(const Edit &edit, QVector<Range> *glitches);
+// The last good frame before each torn stretch, turned and flipped like the edit, as pictures in
+// the cache. With make false, only pictures already made; the others are empty.
+QStringList writeHoldImages(const Edit &edit, const QVector<Range> &glitches, bool make = true);
+// Puts what Clean up an old tape needs into `options`, from the cache. Returns false when the
+// clean-up is on and the video has not been scanned yet, or, with make false, a picture is
+// still to be made.
+bool addTapeCleanUp(const Edit &edit, CompileOptions *options, bool make = true);
+
 // A photo with Levi's rotation and flip already applied, made by Qt as a lossless copy in the cache,
 // because the engine's photo reader cannot turn a picture. Returns the plain media path when the
 // photo is not turned or flipped. Safe to call from a worker thread.
