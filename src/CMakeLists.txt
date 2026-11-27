@@ -139,6 +139,8 @@ add_executable(shotcut WIN32 MACOSX_BUNDLE
   scrubbar.cpp scrubbar.h
   settings.cpp settings.h
   sharedframe.cpp sharedframe.h
+  simple/bugsmode.cpp simple/bugsmode.h
+  simple/bugsrules.cpp simple/bugsrules.h
   simple/collage.cpp simple/collage.h
   simple/collageitemview.cpp simple/collageitemview.h
   simple/simplecontroller.cpp simple/simplecontroller.h

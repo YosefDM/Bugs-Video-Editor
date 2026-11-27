@@ -44,3 +44,11 @@ add_executable(test_collage
 target_include_directories(test_collage PRIVATE ${CMAKE_SOURCE_DIR}/src/simple)
 target_link_libraries(test_collage PRIVATE Qt6::Core Qt6::Test)
 add_test(NAME simple_collage COMMAND test_collage)
+
+add_executable(test_bugs_mode
+  test_bugs_mode.cpp
+  ${CMAKE_SOURCE_DIR}/src/simple/bugsrules.cpp
+)
+target_include_directories(test_bugs_mode PRIVATE ${CMAKE_SOURCE_DIR}/src/simple)
+target_link_libraries(test_bugs_mode PRIVATE Qt6::Core Qt6::Test)
+add_test(NAME simple_bugs COMMAND test_bugs_mode)
