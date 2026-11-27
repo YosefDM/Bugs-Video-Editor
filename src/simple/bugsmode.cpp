@@ -166,10 +166,11 @@ void BugsMode::askForCode()
     }
     m_asking = true;
     bool ok = false;
+    // Levi is not told that each day has its own code.
     const QString code = QInputDialog::getText(m_window,
                                                QStringLiteral("Turn off the bugs"),
-                                               QStringLiteral("Call Yosef for today's code, then "
-                                                              "type it here."),
+                                               QStringLiteral(
+                                                   "Call Yosef for the code, then type it here."),
                                                QLineEdit::Normal,
                                                QString(),
                                                &ok,
@@ -199,7 +200,7 @@ void BugsMode::askForCode()
     case BugsRules::CodeResult::Wrong:
         QMessageBox::warning(m_window,
                              QStringLiteral("Bugs"),
-                             QStringLiteral("That isn't today's code."));
+                             QStringLiteral("That isn't the code."));
         break;
     }
 }

@@ -6,7 +6,7 @@ the last for fixes, and the first for big changes. Each release notes the Shotcu
 ## Unreleased
 
 ### Added
-- **Bugs mode**, on Levi's laptop only. During seder (Sunday to Thursday, 10 am to 1 pm and 4 to 6:30 pm), or once BUGS! has been in use for three hours in a day, real bugs crawl over the window and now and then a spider jumps out. Clicks go straight through them. **Turn off the bugs…** in the title-bar menu (right-click the title bar) asks for a code from Yosef: each day has its own, which turns them off for the rest of that day, and one turns them off for good.
+- **Bugs mode**, on Levi's laptop only. During seder (Sunday to Thursday, 10 am to 1 pm and 4 to 6:30 pm), or once BUGS! has been in use for three hours in a day, real bugs crawl over the window and now and then a spider jumps out. Clicks go straight through them. **Turn off the bugs…** in the title-bar menu (right-click the title bar) asks for a code from Yosef.
 - **Hide**: black out or blur the picture for a few seconds while the sound keeps playing, such as when the camera turns to the ladies during a speech. It covers the whole picture, or only a box drawn over the part to hide. Black takes that part right out.
 - **Picture**: make a video or photo lighter or darker, and **Clean up an old tape** for a video of a VCR tape, which takes out most of the lines that flash up and down, the snow and the fuzzy noise.
 - **Sound**: up to 4 times louder without crackling, **Clearer voices**, and **Take out static** for hiss and hum.
